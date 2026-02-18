@@ -156,31 +156,15 @@
    Usamos corsproxy.io que reenvía la request con los headers correctos.
    Si falla, intentamos allorigins.win como fallback.
 ────────────────────────────────────────────────────────────────────────── */
-const SF = 'https://api.sofascore.com/api/v1';
-
 async function sfGet(path) {
-    const target = SF + path;
-
-    // Proxy 1: corsproxy.io
+    // Usamos nuestro propio proxy en /sf para evitar bloqueos CORS y de datacenter
     try {
-        const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(target), {
-            headers: { 'x-requested-with': 'XMLHttpRequest' }
-        });
+        const r = await fetch('/sf?path=' + encodeURIComponent(path));
         if (r.ok) {
             const j = await r.json();
             if (j && !j.error) return j;
         }
     } catch(_) {}
-
-    // Proxy 2: allorigins
-    try {
-        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(target));
-        if (r.ok) {
-            const w = await r.json();
-            if (w.contents) return JSON.parse(w.contents);
-        }
-    } catch(_) {}
-
     return null;
 }
 
