@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Partidos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { opacity: 0.85; font-size: 14px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card h2 { font-size: 18px; color: #333; margin-bottom: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px; }
+        input, select {
+            width: 100%; padding: 11px 14px;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 15px; transition: border-color .2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #667eea; }
+        button {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px;
+            font-size: 17px; font-weight: bold; cursor: pointer;
+            transition: opacity .2s;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .loading { display: none; text-align: center; padding: 40px; }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #667eea;
+            border-radius: 50%; width: 48px; height: 48px;
+            animation: spin 1s linear infinite; margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-steps { color: #888; font-size: 13px; margin-top: 8px; }
+
+        /* ── Resultado ── */
+        .resultado { display: none; }
+        .match-header {
+            text-align: center;
+        }
+        .vs-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; margin: 16px 0;
+        }
+        .team-name { font-size: 22px; font-weight: 700; color: #222; }
+        .vs-badge {
+            background: #667eea; color: white;
+            padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 15px;
+        }
+        .match-meta { color: #666; font-size: 13px; line-height: 1.8; }
+        .source-badge {
+            display: inline-block; font-size: 11px; padding: 3px 10px;
+            border-radius: 20px; font-weight: 600; margin-top: 6px;
+        }
+        .source-sofascore { background: #e8f4fd; color: #1a73e8; }
+        .source-api { background: #fff3e0; color: #e65100; }
+        .warning-box {
+            background: #fff8e1; border-left: 4px solid #ffc107;
+            padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #555;
+            margin-top: 12px;
+        }
+
+        /* ── Dos columnas ── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+        .col-header { font-weight: 700; color: #667eea; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+        /* ── Forma ── */
+        .forma-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .badge {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 13px; color: white;
+        }
+        .badge-V { background: #4caf50; }
+        .badge-E { background: #ff9800; }
+        .badge-D { background: #f44336; }
+        .forma-detalle { font-size: 12px; color: #777; }
+        .forma-item { margin-bottom: 3px; }
+
+        /* ── Stats ── */
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label-text { color: #555; }
+        .stat-value-text { font-weight: 600; color: #333; }
+
+        /* ── H2H ── */
+        .h2h-summary {
+            display: flex; gap: 10px; margin-bottom: 14px; text-align: center;
+        }
+        .h2h-box { flex: 1; background: #f8f9fa; border-radius: 8px; padding: 12px 6px; }
+        .h2h-num { font-size: 22px; font-weight: bold; color: #667eea; }
+        .h2h-lbl { font-size: 11px; color: #888; margin-top: 3px; }
+        .h2h-list { font-size: 13px; }
+        .h2h-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; gap: 8px; }
+        .h2h-item:last-child { border-bottom: none; }
+        .h2h-score { font-weight: 700; color: #444; }
+        .h2h-comp { color: #aaa; font-size: 11px; }
+
+        /* ── Recomendaciones ── */
+        .rec-card {
+            border-radius: 10px; padding: 16px 20px; margin-bottom: 12px;
+            border-left: 5px solid;
+        }
+        .rec-alta { background: #e8f5e9; border-color: #4caf50; }
+        .rec-media { background: #e3f2fd; border-color: #2196f3; }
+        .rec-baja  { background: #fafafa; border-color: #bdbdbd; }
+        .rec-tipo { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .rec-razon { font-size: 13px; color: #555; margin-bottom: 6px; }
+        .rec-meta { display: flex; gap: 16px; font-size: 12px; color: #777; }
+        .rec-conf { font-weight: 600; }
+        .conf-alta { color: #2e7d32; }
+        .conf-media { color: #1565c0; }
+        .conf-baja { color: #757575; }
+
+        /* ── Alineaciones ── */
+        .lineup-list { list-style: none; font-size: 13px; }
+        .lineup-list li { padding: 4px 0; border-bottom: 1px solid #f5f5f5; display: flex; gap: 8px; }
+        .lineup-list li:last-child { border-bottom: none; }
+        .lineup-num { color: #aaa; min-width: 24px; }
+        .lineup-pos { background: #f0f0f0; border-radius: 4px; padding: 1px 5px; font-size: 11px; color: #555; }
+        .lineup-cap { color: #f59e0b; font-size: 11px; }
+
+        .error-box {
+            background: #fff0f0; color: #c33;
+            padding: 20px; border-radius: 8px; border-left: 4px solid #c33;
+        }
+        .section-label { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Analizador de Partidos</h1>
+        <p>Análisis pre-partido para scalping deportivo &mdash; Sofascore + API-Football</p>
+    </div>
+
+    <div class="card">
+        <form id="analisisForm">
+            <div class="form-group">
+                <label>Equipo Local</label>
+                <input type="text" id="equipoA" placeholder="Ej: AC Milan" required>
+            </div>
+            <div class="form-group">
+                <label>Equipo Visitante</label>
+                <input type="text" id="equipoB" placeholder="Ej: Como" required>
+            </div>
+            <div class="form-group">
+                <label>Liga (opcional &mdash; ayuda a refinar la búsqueda)</label>
+                <select id="liga">
+                    <option value="">Auto-detectar</option>
+                    <option value="Premier League">Premier League</option>
+                    <option value="La Liga">La Liga</option>
+                    <option value="Serie A">Serie A</option>
+                    <option value="Bundesliga">Bundesliga</option>
+                    <option value="Ligue 1">Ligue 1</option>
+                    <option value="Champions League">Champions League</option>
+                    <option value="Primeira Liga">Primeira Liga (Portugal)</option>
+                    <option value="Copa Libertadores">Copa Libertadores</option>
+                    <option value="Copa Sudamericana">Copa Sudamericana</option>
+                    <option value="Super Lig">Süper Lig (Turquía)</option>
+                    <option value="Liga Profesional Argentina">Liga Profesional Argentina</option>
+                </select>
+            </div>
+            <button type="submit" id="btnAnalizar">Analizar Partido</button>
+        </form>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Buscando en Sofascore...</p>
+        <p class="loading-steps">Recopilando forma, estadísticas, H2H y corners...</p>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
+</div>
+
+<script>
+document.getElementById('analisisForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const equipoA = document.getElementById('equipoA').value.trim();
+    const equipoB = document.getElementById('equipoB').value.trim();
+    const liga    = document.getElementById('liga').value;
+
+    document.getElementById('loading').style.display  = 'block';
+    document.getElementById('resultado').style.display = 'none';
+    document.getElementById('btnAnalizar').disabled = true;
+
+    try {
+        const resp = await fetch('/analizar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({equipo_a: equipoA, equipo_b: equipoB, liga})
+        });
+        const data = await resp.json();
+        renderResultado(data);
+    } catch (err) {
+        renderError(err.message);
+    } finally {
+        document.getElementById('loading').style.display  = 'none';
+        document.getElementById('btnAnalizar').disabled = false;
+    }
+});
+
+/* ── Helpers ─────────────────────────────────────────────── */
+
+function val(v, suffix='') {
+    return (v !== null && v !== undefined && v !== '') ? v + suffix : '—';
+}
+
+function formaBadges(forma) {
+    if (!forma || !forma.length) return '<span style="color:#aaa">Sin datos</span>';
+    return forma.map(r => `<span class="badge badge-${r}">${r}</span>`).join('');
+}
+
+function formaDetalle(detalle) {
+    if (!detalle || !detalle.length) return '';
+    return detalle.map(d =>
+        `<div class="forma-item">${d.fecha} ${d.local ? 'vs' : 'en'} ${d.rival || '?'} &mdash; <strong>${d.resultado}</strong></div>`
+    ).join('');
+}
+
+function confClass(c) {
+    if (!c) return 'conf-baja';
+    const l = c.toLowerCase();
+    if (l.includes('alta')) return 'conf-alta';
+    if (l.includes('media')) return 'conf-media';
+    return 'conf-baja';
+}
+
+function recClass(c) {
+    if (!c) return 'rec-baja';
+    const l = c.toLowerCase();
+    if (l.includes('alta')) return 'rec-alta';
+    if (l.includes('media')) return 'rec-media';
+    return 'rec-baja';
+}
+
+/* ── Render principal ─────────────────────────────────────── */
+
+function renderResultado(data) {
+    const el = document.getElementById('resultado');
+    if (data.error) { el.innerHTML = `<div class="card error-box">Error: ${data.error}</div>`; el.style.display='block'; return; }
+
+    const m    = data.metadata    || {};
+    const al   = data.alineaciones|| {};
+    const est  = data.estadisticas|| {};
+    const fo   = data.forma       || {};
+    const h2h  = data.h2h         || {};
+    const cor  = data.corners     || {};
+    const tar  = data.tarjetas    || {};
+    const recs = data.recomendaciones || [];
+
+    const fuente = data.fuente === 'sofascore'
+        ? '<span class="source-badge source-sofascore">Sofascore (tiempo real)</span>'
+        : '<span class="source-badge source-api">API-Football (histórico)</span>';
+
+    const warning = data.advertencia
+        ? `<div class="warning-box">Advertencia: ${data.advertencia}</div>` : '';
+
+    const fechaStr = m.fecha
+        ? new Date(m.fecha).toLocaleString('es-ES', {dateStyle:'full', timeStyle:'short'})
+        : '—';
+
+    /* ── Header del partido ── */
+    let html = `
+    <div class="card match-header">
+        <div class="vs-row">
+            <div class="team-name">${m.equipo_a || '—'}</div>
+            <div class="vs-badge">VS</div>
+            <div class="team-name">${m.equipo_b || '—'}</div>
+        </div>
+        <div class="match-meta">
+            ${fechaStr}<br>
+            ${m.competicion ? m.competicion + '<br>' : ''}
+            ${m.estadio ? 'Estadio: ' + m.estadio + '<br>' : ''}
+            ${m.arbitro ? 'Árbitro: ' + m.arbitro : ''}
+        </div>
+        ${fuente}
+        ${warning}
+    </div>`;
+
+    /* ── Alineaciones ── */
+    const linA = al.titulares_a || [];
+    const linB = al.titulares_b || [];
+    if (linA.length || linB.length) {
+        html += `<div class="card"><h2>Alineaciones ${al.confirmadas ? '(Confirmadas)' : '(Previstas)'}</h2>
+        <div class="two-col">`;
+        for (const [equipo, titulares, formacion] of [
+            [m.equipo_a, linA, al.formacion_a],
+            [m.equipo_b, linB, al.formacion_b],
+        ]) {
+            html += `<div>
+                <div class="col-header">${equipo} ${formacion ? '('+formacion+')' : ''}</div>
+                <ul class="lineup-list">
+                ${titulares.map(j => `<li>
+                    <span class="lineup-num">${j.numero||''}</span>
+                    <span>${j.nombre}</span>
+                    <span class="lineup-pos">${j.posicion||''}</span>
+                    ${j.capitan ? '<span class="lineup-cap">(C)</span>' : ''}
+                </li>`).join('')}
+                </ul>
+            </div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    /* ── Forma reciente ── */
+    html += `<div class="card"><h2>Forma Reciente (últimos 5)</h2>
+    <div class="two-col">
+        <div>
+            <div class="col-header">${m.equipo_a}</div>
+            <div class="forma-badges">${formaBadges(fo.forma_a)}</div>
+            <div class="forma-detalle">${formaDetalle(fo.detalle_a)}</div>
+        </div>
+        <div>
+            <div class="col-header">${m.equipo_b}</div>
+            <div class="forma-badges">${formaBadges(fo.forma_b)}</div>
+            <div class="forma-detalle">${formaDetalle(fo.detalle_b)}</div>
+        </div>
+    </div></div>`;
+
+    /* ── Estadísticas ── */
+    const stA = est.equipo_a || {};
+    const stB = est.equipo_b || {};
+    if (Object.keys(stA).length || Object.keys(stB).length) {
+        html += `<div class="card"><h2>Estadísticas de Temporada</h2>
+        <div class="two-col">
+            <div>
+                <div class="col-header">${m.equipo_a}</div>
+                ${statRow('Goles marcados', stA.goles_marcados)}
+                ${statRow('Goles recibidos', stA.goles_recibidos)}
+                ${statRow('Promedio GF', stA.promedio_gf)}
+                ${statRow('Promedio GC', stA.promedio_gc)}
+                ${statRow('Clean sheets', stA.clean_sheets)}
+                ${statRow('Partidos', stA.partidos_analizados)}
+            </div>
+            <div>
+                <div class="col-header">${m.equipo_b}</div>
+                ${statRow('Goles marcados', stB.goles_marcados)}
+                ${statRow('Goles recibidos', stB.goles_recibidos)}
+                ${statRow('Promedio GF', stB.promedio_gf)}
+                ${statRow('Promedio GC', stB.promedio_gc)}
+                ${statRow('Clean sheets', stB.clean_sheets)}
+                ${statRow('Partidos', stB.partidos_analizados)}
+            </div>
+        </div></div>`;
+    }
+
+    /* ── Corners y tarjetas ── */
+    if (cor.promedio_total_a || cor.promedio_total_b || tar.promedio_amarillas_a || tar.promedio_amarillas_b) {
+        html += `<div class="card"><h2>Corners y Tarjetas</h2>
+        <div class="two-col">
+            <div>
+                <div class="col-header">Corners (promedio/partido)</div>
+                ${statRow(m.equipo_a, cor.promedio_total_a)}
+                ${statRow(m.equipo_b, cor.promedio_total_b)}
+                ${cor.promedio_total_a && cor.promedio_total_b
+                    ? statRow('Total combinado', (cor.promedio_total_a + cor.promedio_total_b).toFixed(1)) : ''}
+            </div>
+            <div>
+                <div class="col-header">Amarillas (promedio/partido)</div>
+                ${statRow(m.equipo_a, tar.promedio_amarillas_a)}
+                ${statRow(m.equipo_b, tar.promedio_amarillas_b)}
+            </div>
+        </div></div>`;
+    }
+
+    /* ── H2H ── */
+    const h2hR  = h2h.resumen   || {};
+    const h2hH  = h2h.historial || [];
+    if (h2hH.length) {
+        html += `<div class="card"><h2>Historial Directo (H2H)</h2>
+        <div class="h2h-summary">
+            <div class="h2h-box"><div class="h2h-num">${h2hR.victorias_a||0}</div><div class="h2h-lbl">${m.equipo_a}</div></div>
+            <div class="h2h-box"><div class="h2h-num">${h2hR.empates||0}</div><div class="h2h-lbl">Empates</div></div>
+            <div class="h2h-box"><div class="h2h-num">${h2hR.victorias_b||0}</div><div class="h2h-lbl">${m.equipo_b}</div></div>
+        </div>
+        <div class="h2h-list">
+        ${h2hH.slice(0,8).map(p => `<div class="h2h-item">
+            <span>${p.fecha}</span>
+            <span>${p.local} <strong class="h2h-score">${p.resultado}</strong> ${p.visitante}</span>
+            <span class="h2h-comp">${p.competicion}</span>
+        </div>`).join('')}
+        </div></div>`;
+    }
+
+    /* ── Recomendaciones ── */
+    if (recs.length) {
+        html += `<div class="card"><h2>Recomendaciones de Apuesta</h2>
+        <p style="font-size:12px;color:#aaa;margin-bottom:14px">Solo orientativo. Las apuestas conllevan riesgo de pérdida económica.</p>`;
+        recs.forEach(r => {
+            html += `<div class="rec-card ${recClass(r.confianza)}">
+                <div class="rec-tipo">${r.tipo}</div>
+                <div class="rec-razon">${r.razon}</div>
+                <div class="rec-meta">
+                    <span>Confianza: <strong class="rec-conf ${confClass(r.confianza)}">${r.confianza}</strong></span>
+                    <span>Cuota estimada: <strong>${r.cuota_tipica}</strong></span>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    el.innerHTML = html;
+    el.style.display = 'block';
+}
+
+function statRow(label, value) {
+    return `<div class="stat-row">
+        <span class="stat-label-text">${label}</span>
+        <span class="stat-value-text">${val(value)}</span>
+    </div>`;
+}
+
+function renderError(msg) {
+    const el = document.getElementById('resultado');
+    el.innerHTML = `<div class="card error-box">Error: ${msg}</div>`;
+    el.style.display = 'block';
+}
+</script>
+</body>
+</html>
