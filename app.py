@@ -1,164 +1,35 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-from datetime import datetime, timedelta
 import time
-
-from scraping_module import ScraperDeportivo
+import random
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# ── API-Football (fallback para datos históricos 2022-2024) ───────────────────
-API_FOOTBALL_KEY = "12847b343c75c28d90392de6f3f3d907"
-API_BASE_URL = "https://v3.football.api-sports.io"
-API_HEADERS = {
-    'x-rapidapi-host': "v3.football.api-sports.io",
-    'x-rapidapi-key': API_FOOTBALL_KEY,
-}
+# ── Headers para Sofascore (búsqueda de equipos/partido desde el servidor) ────
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+]
 
-LIGAS_IDS_API = {
-    'Premier League': 39,
-    'La Liga': 140,
-    'Serie A': 135,
-    'Bundesliga': 78,
-    'Ligue 1': 61,
-    'Champions League': 2,
-    'Primeira Liga': 94,
-    'Liga Portugal': 94,
-    'Betclic': 94,
-    'Copa Libertadores': 13,
-    'Libertadores': 13,
-    'Copa Sudamericana': 11,
-    'Sudamericana': 11,
-    'Super Lig': 203,
-    'Süper Lig': 203,
-    'Turquia': 203,
-    'Liga Profesional Argentina': 128,
-    'Liga Argentina': 128,
-    'Primera Division Argentina': 128,
-    'Argentina': 128,
-}
+def sofascore_headers():
+    return {
+        'User-Agent': random.choice(USER_AGENTS),
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'Origin': 'https://www.sofascore.com',
+        'Referer': 'https://www.sofascore.com/',
+    }
 
-
-class AnalizadorPartidos:
-    def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(API_HEADERS)
-        self.scraper = ScraperDeportivo()
-
-    # ── API-Football helpers ───────────────────────────────────────────────────
-
-    def _api_request(self, endpoint, params=None):
-        try:
-            url = f"{API_BASE_URL}/{endpoint}"
-            r = self.session.get(url, params=params, timeout=10)
-            if r.status_code == 200:
-                return r.json()
-            if r.status_code == 429:
-                time.sleep(2)
-                return self._api_request(endpoint, params)
-            return {"error": f"Status {r.status_code}"}
-        except Exception as e:
-            return {"error": str(e)}
-
-    def _api_buscar_equipo(self, nombre):
-        result = self._api_request("teams", {'search': nombre})
-        if 'response' in result and result['response']:
-            return result['response'][0]['team']
+def sofascore_get(url, params=None):
+    try:
+        r = requests.get(url, params=params, headers=sofascore_headers(), timeout=10)
+        if r.status_code == 200:
+            return r.json()
         return None
-
-    def _api_buscar_fixture(self, team_a_id, team_b_id, liga, season):
-        params = {'season': season, 'team': team_a_id}
-        if liga and liga in LIGAS_IDS_API:
-            params['league'] = LIGAS_IDS_API[liga]
-        fixtures = self._api_request("fixtures", params)
-        if 'response' not in fixtures or not fixtures['response']:
-            return None
-        for f in fixtures['response']:
-            hid = f['teams']['home']['id']
-            aid = f['teams']['away']['id']
-            if team_b_id in [hid, aid]:
-                return f
+    except Exception:
         return None
-
-    def _api_buscar_partido(self, equipo_a, equipo_b, liga=None):
-        """Fallback: busca partido en API-Football (solo 2022-2024)."""
-        team_a = self._api_buscar_equipo(equipo_a)
-        team_b = self._api_buscar_equipo(equipo_b)
-        if not team_a or not team_b:
-            return None, "No se encontraron los equipos en API-Football"
-
-        for season in [2024, 2023, 2022]:
-            fixture = self._api_buscar_fixture(team_a['id'], team_b['id'], liga, season)
-            if fixture:
-                return self._api_fixture_a_resultado(fixture), None
-
-        # Buscar por fecha (próximos 30 días) — solo funciona en plan de pago
-        hoy = datetime.now().strftime('%Y-%m-%d')
-        futuro = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
-        params = {'team': team_a['id'], 'from': hoy, 'to': futuro}
-        if liga and liga in LIGAS_IDS_API:
-            params['league'] = LIGAS_IDS_API[liga]
-        fixtures = self._api_request("fixtures", params)
-        if 'response' in fixtures and fixtures['response']:
-            for f in fixtures['response']:
-                if team_b['id'] in [f['teams']['home']['id'], f['teams']['away']['id']]:
-                    return self._api_fixture_a_resultado(f), None
-
-        return None, f"No se encontró partido entre {equipo_a} y {equipo_b}"
-
-    def _api_fixture_a_resultado(self, fixture):
-        """Convierte un fixture de API-Football al formato unificado."""
-        return {
-            'fuente': 'api-football',
-            'metadata': {
-                'equipo_a': fixture['teams']['home']['name'],
-                'equipo_b': fixture['teams']['away']['name'],
-                'competicion': fixture['league']['name'],
-                'fecha': fixture['fixture']['date'],
-                'estadio': fixture['fixture'].get('venue', {}).get('name', ''),
-                'arbitro': fixture['fixture'].get('referee', '') or '',
-            },
-            'alineaciones': {
-                'confirmadas': False,
-                'formacion_a': '',
-                'formacion_b': '',
-                'titulares_a': [],
-                'titulares_b': [],
-                'bajas_a': [],
-                'bajas_b': [],
-            },
-            'estadisticas': {'equipo_a': {}, 'equipo_b': {}},
-            'forma': {'forma_a': [], 'forma_b': [], 'detalle_a': [], 'detalle_b': []},
-            'h2h': {'historial': [], 'resumen': {}},
-            'corners': {'promedio_total_a': None, 'promedio_total_b': None},
-            'tarjetas': {'promedio_amarillas_a': None, 'promedio_amarillas_b': None, 'arbitro_promedio': None},
-            'recomendaciones': [{
-                'tipo': 'Datos limitados (fuente histórica)',
-                'razon': 'API-Football solo tiene datos hasta 2024. Se recomienda usar Sofascore para partidos actuales.',
-                'confianza': 'Baja',
-                'cuota_tipica': 'N/A',
-            }],
-            'advertencia': 'Datos obtenidos de API-Football (histórico). Para la temporada actual usa Sofascore.',
-        }
-
-    # ── Método principal ───────────────────────────────────────────────────────
-
-    def buscar_partido(self, equipo_a, equipo_b, liga=None):
-        """
-        1. Intenta Sofascore (datos actuales 2025-2026)
-        2. Fallback a API-Football (datos históricos 2022-2024)
-        """
-        # Paso 1: Sofascore
-        resultado = self.scraper.buscar_partido_sofascore(equipo_a, equipo_b, liga)
-        if resultado:
-            return resultado, None
-
-        # Paso 2: API-Football (fallback)
-        print("[app] Sofascore falló, intentando API-Football...")
-        return self._api_buscar_partido(equipo_a, equipo_b, liga)
-
-
-analizador = AnalizadorPartidos()
 
 
 @app.route('/')
@@ -166,22 +37,84 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/analizar', methods=['POST'])
-def analizar():
-    data = request.json
+@app.route('/buscar', methods=['POST'])
+def buscar():
+    """
+    Busca el partido en Sofascore y devuelve el event_id + team_ids.
+    El navegador del cliente usa esos IDs para hacer el resto de las calls
+    a api.sofascore.com directamente (evita el bloqueo de IPs de datacenter).
+    """
+    data = request.json or {}
     equipo_a = data.get('equipo_a', '').strip()
     equipo_b = data.get('equipo_b', '').strip()
-    liga = data.get('liga', '').strip() or None
 
     if not equipo_a or not equipo_b:
         return jsonify({'error': 'Faltan equipos'}), 400
 
-    resultado, error = analizador.buscar_partido(equipo_a, equipo_b, liga)
+    # Buscar equipo A
+    r_a = sofascore_get('https://api.sofascore.com/api/v1/search/all', {'q': equipo_a})
+    team_a = None
+    if r_a and 'results' in r_a:
+        for item in r_a['results']:
+            if item.get('type') == 'team':
+                e = item.get('entity', {})
+                team_a = {'id': e.get('id'), 'nombre': e.get('name')}
+                break
 
-    if error:
-        return jsonify({'error': error}), 404
+    if not team_a:
+        return jsonify({'error': f'No se encontró el equipo: {equipo_a}'}), 404
 
-    return jsonify({'encontrado': True, **resultado})
+    time.sleep(random.uniform(1.0, 2.0))
+
+    # Buscar equipo B
+    r_b = sofascore_get('https://api.sofascore.com/api/v1/search/all', {'q': equipo_b})
+    team_b = None
+    if r_b and 'results' in r_b:
+        for item in r_b['results']:
+            if item.get('type') == 'team':
+                e = item.get('entity', {})
+                team_b = {'id': e.get('id'), 'nombre': e.get('name')}
+                break
+
+    if not team_b:
+        return jsonify({'error': f'No se encontró el equipo: {equipo_b}'}), 404
+
+    time.sleep(random.uniform(1.0, 2.0))
+
+    # Buscar el partido en próximos eventos del equipo A
+    event_id = None
+    evento = None
+    for pagina in [0, 1]:
+        r_ev = sofascore_get(f'https://api.sofascore.com/api/v1/team/{team_a["id"]}/events/next/{pagina}')
+        if not r_ev or 'events' not in r_ev:
+            continue
+        for ev in r_ev['events']:
+            home_id = ev.get('homeTeam', {}).get('id')
+            away_id = ev.get('awayTeam', {}).get('id')
+            if team_b['id'] in [home_id, away_id]:
+                event_id = ev['id']
+                evento = ev
+                break
+        if event_id:
+            break
+        time.sleep(random.uniform(1.0, 1.5))
+
+    if not event_id:
+        return jsonify({'error': f'No se encontró el próximo partido entre {equipo_a} y {equipo_b}'}), 404
+
+    # Metadata básica del partido
+    ts = evento.get('startTimestamp', 0)
+    fecha = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%dT%H:%M:%S+00:00') if ts else ''
+
+    return jsonify({
+        'event_id': event_id,
+        'team_a_id': team_a['id'],
+        'team_b_id': team_b['id'],
+        'equipo_a': evento.get('homeTeam', {}).get('name', team_a['nombre']),
+        'equipo_b': evento.get('awayTeam', {}).get('name', team_b['nombre']),
+        'competicion': evento.get('tournament', {}).get('name', ''),
+        'fecha': fecha,
+    })
 
 
 if __name__ == '__main__':
