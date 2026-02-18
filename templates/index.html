@@ -101,6 +101,48 @@
         .ca{color:#2e7d32}.cm{color:#1565c0}.cb{color:#757575}
 
         .error-box{background:#fff0f0;color:#c33;padding:16px;border-radius:8px;border-left:4px solid #c33}
+
+        /* ── Bloque Análisis IA ── */
+        .ia-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 14px; padding: 22px; margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(102,126,234,0.25);
+        }
+        .ia-card h2 {
+            color: #a78bfa; font-size: 17px; margin-bottom: 6px;
+            border-bottom: 1px solid #2d2d4e; padding-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .ia-loading {
+            color: #8888aa; font-size: 13px; padding: 20px 0;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .ia-spinner {
+            border: 3px solid #2d2d4e; border-top: 3px solid #a78bfa;
+            border-radius: 50%; width: 20px; height: 20px;
+            animation: spin 1s linear infinite; flex-shrink: 0;
+        }
+        .ia-body { color: #d4d4f0; font-size: 14px; line-height: 1.75; }
+        .ia-body h3, .ia-body strong, .ia-body b {
+            color: #c4b5fd; font-weight: 700;
+        }
+        .ia-body p { margin-bottom: 10px; }
+        .ia-body ul { padding-left: 18px; margin-bottom: 10px; }
+        .ia-body li { margin-bottom: 4px; }
+        .ia-seccion {
+            background: rgba(255,255,255,0.04); border-radius: 8px;
+            padding: 12px 14px; margin-bottom: 10px;
+            border-left: 3px solid #7c3aed;
+        }
+        .ia-seccion-titulo {
+            color: #a78bfa; font-weight: 700; font-size: 13px;
+            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+        }
+        .ia-error { color: #f87171; font-size: 13px; padding: 10px 0; }
+        .ia-badge {
+            background: #7c3aed; color: white; font-size: 10px;
+            padding: 2px 8px; border-radius: 10px; font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -256,6 +298,9 @@ document.getElementById('frm').addEventListener('submit', async e => {
 
         step('Listo!');
         renderResultado(resultado);
+
+        // Llamar a Kimi en paralelo (no bloquea el render de los stats)
+        pedirAnalisisIA(resultado);
 
     } catch(err) {
         renderError('Error: ' + err.message);
@@ -518,9 +563,114 @@ function renderResultado(r) {
     });
     html += `</div>`;
 
+    // Agregar placeholder del bloque IA al final
+    html += `<div class="ia-card" id="ia-bloque">
+        <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2</span></h2>
+        <div class="ia-loading" id="ia-loading">
+            <div class="ia-spinner"></div>
+            <span>Kimi está analizando todos los datos del partido...</span>
+        </div>
+        <div class="ia-body" id="ia-body" style="display:none"></div>
+    </div>`;
+
     const el = document.getElementById('resultado');
     el.innerHTML = html;
     el.style.display = 'block';
+}
+
+/* ─── ANÁLISIS DE IA ─────────────────────────────────────────────────────── */
+
+async function pedirAnalisisIA(r) {
+    const payload = {
+        eqA: r.meta.eqA,
+        eqB: r.meta.eqB,
+        fecha: r.meta.fecha,
+        competicion: r.meta.competicion,
+        estadio: r.meta.estadio,
+        arbitro: r.meta.arbitro,
+        formaA: r.forma.fA.badges,
+        formaB: r.forma.fB.badges,
+        detA: r.forma.fA.detalle,
+        detB: r.forma.fB.detalle,
+        statsA: r.stats.sA,
+        statsB: r.stats.sB,
+        cornersA: r.corners.a,
+        cornersB: r.corners.b,
+        amarillasA: r.amarillas.a,
+        amarillasB: r.amarillas.b,
+        formacionA: r.alin.fA,
+        formacionB: r.alin.fB,
+        titularesA: r.alin.tA,
+        titularesB: r.alin.tB,
+        h2h: r.h2h,
+    };
+
+    try {
+        const resp = await fetch('/analisis-ia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+
+        const loading = document.getElementById('ia-loading');
+        const body    = document.getElementById('ia-body');
+        if (!loading || !body) return;
+
+        loading.style.display = 'none';
+        body.style.display    = 'block';
+
+        if (data.error) {
+            body.innerHTML = `<div class="ia-error">⚠️ Error al obtener análisis: ${data.error}</div>`;
+            return;
+        }
+
+        // Convertir markdown básico a HTML
+        body.innerHTML = markdownToHtml(data.analisis);
+
+    } catch(err) {
+        const loading = document.getElementById('ia-loading');
+        const body    = document.getElementById('ia-body');
+        if (loading) loading.style.display = 'none';
+        if (body) {
+            body.style.display = 'block';
+            body.innerHTML = `<div class="ia-error">⚠️ No se pudo conectar con Kimi: ${err.message}</div>`;
+        }
+    }
+}
+
+function markdownToHtml(text) {
+    // Detectar secciones numeradas como "1. **TÍTULO**" y envolverlas
+    // Primero separamos por secciones numeradas
+    const secciones = text.split(/(?=\n\d+\.\s+\*\*)/);
+
+    if (secciones.length > 1) {
+        return secciones.map(sec => {
+            const matchTitulo = sec.match(/^\n?(\d+\.\s+\*\*([^*]+)\*\*)([\s\S]*)/);
+            if (matchTitulo) {
+                const titulo = matchTitulo[2].trim();
+                const cuerpo = procesarMarkdown(matchTitulo[3]);
+                return `<div class="ia-seccion">
+                    <div class="ia-seccion-titulo">${titulo}</div>
+                    <div>${cuerpo}</div>
+                </div>`;
+            }
+            return `<p>${procesarMarkdown(sec)}</p>`;
+        }).join('');
+    }
+
+    return procesarMarkdown(text);
+}
+
+function procesarMarkdown(text) {
+    return text
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')   // **negrita**
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')                 // *cursiva*
+        .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')              // listas
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')             // envolver listas
+        .replace(/\n\n+/g, '</p><p>')                           // párrafos
+        .replace(/\n/g, '<br>')                                  // saltos de línea
+        .replace(/^/, '<p>').replace(/$/, '</p>');              // envolver todo
 }
 
 function renderError(msg) {
