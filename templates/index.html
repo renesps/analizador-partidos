@@ -8,8 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
-            padding: 16px;
+            background: #f0f2f5; padding: 16px;
         }
         .container { max-width: 900px; margin: 0 auto; }
         .header {
@@ -29,8 +28,9 @@
         .form-group { margin-bottom: 14px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #444; font-size: 13px; }
         input, select {
-            width: 100%; padding: 10px 12px;
+            width: 100%; padding: 11px 13px;
             border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px;
+            transition: border-color .2s;
         }
         input:focus, select:focus { outline: none; border-color: #667eea; }
         button {
@@ -39,9 +39,8 @@
             color: white; border: none; border-radius: 8px;
             font-size: 16px; font-weight: bold; cursor: pointer;
         }
-        button:disabled { opacity: .55; cursor: not-allowed; }
+        button:disabled { opacity: .5; cursor: not-allowed; }
 
-        /* loading */
         .loading { display: none; text-align: center; padding: 36px; }
         .spinner {
             border: 4px solid #f0f0f0; border-top: 4px solid #667eea;
@@ -49,90 +48,66 @@
             animation: spin 1s linear infinite; margin: 0 auto 12px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #loadingMsg { color: #666; font-size: 13px; margin-top: 6px; }
+        #stepMsg { color: #555; font-size: 14px; font-weight: 500; }
+        #subMsg  { color: #999; font-size: 12px; margin-top: 5px; }
 
         .resultado { display: none; }
 
-        /* header partido */
         .match-header { text-align: center; }
-        .vs-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 14px 0; }
+        .vs-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 14px 0; flex-wrap: wrap; }
         .team-name { font-size: 20px; font-weight: 700; color: #222; }
-        .vs-badge { background: #667eea; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
-        .match-meta { color: #666; font-size: 13px; line-height: 1.9; }
-        .source-badge { display: inline-block; font-size: 11px; padding: 3px 10px;
-            border-radius: 20px; font-weight: 600; margin-top: 6px;
-            background: #e8f4fd; color: #1a73e8; }
+        .vs-badge { background: #667eea; color: white; padding: 5px 14px; border-radius: 20px; font-weight: bold; }
+        .match-meta { color: #666; font-size: 13px; line-height: 2; }
+        .source-ok  { display:inline-block; background:#e8f5e9; color:#2e7d32; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-top:6px; }
 
-        /* dos columnas */
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 580px) { .two-col { grid-template-columns: 1fr; } }
-        .col-header { font-weight: 700; color: #667eea; font-size: 12px;
-            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+        .col-hdr { font-weight:700; color:#667eea; font-size:12px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
 
-        /* forma */
-        .forma-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 7px; }
-        .badge { width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 12px; color: white; }
-        .badge-V { background: #4caf50; }
-        .badge-E { background: #ff9800; }
-        .badge-D { background: #f44336; }
-        .forma-detalle { font-size: 12px; color: #777; }
-        .forma-item { margin-bottom: 2px; }
+        .forma-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:7px; }
+        .badge { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; color:white; }
+        .badge-V{background:#4caf50}.badge-E{background:#ff9800}.badge-D{background:#f44336}
+        .forma-det { font-size:12px; color:#777; }
+        .fitem { margin-bottom:2px; }
 
-        /* stats */
-        .stat-row { display: flex; justify-content: space-between; align-items: center;
-            padding: 7px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
-        .stat-row:last-child { border-bottom: none; }
-        .stat-lbl { color: #555; }
-        .stat-val { font-weight: 600; color: #333; }
+        .srow { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f5f5f5; font-size:13px; }
+        .srow:last-child { border-bottom:none; }
+        .slbl { color:#555; } .sval { font-weight:600; color:#333; }
 
-        /* h2h */
-        .h2h-summary { display: flex; gap: 8px; margin-bottom: 12px; text-align: center; }
-        .h2h-box { flex: 1; background: #f8f9fa; border-radius: 8px; padding: 10px 4px; }
-        .h2h-num { font-size: 20px; font-weight: bold; color: #667eea; }
-        .h2h-lbl { font-size: 11px; color: #888; margin-top: 2px; }
-        .h2h-list { font-size: 12px; }
-        .h2h-item { display: flex; justify-content: space-between;
-            padding: 5px 0; border-bottom: 1px solid #f0f0f0; gap: 6px; flex-wrap: wrap; }
-        .h2h-item:last-child { border-bottom: none; }
-        .h2h-score { font-weight: 700; }
-        .h2h-comp { color: #aaa; font-size: 11px; }
+        .h2h-sum { display:flex; gap:8px; margin-bottom:12px; text-align:center; }
+        .h2h-box { flex:1; background:#f8f9fa; border-radius:8px; padding:10px 4px; }
+        .h2h-num { font-size:20px; font-weight:bold; color:#667eea; }
+        .h2h-lbl { font-size:11px; color:#888; margin-top:2px; }
+        .h2h-list { font-size:12px; }
+        .h2h-item { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f0f0f0; gap:6px; flex-wrap:wrap; }
+        .h2h-item:last-child{border-bottom:none}
+        .h2h-score{font-weight:700} .h2h-comp{color:#aaa;font-size:11px}
 
-        /* alineaciones */
-        .lineup-list { list-style: none; font-size: 13px; }
-        .lineup-list li { padding: 4px 0; border-bottom: 1px solid #f5f5f5;
-            display: flex; gap: 7px; align-items: center; }
-        .lineup-list li:last-child { border-bottom: none; }
-        .lineup-num { color: #aaa; min-width: 22px; font-size: 12px; }
-        .lineup-pos { background: #f0f0f0; border-radius: 4px;
-            padding: 1px 5px; font-size: 11px; color: #555; }
-        .lineup-cap { color: #f59e0b; font-size: 11px; }
+        .lineup-list { list-style:none; font-size:13px; }
+        .lineup-list li { padding:4px 0; border-bottom:1px solid #f5f5f5; display:flex; gap:6px; align-items:center; }
+        .lineup-list li:last-child{border-bottom:none}
+        .lnum{color:#aaa;min-width:22px;font-size:12px}
+        .lpos{background:#f0f0f0;border-radius:4px;padding:1px 5px;font-size:11px;color:#555}
+        .lcap{color:#f59e0b;font-size:11px}
 
-        /* recomendaciones */
-        .rec-card { border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border-left: 5px solid; }
-        .rec-alta  { background: #e8f5e9; border-color: #4caf50; }
-        .rec-media { background: #e3f2fd; border-color: #2196f3; }
-        .rec-baja  { background: #fafafa; border-color: #bdbdbd; }
-        .rec-tipo  { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
-        .rec-razon { font-size: 13px; color: #555; margin-bottom: 5px; }
-        .rec-meta  { display: flex; gap: 14px; font-size: 12px; color: #777; }
-        .rec-conf  { font-weight: 600; }
-        .conf-alta  { color: #2e7d32; }
-        .conf-media { color: #1565c0; }
-        .conf-baja  { color: #757575; }
+        .rec-card{border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:5px solid}
+        .rec-alta{background:#e8f5e9;border-color:#4caf50}
+        .rec-media{background:#e3f2fd;border-color:#2196f3}
+        .rec-baja{background:#fafafa;border-color:#bdbdbd}
+        .rec-tipo{font-weight:700;font-size:15px;margin-bottom:3px}
+        .rec-razon{font-size:13px;color:#555;margin-bottom:5px}
+        .rec-meta{display:flex;gap:14px;font-size:12px;color:#777}
+        .rc{font-weight:600}
+        .ca{color:#2e7d32}.cm{color:#1565c0}.cb{color:#757575}
 
-        .error-box { background: #fff0f0; color: #c33;
-            padding: 16px; border-radius: 8px; border-left: 4px solid #c33; }
-        .info-box { background: #e3f2fd; color: #1565c0;
-            padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+        .error-box{background:#fff0f0;color:#c33;padding:16px;border-radius:8px;border-left:4px solid #c33}
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>Analizador de Partidos</h1>
-        <p>Scalping deportivo · Sofascore en tiempo real</p>
+        <p>Scalping deportivo · Sofascore tiempo real</p>
     </div>
 
     <div class="card">
@@ -168,435 +143,408 @@
 
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <p>Buscando partido...</p>
-        <p id="loadingMsg"></p>
+        <p id="stepMsg">Buscando equipos...</p>
+        <p id="subMsg"></p>
     </div>
 
     <div class="resultado" id="resultado"></div>
 </div>
 
 <script>
-const API = 'https://api.sofascore.com/api/v1';
+/* ─── PROXY CORS ────────────────────────────────────────────────────────────
+   Sofascore bloquea requests cross-origin desde browsers.
+   Usamos corsproxy.io que reenvía la request con los headers correctos.
+   Si falla, intentamos allorigins.win como fallback.
+────────────────────────────────────────────────────────────────────────── */
+const SF = 'https://api.sofascore.com/api/v1';
 
-// Sofascore no tiene CORS para llamadas directas del browser en producción,
-// así que usamos un proxy CORS público solo para leer datos.
-// allorigins.win reenvía la respuesta con headers CORS correctos.
 async function sfGet(path) {
-    const url = `${API}${path}`;
-    try {
-        // Intentar directo primero (funciona en algunos navegadores/redes)
-        const r = await fetch(url, {
-            headers: {
-                'Accept': 'application/json',
-            }
-        });
-        if (r.ok) return await r.json();
-    } catch (_) {}
+    const target = SF + path;
 
-    // Fallback: proxy CORS
+    // Proxy 1: corsproxy.io
     try {
-        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const r2 = await fetch(proxy);
-        if (r2.ok) {
-            const wrapper = await r2.json();
-            return JSON.parse(wrapper.contents);
+        const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(target), {
+            headers: { 'x-requested-with': 'XMLHttpRequest' }
+        });
+        if (r.ok) {
+            const j = await r.json();
+            if (j && !j.error) return j;
         }
-    } catch (_) {}
+    } catch(_) {}
+
+    // Proxy 2: allorigins
+    try {
+        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(target));
+        if (r.ok) {
+            const w = await r.json();
+            if (w.contents) return JSON.parse(w.contents);
+        }
+    } catch(_) {}
 
     return null;
 }
 
-function setMsg(txt) { document.getElementById('loadingMsg').textContent = txt; }
+function step(msg, sub='') {
+    document.getElementById('stepMsg').textContent = msg;
+    document.getElementById('subMsg').textContent  = sub;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function val(x)    { return (x !== null && x !== undefined && x !== '') ? x : '—'; }
 
-document.getElementById('frm').addEventListener('submit', async (e) => {
+/* ─── FORMULARIO ─────────────────────────────────────────────────────────── */
+document.getElementById('frm').addEventListener('submit', async e => {
     e.preventDefault();
     const eqA  = document.getElementById('eqA').value.trim();
     const eqB  = document.getElementById('eqB').value.trim();
-    const liga = document.getElementById('liga').value;
     const btn  = document.getElementById('btn');
 
-    document.getElementById('loading').style.display  = 'block';
+    document.getElementById('loading').style.display   = 'block';
     document.getElementById('resultado').style.display = 'none';
     btn.disabled = true;
 
     try {
-        // 1. El servidor busca el partido y devuelve IDs (Render)
-        setMsg('Buscando partido en Sofascore...');
-        const resp = await fetch('/buscar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({equipo_a: eqA, equipo_b: eqB, liga})
-        });
-        const base = await resp.json();
-        if (base.error) { renderError(base.error); return; }
-
-        // 2. El browser hace las calls pesadas a Sofascore directamente
-        setMsg('Obteniendo forma reciente...');
-        const [lastA, lastB] = await Promise.all([
-            sfGet(`/team/${base.team_a_id}/events/last/0`),
-            sfGet(`/team/${base.team_b_id}/events/last/0`),
+        /* 1. Buscar equipos */
+        step('Buscando equipos en Sofascore...');
+        const [rA, rB] = await Promise.all([
+            sfGet('/search/all?q=' + encodeURIComponent(eqA)),
+            sfGet('/search/all?q=' + encodeURIComponent(eqB)),
         ]);
 
-        setMsg('Obteniendo alineaciones y árbitro...');
-        const [lineups, eventData, h2hData] = await Promise.all([
-            sfGet(`/event/${base.event_id}/lineups`),
-            sfGet(`/event/${base.event_id}`),
-            sfGet(`/event/${base.event_id}/h2h`),
+        const teamA = firstTeam(rA, eqA);
+        const teamB = firstTeam(rB, eqB);
+
+        if (!teamA) { renderError('No se encontró el equipo: ' + eqA); return; }
+        if (!teamB) { renderError('No se encontró el equipo: ' + eqB); return; }
+
+        /* 2. Buscar el partido */
+        step('Buscando el partido...', teamA.nombre + ' vs ' + teamB.nombre);
+        const evento = await buscarPartido(teamA.id, teamB.id);
+        if (!evento) { renderError('No se encontró el próximo partido entre ' + eqA + ' y ' + eqB); return; }
+
+        const eventId  = evento.id;
+        const teamAId  = teamA.id;
+        const teamBId  = teamB.id;
+        const eqANom   = evento.homeTeam?.name || teamA.nombre;
+        const eqBNom   = evento.awayTeam?.name || teamB.nombre;
+
+        /* 3. Datos en paralelo */
+        step('Obteniendo forma reciente y alineaciones...', '');
+        const [lastA, lastB, lineups, eventData, h2hData] = await Promise.all([
+            sfGet('/team/' + teamAId + '/events/last/0'),
+            sfGet('/team/' + teamBId + '/events/last/0'),
+            sfGet('/event/' + eventId + '/lineups'),
+            sfGet('/event/' + eventId),
+            sfGet('/event/' + eventId + '/h2h'),
         ]);
 
-        setMsg('Calculando estadísticas...');
-        // Corners/tarjetas: stats de últimos 5 partidos de cada equipo
-        const eventsA = (lastA?.events || []).filter(e => e?.status?.code === 100).slice(-5);
-        const eventsB = (lastB?.events || []).filter(e => e?.status?.code === 100).slice(-5);
+        /* 4. Stats partido a partido (corners/amarillas) */
+        step('Calculando corners y tarjetas...', 'Analizando últimos 5 partidos...');
+        const evA = finished(lastA?.events).slice(-5);
+        const evB = finished(lastB?.events).slice(-5);
+        const [statsA, statsB] = await Promise.all([
+            fetchStats(evA, teamAId),
+            fetchStats(evB, teamBId),
+        ]);
 
-        const statsA = await fetchEventStats(eventsA, base.team_a_id);
-        const statsB = await fetchEventStats(eventsB, base.team_b_id);
-
-        // Árbitro
+        /* 5. Montar resultado */
+        const ts      = evento.startTimestamp;
+        const fecha   = ts ? new Date(ts * 1000).toISOString() : '';
         const arbitro = eventData?.event?.referee?.name || '';
         const estadio = eventData?.event?.venue?.stadium?.name || '';
 
-        const resultado = buildResultado(base, lastA, lastB, lineups, h2hData, statsA, statsB, arbitro, estadio);
+        const resultado = {
+            meta: { eqA: eqANom, eqB: eqBNom,
+                    competicion: evento.tournament?.name || '',
+                    fecha, estadio, arbitro },
+            alin: parseLineups(lineups),
+            forma: {
+                fA: forma(lastA?.events, teamAId),
+                fB: forma(lastB?.events, teamBId),
+            },
+            stats: {
+                sA: calcStats(lastA?.events, teamAId),
+                sB: calcStats(lastB?.events, teamBId),
+            },
+            corners: { a: statsA.corners, b: statsB.corners },
+            amarillas: { a: statsA.amarillas, b: statsB.amarillas },
+            h2h: parseH2H(h2hData, eqANom, eqBNom),
+        };
+
+        step('Listo!');
         renderResultado(resultado);
 
-    } catch (err) {
-        renderError('Error inesperado: ' + err.message);
+    } catch(err) {
+        renderError('Error: ' + err.message);
     } finally {
         document.getElementById('loading').style.display = 'none';
         btn.disabled = false;
     }
 });
 
-// ── Helpers de datos ──────────────────────────────────────────────────────────
+/* ─── HELPERS DE DATOS ───────────────────────────────────────────────────── */
 
-async function fetchEventStats(events, teamId) {
-    const cornersArr = [], amarillasArr = [];
-    for (const ev of events.slice(-5)) {
-        const data = await sfGet(`/event/${ev.id}/statistics`);
-        if (!data?.statistics) continue;
-        const esLocal = ev?.homeTeam?.id === teamId;
-        const lado = esLocal ? 'home' : 'away';
-        for (const grupo of data.statistics) {
-            for (const grp of (grupo.groups || [])) {
-                for (const st of (grp.statisticsItems || [])) {
-                    const nom = (st.name || '').toLowerCase();
-                    const val = parseFloat((st[lado] || '0').toString().replace(',', '.')) || 0;
-                    if (nom.includes('corner')) cornersArr.push(val);
-                    if (nom.includes('yellow')) amarillasArr.push(val);
-                }
-            }
+function firstTeam(data, fallback) {
+    if (!data?.results) return null;
+    for (const item of data.results) {
+        if (item.type === 'team') {
+            const e = item.entity;
+            return { id: e.id, nombre: e.name };
         }
-        await sleep(400);
     }
-    return {
-        corners: cornersArr.length ? +(cornersArr.reduce((a,b)=>a+b,0)/cornersArr.length).toFixed(1) : null,
-        amarillas: amarillasArr.length ? +(amarillasArr.reduce((a,b)=>a+b,0)/amarillasArr.length).toFixed(1) : null,
-    };
+    return null;
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function buildResultado(base, lastA, lastB, lineups, h2hData, statsA, statsB, arbitro, estadio) {
-    const formaA = parseFoma(lastA?.events || [], base.team_a_id);
-    const formaB = parseFoma(lastB?.events || [], base.team_b_id);
-
-    return {
-        metadata: {
-            equipo_a: base.equipo_a,
-            equipo_b: base.equipo_b,
-            competicion: base.competicion,
-            fecha: base.fecha,
-            estadio,
-            arbitro,
-        },
-        alineaciones: parseLineups(lineups),
-        forma: {
-            forma_a: formaA.forma,
-            detalle_a: formaA.detalle,
-            forma_b: formaB.forma,
-            detalle_b: formaB.detalle,
-        },
-        estadisticas: {
-            equipo_a: calcStats(lastA?.events || [], base.team_a_id),
-            equipo_b: calcStats(lastB?.events || [], base.team_b_id),
-        },
-        corners: {
-            promedio_total_a: statsA.corners,
-            promedio_total_b: statsB.corners,
-        },
-        tarjetas: {
-            promedio_amarillas_a: statsA.amarillas,
-            promedio_amarillas_b: statsB.amarillas,
-        },
-        h2h: parseH2H(h2hData, base.equipo_a, base.equipo_b),
-        recomendaciones: [],  // se calculan en renderResultado
-    };
+async function buscarPartido(idA, idB) {
+    for (const pag of [0, 1]) {
+        const data = await sfGet('/team/' + idA + '/events/next/' + pag);
+        if (!data?.events) continue;
+        for (const ev of data.events) {
+            if ([ev.homeTeam?.id, ev.awayTeam?.id].includes(idB)) return ev;
+        }
+        await sleep(300);
+    }
+    return null;
 }
 
-function parseFoma(events, teamId) {
-    const terminados = events.filter(e => e?.status?.code === 100).slice(-5);
-    const forma = [], detalle = [];
-    for (const ev of terminados) {
-        const esLocal = ev?.homeTeam?.id === teamId;
-        const gf = (esLocal ? ev?.homeScore?.current : ev?.awayScore?.current) || 0;
-        const gc = (esLocal ? ev?.awayScore?.current : ev?.homeScore?.current) || 0;
-        forma.push(gf > gc ? 'V' : gf === gc ? 'E' : 'D');
-        const ts = ev?.startTimestamp;
-        const fecha = ts ? new Date(ts * 1000).toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'}) : '';
-        const rival = esLocal ? ev?.awayTeam?.name : ev?.homeTeam?.name;
-        detalle.push({ rival, resultado: `${gf}-${gc}`, fecha, local: esLocal });
+function finished(events) {
+    return (events || []).filter(e => e?.status?.code === 100);
+}
+
+async function fetchStats(events, teamId) {
+    const corners = [], amarillas = [];
+    for (const ev of events) {
+        const data = await sfGet('/event/' + ev.id + '/statistics');
+        if (!data?.statistics) { await sleep(300); continue; }
+        const lado = ev.homeTeam?.id === teamId ? 'home' : 'away';
+        for (const grupo of data.statistics)
+            for (const grp of (grupo.groups || []))
+                for (const st of (grp.statisticsItems || [])) {
+                    const n = (st.name || '').toLowerCase();
+                    const v = parseFloat((st[lado] || '0').toString().replace(',','.')) || 0;
+                    if (n.includes('corner')) corners.push(v);
+                    if (n.includes('yellow')) amarillas.push(v);
+                }
+        await sleep(300);
     }
-    return { forma, detalle };
+    const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
+    return { corners: avg(corners), amarillas: avg(amarillas) };
+}
+
+function forma(events, teamId) {
+    const list = finished(events).slice(-5);
+    const badges = [], detalle = [];
+    for (const ev of list) {
+        const local = ev.homeTeam?.id === teamId;
+        const gf = (local ? ev.homeScore?.current : ev.awayScore?.current) || 0;
+        const gc = (local ? ev.awayScore?.current : ev.homeScore?.current) || 0;
+        badges.push(gf > gc ? 'V' : gf === gc ? 'E' : 'D');
+        const ts    = ev.startTimestamp;
+        const fecha = ts ? new Date(ts*1000).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}) : '';
+        detalle.push({ rival: local ? ev.awayTeam?.name : ev.homeTeam?.name,
+                       res: gf+'-'+gc, fecha, local });
+    }
+    return { badges, detalle };
 }
 
 function calcStats(events, teamId) {
-    const terminados = events.filter(e => e?.status?.code === 100).slice(-5);
-    if (!terminados.length) return {};
+    const list = finished(events).slice(-5);
+    if (!list.length) return {};
     const gf = [], gc = [];
-    for (const ev of terminados) {
-        const esLocal = ev?.homeTeam?.id === teamId;
-        gf.push((esLocal ? ev?.homeScore?.current : ev?.awayScore?.current) || 0);
-        gc.push((esLocal ? ev?.awayScore?.current : ev?.homeScore?.current) || 0);
+    for (const ev of list) {
+        const local = ev.homeTeam?.id === teamId;
+        gf.push((local ? ev.homeScore?.current : ev.awayScore?.current) || 0);
+        gc.push((local ? ev.awayScore?.current : ev.homeScore?.current) || 0);
     }
-    const n = gf.length;
-    const sumGf = gf.reduce((a,b)=>a+b,0);
-    const sumGc = gc.reduce((a,b)=>a+b,0);
-    return {
-        goles_marcados: sumGf,
-        goles_recibidos: sumGc,
-        promedio_gf: +(sumGf/n).toFixed(2),
-        promedio_gc: +(sumGc/n).toFixed(2),
-        clean_sheets: gc.filter(g=>g===0).length,
-        partidos_analizados: n,
-    };
+    const n = gf.length, sgf = gf.reduce((a,b)=>a+b,0), sgc = gc.reduce((a,b)=>a+b,0);
+    return { gf: sgf, gc: sgc, pgf: +(sgf/n).toFixed(2), pgc: +(sgc/n).toFixed(2),
+             cs: gc.filter(g=>g===0).length, n };
 }
 
 function parseLineups(data) {
-    if (!data) return { confirmadas: false, formacion_a:'', formacion_b:'', titulares_a:[], titulares_b:[] };
-    const parse = (lado) => {
-        const eq = data[lado] || {};
-        return {
-            formacion: eq.formation || '',
-            titulares: (eq.players || [])
-                .filter(p => !p.substitute)
-                .map(p => ({
-                    nombre: p?.player?.name || '',
-                    posicion: p?.position || '',
-                    numero: p?.shirtNumber || '',
-                    capitan: !!p?.captain,
-                })),
-        };
+    if (!data) return { confirmadas:false, fA:'', fB:'', tA:[], tB:[] };
+    const parse = side => {
+        const eq = data[side] || {};
+        return { form: eq.formation || '',
+                 tit: (eq.players||[]).filter(p=>!p.substitute).map(p=>({
+                     nombre: p?.player?.name||'', pos: p?.position||'',
+                     num: p?.shirtNumber||'', cap: !!p?.captain })) };
     };
     const h = parse('home'), a = parse('away');
-    return {
-        confirmadas: !!data.confirmed,
-        formacion_a: h.formacion,
-        formacion_b: a.formacion,
-        titulares_a: h.titulares,
-        titulares_b: a.titulares,
-    };
+    return { confirmadas: !!data.confirmed, fA: h.form, fB: a.form, tA: h.tit, tB: a.tit };
 }
 
-function parseH2H(data, nombreA, nombreB) {
-    if (!data?.events) return { historial: [], resumen: {} };
-    let vA = 0, vB = 0, emp = 0;
-    const historial = data.events.slice(0, 10).map(ev => {
-        const home = ev?.homeTeam?.name || '';
-        const away = ev?.awayTeam?.name || '';
-        const sh = ev?.homeScore?.current || 0;
-        const sa = ev?.awayScore?.current || 0;
-        const ts = ev?.startTimestamp;
+function parseH2H(data, nomA, nomB) {
+    if (!data?.events) return { list:[], res:{vA:0,vB:0,emp:0,n:0} };
+    let vA=0,vB=0,emp=0;
+    const list = data.events.slice(0,10).map(ev => {
+        const home = ev.homeTeam?.name||'', away = ev.awayTeam?.name||'';
+        const sh = ev.homeScore?.current||0, sa = ev.awayScore?.current||0;
+        const ts = ev.startTimestamp;
         const fecha = ts ? new Date(ts*1000).toLocaleDateString('es-ES') : '';
-        if (sh > sa) { nombreA.toLowerCase().includes(home.toLowerCase().slice(0,4)) ? vA++ : vB++; }
-        else if (sh < sa) { nombreA.toLowerCase().includes(away.toLowerCase().slice(0,4)) ? vA++ : vB++; }
+        // contar victorias: el equipo A es el que tiene nombre similar a nomA
+        const aEsHome = nomA.toLowerCase().slice(0,5).split('').some(c=>home.toLowerCase().includes(c));
+        if      (sh > sa) aEsHome ? vA++ : vB++;
+        else if (sh < sa) aEsHome ? vB++ : vA++;
         else emp++;
-        return { local: home, visitante: away, resultado: `${sh}-${sa}`,
-                 fecha, competicion: ev?.tournament?.name || '' };
+        return { home, away, sc: sh+'-'+sa, fecha, comp: ev.tournament?.name||'' };
     });
-    return { historial, resumen: { victorias_a: vA, victorias_b: vB, empates: emp, total: historial.length } };
+    return { list, res:{vA,vB,emp,n:list.length} };
 }
 
-function generarRecomendaciones(r) {
+function recomendaciones(r) {
     const recs = [];
-    const stA = r.estadisticas.equipo_a;
-    const stB = r.estadisticas.equipo_b;
-    const fA  = r.forma.forma_a;
-    const cA  = r.corners.promedio_total_a;
-    const cB  = r.corners.promedio_total_b;
-    const h   = r.h2h.resumen;
+    const sA=r.stats.sA, sB=r.stats.sB, fA=r.forma.fA.badges;
+    const cA=r.corners.a, cB=r.corners.b, h=r.h2h.res;
 
-    if (stA.promedio_gc > 0.8 && stB.promedio_gf > 0.8)
-        recs.push({ tipo:'Ambos Equipos Marcan (SI)',
-            razon:`Local recibe ${stA.promedio_gc?.toFixed(1)} goles/partido, visitante marca ${stB.promedio_gf?.toFixed(1)}`,
-            confianza:'Media', cuota_tipica:'1.75-1.90' });
+    if (sA.pgc>0.8 && sB.pgf>0.8)
+        recs.push({tipo:'Ambos Equipos Marcan (SI)',
+            razon:`Local recibe ${sA.pgc?.toFixed(1)} goles/partido · Visitante marca ${sB.pgf?.toFixed(1)}`,
+            conf:'Media', cuota:'1.75–1.90'});
 
-    if (cA && cB && (cA+cB) > 9)
-        recs.push({ tipo:'Más de 9.5 corners',
+    if (cA && cB && cA+cB>9)
+        recs.push({tipo:'Más de 9.5 corners',
             razon:`Promedio combinado: ${(cA+cB).toFixed(1)} corners/partido`,
-            confianza: (cA+cB) > 10.5 ? 'Media-Alta' : 'Media', cuota_tipica:'1.75-1.85' });
+            conf: cA+cB>10.5 ? 'Media-Alta':'Media', cuota:'1.75–1.85'});
 
     const vic = fA.filter(x=>x==='V').length;
-    if (vic >= 3)
-        recs.push({ tipo:'Victoria Local',
-            razon:`${r.metadata.equipo_a} ganó ${vic} de sus últimos ${fA.length} partidos`,
-            confianza: vic >= 4 ? 'Media-Alta' : 'Media', cuota_tipica:'1.70-1.90' });
+    if (vic>=3)
+        recs.push({tipo:'Victoria Local',
+            razon:`${r.meta.eqA} ganó ${vic} de sus últimos ${fA.length} partidos`,
+            conf: vic>=4?'Media-Alta':'Media', cuota:'1.70–1.90'});
 
-    if (stA.promedio_gf && stB.promedio_gf && (stA.promedio_gf + stB.promedio_gf) > 2.8)
-        recs.push({ tipo:'Más de 2.5 goles',
-            razon:`Promedios ofensivos: ${stA.promedio_gf?.toFixed(1)} + ${stB.promedio_gf?.toFixed(1)} goles/partido`,
-            confianza:'Media', cuota_tipica:'1.75-1.85' });
+    if (sA.pgf && sB.pgf && sA.pgf+sB.pgf>2.8)
+        recs.push({tipo:'Más de 2.5 goles',
+            razon:`Promedios ofensivos: ${sA.pgf?.toFixed(1)} + ${sB.pgf?.toFixed(1)} goles/partido`,
+            conf:'Media', cuota:'1.75–1.85'});
 
-    if (h.total >= 5 && h.victorias_a / h.total >= 0.6)
-        recs.push({ tipo:'Ventaja histórica Local',
-            razon:`${r.metadata.equipo_a} ganó ${h.victorias_a}/${h.total} enfrentamientos directos`,
-            confianza:'Media', cuota_tipica:'1.75-1.90' });
+    if (h.n>=5 && h.vA/h.n>=0.6)
+        recs.push({tipo:'Ventaja histórica Local',
+            razon:`${r.meta.eqA} ganó ${h.vA}/${h.n} enfrentamientos directos`,
+            conf:'Media', cuota:'1.75–1.90'});
 
     if (!recs.length)
-        recs.push({ tipo:'Sin recomendación clara', razon:'Datos insuficientes o partido equilibrado',
-            confianza:'Baja', cuota_tipica:'N/A' });
+        recs.push({tipo:'Sin recomendación clara',
+            razon:'Partido equilibrado o datos insuficientes',
+            conf:'Baja', cuota:'N/A'});
     return recs;
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+/* ─── RENDER ─────────────────────────────────────────────────────────────── */
 
-function v(x) { return (x !== null && x !== undefined && x !== '') ? x : '—'; }
+function sr(l,v_) { return `<div class="srow"><span class="slbl">${l}</span><span class="sval">${val(v_)}</span></div>`; }
 
-function formaBadges(arr) {
+function badges(arr) {
     if (!arr?.length) return '<span style="color:#aaa">Sin datos</span>';
     return arr.map(r=>`<span class="badge badge-${r}">${r}</span>`).join('');
 }
-function formaDetalle(arr) {
+function detHTML(arr) {
     if (!arr?.length) return '';
-    return arr.map(d=>`<div class="forma-item">${d.fecha} ${d.local?'vs':'en'} ${d.rival||'?'} — <strong>${d.resultado}</strong></div>`).join('');
+    return arr.map(d=>`<div class="fitem">${d.fecha} ${d.local?'vs':'en'} ${d.rival||'?'} — <b>${d.res}</b></div>`).join('');
 }
-function confClass(c) {
-    if (!c) return 'conf-baja';
-    return c.toLowerCase().includes('alta') ? 'conf-alta' : c.toLowerCase().includes('media') ? 'conf-media' : 'conf-baja';
+function ccls(c) {
+    if (!c) return 'cb';
+    return c.toLowerCase().includes('alta')?'ca':c.toLowerCase().includes('media')?'cm':'cb';
 }
-function recClass(c) {
+function rcls(c) {
     if (!c) return 'rec-baja';
-    return c.toLowerCase().includes('alta') ? 'rec-alta' : c.toLowerCase().includes('media') ? 'rec-media' : 'rec-baja';
-}
-function sr(lbl, val) {
-    return `<div class="stat-row"><span class="stat-lbl">${lbl}</span><span class="stat-val">${v(val)}</span></div>`;
+    return c.toLowerCase().includes('alta')?'rec-alta':c.toLowerCase().includes('media')?'rec-media':'rec-baja';
 }
 
-function renderResultado(data) {
-    data.recomendaciones = generarRecomendaciones(data);
-    const el = document.getElementById('resultado');
-    const m  = data.metadata;
-    const al = data.alineaciones;
-    const fo = data.forma;
-    const st = data.estadisticas;
-    const cor= data.corners;
-    const tar= data.tarjetas;
-    const h  = data.h2h;
-
+function renderResultado(r) {
+    const recs = recomendaciones(r);
+    const m=r.meta, al=r.alin, fo=r.forma, st=r.stats, co=r.corners, am=r.amarillas, h=r.h2h;
     const fecha = m.fecha ? new Date(m.fecha).toLocaleString('es-ES',{dateStyle:'full',timeStyle:'short'}) : '—';
 
     let html = `
     <div class="card match-header">
         <div class="vs-row">
-            <div class="team-name">${m.equipo_a}</div>
+            <div class="team-name">${m.eqA}</div>
             <div class="vs-badge">VS</div>
-            <div class="team-name">${m.equipo_b}</div>
+            <div class="team-name">${m.eqB}</div>
         </div>
         <div class="match-meta">
             ${fecha}<br>
-            ${m.competicion ? m.competicion+'<br>' : ''}
-            ${m.estadio ? 'Estadio: '+m.estadio+'<br>' : ''}
-            ${m.arbitro ? 'Árbitro: '+m.arbitro : ''}
+            ${m.competicion?m.competicion+'<br>':''}
+            ${m.estadio?'Estadio: '+m.estadio+'<br>':''}
+            ${m.arbitro?'Árbitro: '+m.arbitro:''}
         </div>
-        <span class="source-badge">Sofascore (tiempo real)</span>
+        <span class="source-ok">✓ Sofascore tiempo real</span>
     </div>`;
 
-    // Alineaciones
-    if (al.titulares_a.length || al.titulares_b.length) {
-        html += `<div class="card"><h2>Alineaciones ${al.confirmadas?'(Confirmadas)':'(Previstas)'}</h2><div class="two-col">`;
-        for (const [eq,tit,form] of [[m.equipo_a,al.titulares_a,al.formacion_a],[m.equipo_b,al.titulares_b,al.formacion_b]]) {
-            html += `<div><div class="col-header">${eq} ${form?'('+form+')':''}</div><ul class="lineup-list">
-            ${tit.map(j=>`<li><span class="lineup-num">${j.numero||''}</span><span>${j.nombre}</span><span class="lineup-pos">${j.posicion||''}</span>${j.capitan?'<span class="lineup-cap">(C)</span>':''}</li>`).join('')}
+    /* alineaciones */
+    if (al.tA.length || al.tB.length) {
+        html += `<div class="card"><h2>Alineaciones ${al.confirmadas?'✓ Confirmadas':'(Previstas)'}</h2><div class="two-col">`;
+        for (const [nom,tit,form] of [[m.eqA,al.tA,al.fA],[m.eqB,al.tB,al.fB]])
+            html += `<div><div class="col-hdr">${nom}${form?' ('+form+')':''}</div><ul class="lineup-list">
+            ${tit.map(j=>`<li><span class="lnum">${j.num||''}</span><span>${j.nombre}</span>
+            <span class="lpos">${j.pos||''}</span>${j.cap?'<span class="lcap">(C)</span>':''}</li>`).join('')}
             </ul></div>`;
-        }
         html += `</div></div>`;
     }
 
-    // Forma
+    /* forma */
     html += `<div class="card"><h2>Forma Reciente (últimos 5)</h2><div class="two-col">
-    <div><div class="col-header">${m.equipo_a}</div><div class="forma-badges">${formaBadges(fo.forma_a)}</div><div class="forma-detalle">${formaDetalle(fo.detalle_a)}</div></div>
-    <div><div class="col-header">${m.equipo_b}</div><div class="forma-badges">${formaBadges(fo.forma_b)}</div><div class="forma-detalle">${formaDetalle(fo.detalle_b)}</div></div>
+    <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
+    <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
     </div></div>`;
 
-    // Estadísticas
-    const sA = st.equipo_a, sB = st.equipo_b;
-    if (Object.keys(sA).length || Object.keys(sB).length) {
+    /* estadísticas */
+    const sA=st.sA, sB=st.sB;
+    if (Object.keys(sA).length||Object.keys(sB).length)
         html += `<div class="card"><h2>Estadísticas (últimos 5 partidos)</h2><div class="two-col">
-        <div><div class="col-header">${m.equipo_a}</div>
-        ${sr('Goles marcados',sA.goles_marcados)}${sr('Goles recibidos',sA.goles_recibidos)}
-        ${sr('Promedio GF',sA.promedio_gf)}${sr('Promedio GC',sA.promedio_gc)}
-        ${sr('Clean sheets',sA.clean_sheets)}</div>
-        <div><div class="col-header">${m.equipo_b}</div>
-        ${sr('Goles marcados',sB.goles_marcados)}${sr('Goles recibidos',sB.goles_recibidos)}
-        ${sr('Promedio GF',sB.promedio_gf)}${sr('Promedio GC',sB.promedio_gc)}
-        ${sr('Clean sheets',sB.clean_sheets)}</div>
+        <div><div class="col-hdr">${m.eqA}</div>${sr('Goles marcados',sA.gf)}${sr('Goles recibidos',sA.gc)}${sr('Promedio GF',sA.pgf)}${sr('Promedio GC',sA.pgc)}${sr('Clean sheets',sA.cs)}</div>
+        <div><div class="col-hdr">${m.eqB}</div>${sr('Goles marcados',sB.gf)}${sr('Goles recibidos',sB.gc)}${sr('Promedio GF',sB.pgf)}${sr('Promedio GC',sB.pgc)}${sr('Clean sheets',sB.cs)}</div>
         </div></div>`;
-    }
 
-    // Corners y tarjetas
-    if (cor.promedio_total_a || cor.promedio_total_b) {
-        const total = cor.promedio_total_a && cor.promedio_total_b
-            ? (cor.promedio_total_a + cor.promedio_total_b).toFixed(1) : null;
+    /* corners/tarjetas */
+    if (co.a||co.b||am.a||am.b) {
+        const tot = co.a&&co.b ? (co.a+co.b).toFixed(1) : null;
         html += `<div class="card"><h2>Corners y Tarjetas</h2><div class="two-col">
-        <div><div class="col-header">Corners (promedio/partido)</div>
-        ${sr(m.equipo_a, cor.promedio_total_a)}${sr(m.equipo_b, cor.promedio_total_b)}
-        ${total ? sr('Total combinado', total) : ''}</div>
-        <div><div class="col-header">Amarillas (promedio/partido)</div>
-        ${sr(m.equipo_a, tar.promedio_amarillas_a)}${sr(m.equipo_b, tar.promedio_amarillas_b)}</div>
+        <div><div class="col-hdr">Corners (prom/partido)</div>${sr(m.eqA,co.a)}${sr(m.eqB,co.b)}${tot?sr('Total combinado',tot):''}</div>
+        <div><div class="col-hdr">Amarillas (prom/partido)</div>${sr(m.eqA,am.a)}${sr(m.eqB,am.b)}</div>
         </div></div>`;
     }
 
-    // H2H
-    if (h.historial?.length) {
-        const r = h.resumen;
+    /* h2h */
+    if (h.list.length) {
+        const res=h.res;
         html += `<div class="card"><h2>Historial Directo (H2H)</h2>
-        <div class="h2h-summary">
-            <div class="h2h-box"><div class="h2h-num">${r.victorias_a||0}</div><div class="h2h-lbl">${m.equipo_a}</div></div>
-            <div class="h2h-box"><div class="h2h-num">${r.empates||0}</div><div class="h2h-lbl">Empates</div></div>
-            <div class="h2h-box"><div class="h2h-num">${r.victorias_b||0}</div><div class="h2h-lbl">${m.equipo_b}</div></div>
+        <div class="h2h-sum">
+            <div class="h2h-box"><div class="h2h-num">${res.vA}</div><div class="h2h-lbl">${m.eqA}</div></div>
+            <div class="h2h-box"><div class="h2h-num">${res.emp}</div><div class="h2h-lbl">Empates</div></div>
+            <div class="h2h-box"><div class="h2h-num">${res.vB}</div><div class="h2h-lbl">${m.eqB}</div></div>
         </div>
-        <div class="h2h-list">${h.historial.slice(0,8).map(p=>`
-        <div class="h2h-item">
-            <span>${p.fecha}</span>
-            <span>${p.local} <strong class="h2h-score">${p.resultado}</strong> ${p.visitante}</span>
-            <span class="h2h-comp">${p.competicion}</span>
-        </div>`).join('')}</div></div>`;
+        <div class="h2h-list">${h.list.slice(0,8).map(p=>`
+        <div class="h2h-item"><span>${p.fecha}</span>
+        <span>${p.home} <b class="h2h-score">${p.sc}</b> ${p.away}</span>
+        <span class="h2h-comp">${p.comp}</span></div>`).join('')}</div></div>`;
     }
 
-    // Recomendaciones
-    const recs = data.recomendaciones;
-    if (recs.length) {
-        html += `<div class="card"><h2>Recomendaciones de Apuesta</h2>
-        <p style="font-size:12px;color:#aaa;margin-bottom:12px">Solo orientativo. Las apuestas conllevan riesgo de pérdida económica.</p>`;
-        recs.forEach(r => {
-            html += `<div class="rec-card ${recClass(r.confianza)}">
-            <div class="rec-tipo">${r.tipo}</div>
-            <div class="rec-razon">${r.razon}</div>
-            <div class="rec-meta">
-                <span>Confianza: <strong class="rec-conf ${confClass(r.confianza)}">${r.confianza}</strong></span>
-                <span>Cuota: <strong>${r.cuota_tipica}</strong></span>
-            </div></div>`;
-        });
-        html += `</div>`;
-    }
+    /* recomendaciones */
+    html += `<div class="card"><h2>Recomendaciones de Apuesta</h2>
+    <p style="font-size:12px;color:#aaa;margin-bottom:12px">Solo orientativo. Las apuestas conllevan riesgo de pérdida económica.</p>`;
+    recs.forEach(r => {
+        html += `<div class="rec-card ${rcls(r.conf)}">
+        <div class="rec-tipo">${r.tipo}</div>
+        <div class="rec-razon">${r.razon}</div>
+        <div class="rec-meta">
+            <span>Confianza: <b class="rc ${ccls(r.conf)}">${r.conf}</b></span>
+            <span>Cuota: <b>${r.cuota}</b></span>
+        </div></div>`;
+    });
+    html += `</div>`;
 
+    const el = document.getElementById('resultado');
     el.innerHTML = html;
     el.style.display = 'block';
 }
 
 function renderError(msg) {
     const el = document.getElementById('resultado');
-    el.innerHTML = `<div class="card error-box">Error: ${msg}</div>`;
+    el.innerHTML = `<div class="card error-box">${msg}</div>`;
     el.style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('btn').disabled = false;
 }
 </script>
 </body>
