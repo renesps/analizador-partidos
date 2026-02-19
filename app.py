@@ -1,40 +1,76 @@
 from flask import Flask, render_template, request, jsonify
-import os, requests, sqlite3, json, time, threading
+import os, requests, json, time, threading
 
 app = Flask(__name__)
 
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY', '')
 SCRAPE_DO_KEY   = os.environ.get('SCRAPE_DO_KEY', '')
 KIMI_API_KEY    = os.environ.get('KIMI_API_KEY', '')
-DB_PATH         = os.environ.get('DB_PATH', 'historial.db')
+DATABASE_URL    = os.environ.get('DATABASE_URL', '')  # PostgreSQL en Supabase
+DB_PATH         = os.environ.get('DB_PATH', 'historial.db')  # SQLite fallback local
 
-# ── Base de datos ────────────────────────────────────────────────────────────
+# ── Base de datos: PostgreSQL (Supabase) con fallback a SQLite ────────────────
+USE_PG = bool(DATABASE_URL)
+
+if USE_PG:
+    import psycopg2
+    import psycopg2.extras
+
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    if USE_PG:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        return conn
+    else:
+        import sqlite3
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def init_db():
-    with get_db() as conn:
-        conn.execute('''
-            CREATE TABLE IF NOT EXISTS historial (
-                id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                partido   TEXT NOT NULL,
-                competicion TEXT,
-                fecha_partido TEXT,
-                fecha_analisis INTEGER NOT NULL,
-                stats_json TEXT,
-                analisis_ia TEXT
-            )
-        ''')
-        conn.commit()
+    if USE_PG:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    CREATE TABLE IF NOT EXISTS historial (
+                        id            SERIAL PRIMARY KEY,
+                        partido       TEXT NOT NULL,
+                        competicion   TEXT,
+                        fecha_partido TEXT,
+                        fecha_analisis BIGINT NOT NULL,
+                        stats_json    TEXT,
+                        analisis_ia   TEXT
+                    )
+                ''')
+            conn.commit()
+    else:
+        import sqlite3
+        with get_db() as conn:
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS historial (
+                    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                    partido   TEXT NOT NULL,
+                    competicion TEXT,
+                    fecha_partido TEXT,
+                    fecha_analisis INTEGER NOT NULL,
+                    stats_json TEXT,
+                    analisis_ia TEXT
+                )
+            ''')
+            conn.commit()
 
 def purge_old():
     """Borra entradas con más de 24 horas de antigüedad."""
     cutoff = int(time.time()) - 86400
-    with get_db() as conn:
-        conn.execute('DELETE FROM historial WHERE fecha_analisis < ?', (cutoff,))
-        conn.commit()
+    if USE_PG:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute('DELETE FROM historial WHERE fecha_analisis < %s', (cutoff,))
+            conn.commit()
+    else:
+        import sqlite3
+        with get_db() as conn:
+            conn.execute('DELETE FROM historial WHERE fecha_analisis < ?', (cutoff,))
+            conn.commit()
 
 init_db()
 
@@ -138,14 +174,27 @@ def historial_list():
     """Devuelve la lista de análisis guardados (sin el texto completo de IA)."""
     purge_old()
     try:
-        with get_db() as conn:
-            rows = conn.execute('''
-                SELECT id, partido, competicion, fecha_partido, fecha_analisis
-                FROM historial
-                ORDER BY fecha_analisis DESC
-                LIMIT 50
-            ''').fetchall()
-        return jsonify([dict(r) for r in rows])
+        if USE_PG:
+            with get_db() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute('''
+                        SELECT id, partido, competicion, fecha_partido, fecha_analisis
+                        FROM historial
+                        ORDER BY fecha_analisis DESC
+                        LIMIT 50
+                    ''')
+                    rows = cur.fetchall()
+            return jsonify([dict(r) for r in rows])
+        else:
+            import sqlite3
+            with get_db() as conn:
+                rows = conn.execute('''
+                    SELECT id, partido, competicion, fecha_partido, fecha_analisis
+                    FROM historial
+                    ORDER BY fecha_analisis DESC
+                    LIMIT 50
+                ''').fetchall()
+            return jsonify([dict(r) for r in rows])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -153,8 +202,16 @@ def historial_list():
 def historial_get(id):
     """Devuelve un análisis completo por ID."""
     try:
-        with get_db() as conn:
-            row = conn.execute('SELECT * FROM historial WHERE id=?', (id,)).fetchone()
+        if USE_PG:
+            with get_db() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute('SELECT * FROM historial WHERE id=%s', (id,))
+                    row = cur.fetchone()
+        else:
+            import sqlite3
+            with get_db() as conn:
+                row = conn.execute('SELECT * FROM historial WHERE id=?', (id,)).fetchone()
+
         if not row:
             return jsonify({'error': 'No encontrado'}), 404
         d = dict(row)
@@ -172,20 +229,34 @@ def historial_save():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Sin datos'}), 400
-        with get_db() as conn:
-            cur = conn.execute('''
-                INSERT INTO historial (partido, competicion, fecha_partido, fecha_analisis, stats_json, analisis_ia)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                data.get('partido', ''),
-                data.get('competicion', ''),
-                data.get('fecha_partido', ''),
-                int(time.time()),
-                json.dumps(data.get('stats_json')) if data.get('stats_json') else None,
-                data.get('analisis_ia', ''),
-            ))
-            conn.commit()
-            return jsonify({'id': cur.lastrowid}), 201
+
+        partido       = data.get('partido', '')
+        competicion   = data.get('competicion', '')
+        fecha_partido = data.get('fecha_partido', '')
+        fecha_analisis = int(time.time())
+        stats_json    = json.dumps(data.get('stats_json')) if data.get('stats_json') else None
+        analisis_ia   = data.get('analisis_ia', '')
+
+        if USE_PG:
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute('''
+                        INSERT INTO historial (partido, competicion, fecha_partido, fecha_analisis, stats_json, analisis_ia)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    ''', (partido, competicion, fecha_partido, fecha_analisis, stats_json, analisis_ia))
+                    new_id = cur.fetchone()[0]
+                conn.commit()
+            return jsonify({'id': new_id}), 201
+        else:
+            import sqlite3
+            with get_db() as conn:
+                cur = conn.execute('''
+                    INSERT INTO historial (partido, competicion, fecha_partido, fecha_analisis, stats_json, analisis_ia)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (partido, competicion, fecha_partido, fecha_analisis, stats_json, analisis_ia))
+                conn.commit()
+                return jsonify({'id': cur.lastrowid}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -193,9 +264,16 @@ def historial_save():
 def historial_delete(id):
     """Borra un análisis del historial."""
     try:
-        with get_db() as conn:
-            conn.execute('DELETE FROM historial WHERE id=?', (id,))
-            conn.commit()
+        if USE_PG:
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute('DELETE FROM historial WHERE id=%s', (id,))
+                conn.commit()
+        else:
+            import sqlite3
+            with get_db() as conn:
+                conn.execute('DELETE FROM historial WHERE id=?', (id,))
+                conn.commit()
         return jsonify({'ok': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
