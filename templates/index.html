@@ -529,28 +529,49 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
         let allEvents = [];
 
         if (seasonId) {
-            // 2a. Intentar next/0 con season
-            const nextData = await sfGet('/unique-tournament/' + ligaId + '/season/' + seasonId + '/events/next/0');
-            allEvents = nextData?.events || [];
+            // 2a. Pedir páginas 0 y 1 en paralelo (cada página = 10 eventos → cubrimos hasta 20)
+            // Necesario para ligas con muchos partidos en cola (ej: Brasileirão)
+            const base = '/unique-tournament/' + ligaId + '/season/' + seasonId + '/events/next/';
+            const [next0, next1] = await Promise.all([
+                sfGet(base + '0'),
+                sfGet(base + '1'),
+            ]);
+            allEvents = [...(next0?.events || []), ...(next1?.events || [])];
 
-            // Si viene vacío, probar también la season anterior (a veces hay solapamiento)
+            // Si sigue vacío, probar la season anterior (a veces hay solapamiento de temporadas)
             if (!allEvents.length && seasons.length > 1) {
-                const prevData = await sfGet('/unique-tournament/' + ligaId + '/season/' + seasons[1].id + '/events/next/0');
-                allEvents = prevData?.events || [];
+                const base2 = '/unique-tournament/' + ligaId + '/season/' + seasons[1].id + '/events/next/';
+                const [p0, p1] = await Promise.all([sfGet(base2 + '0'), sfGet(base2 + '1')]);
+                allEvents = [...(p0?.events || []), ...(p1?.events || [])];
             }
         } else {
-            // Fallback: sin season
-            const data = await sfGet('/unique-tournament/' + ligaId + '/events/next/0');
-            allEvents = data?.events || [];
+            // Fallback: sin season (2 páginas también)
+            const base = '/unique-tournament/' + ligaId + '/events/next/';
+            const [p0, p1] = await Promise.all([sfGet(base + '0'), sfGet(base + '1')]);
+            allEvents = [...(p0?.events || []), ...(p1?.events || [])];
         }
 
-        const todayStr = new Date().toISOString().slice(0,10);
+        // Deduplicar por id (por si hay solapamiento entre páginas)
+        const _seen = new Set();
+        allEvents = allEvents.filter(ev => {
+            if (_seen.has(ev.id)) return false;
+            _seen.add(ev.id); return true;
+        });
 
-        // Filtrar los de hoy
+        // Filtrar por hoy — usar fecha LOCAL (no UTC) para evitar edge cases de timezone
+        // ej: usuario en Argentina a las 01:00 local = 04:00 UTC del día siguiente
+        const _now = new Date();
+        const todayStr = _now.getFullYear() + '-' +
+            String(_now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(_now.getDate()).padStart(2, '0');
+
         let partidos = allEvents.filter(ev => {
             const ts = ev.startTimestamp || 0;
-            const d = new Date(ts * 1000).toISOString().slice(0,10);
-            return d === todayStr;
+            const d = new Date(ts * 1000);
+            const dStr = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+            return dStr === todayStr;
         });
 
         // Si no hay hoy, mostrar los próximos 10 (pueden ser de mañana)
