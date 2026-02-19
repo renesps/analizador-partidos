@@ -95,6 +95,7 @@ def sf_get(path):
     # 1. Caché
     cached_content, cached_status = cache_get(sf_url)
     if cached_content is not None:
+        app.logger.debug('SF CACHE hit: %s', path)
         return FakeResponse(cached_content, cached_status)
 
     # 2. Rate limit solo para requests reales
@@ -105,9 +106,11 @@ def sf_get(path):
         r = requests.get(sf_url, headers=SF_HEADERS, timeout=15)
         if r.status_code == 200:
             cache_set(sf_url, r.content, r.status_code)
+            app.logger.info('SF DIRECT ok: %s', path)
             return r
-    except Exception:
-        pass
+        app.logger.warning('SF DIRECT %s: %s', r.status_code, path)
+    except Exception as e:
+        app.logger.warning('SF DIRECT error: %s | %s', e, path)
 
     # 4. Fallback: Scrape.do (1 000 req/mes gratis)
     if SCRAPE_DO_KEY:
@@ -119,9 +122,11 @@ def sf_get(path):
             )
             if r.status_code == 200:
                 cache_set(sf_url, r.content, r.status_code)
+                app.logger.info('SF SCRAPE.DO ok: %s', path)
                 return r
-        except Exception:
-            pass
+            app.logger.warning('SF SCRAPE.DO %s: %s', r.status_code, path)
+        except Exception as e:
+            app.logger.warning('SF SCRAPE.DO error: %s | %s', e, path)
 
     # 5. Fallback final: ScraperAPI (preservar créditos, solo si los anteriores fallan)
     if SCRAPER_API_KEY:
@@ -133,11 +138,14 @@ def sf_get(path):
             )
             if r.status_code == 200:
                 cache_set(sf_url, r.content, r.status_code)
+            app.logger.info('SF SCRAPERAPI %s: %s', r.status_code, path)
             return r
         except Exception as e:
+            app.logger.error('SF SCRAPERAPI error: %s | %s', e, path)
             return FakeResponse(b'{"error":"scraperapi failed"}', 502)
 
-    # Sin ningún proxy disponible, devolver lo que tengamos
+    # Sin ningún proxy disponible
+    app.logger.error('SF NO PROXY AVAILABLE: %s', path)
     return FakeResponse(b'{"error":"no proxy available"}', 503)
 
 # ── Rutas principales ────────────────────────────────────────────────────────
