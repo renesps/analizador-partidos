@@ -18,6 +18,23 @@
         }
         .header h1 { font-size: 24px; margin-bottom: 6px; }
         .header p  { opacity: .8; font-size: 13px; }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex; gap: 4px; margin-bottom: 16px;
+            background: white; border-radius: 12px; padding: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+        }
+        .tab-btn {
+            flex: 1; padding: 10px 8px; border: none; border-radius: 8px;
+            background: transparent; cursor: pointer; font-size: 13px;
+            font-weight: 600; color: #888; transition: all .2s;
+        }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .tab-btn:hover:not(.active) { background: #f0f2f5; color: #555; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
         .card {
             background: white; border-radius: 12px;
             padding: 20px; margin-bottom: 16px;
@@ -40,6 +57,12 @@
             font-size: 16px; font-weight: bold; cursor: pointer;
         }
         button:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-sm {
+            width: auto; padding: 7px 14px; font-size: 13px; font-weight: 600;
+            border-radius: 6px; cursor: pointer; border: none; color: white;
+        }
+        .btn-danger { background: #e53935; }
+        .btn-secondary { background: #78909c; }
 
         .loading { display: none; text-align: center; padding: 36px; }
         .spinner {
@@ -48,8 +71,10 @@
             animation: spin 1s linear infinite; margin: 0 auto 12px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #stepMsg { color: #555; font-size: 14px; font-weight: 500; }
-        #subMsg  { color: #999; font-size: 12px; margin-top: 5px; }
+        #stepMsg  { color: #555; font-size: 14px; font-weight: 500; }
+        #subMsg   { color: #999; font-size: 12px; margin-top: 5px; }
+        #stepMsgM { color: #555; font-size: 14px; font-weight: 500; }
+        #subMsgM  { color: #999; font-size: 12px; margin-top: 5px; }
 
         .resultado { display: none; }
 
@@ -123,9 +148,7 @@
             animation: spin 1s linear infinite; flex-shrink: 0;
         }
         .ia-body { color: #d4d4f0; font-size: 14px; line-height: 1.75; }
-        .ia-body h3, .ia-body strong, .ia-body b {
-            color: #c4b5fd; font-weight: 700;
-        }
+        .ia-body h3, .ia-body strong, .ia-body b { color: #c4b5fd; font-weight: 700; }
         .ia-body p { margin-bottom: 10px; }
         .ia-body ul { padding-left: 18px; margin-bottom: 10px; }
         .ia-body li { margin-bottom: 4px; }
@@ -143,69 +166,251 @@
             background: #7c3aed; color: white; font-size: 10px;
             padding: 2px 8px; border-radius: 10px; font-weight: 600;
         }
+
+        /* ── Multi-partido ── */
+        .match-list { list-style: none; }
+        .match-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;
+            border: 2px solid #e8e8e8; cursor: pointer; transition: all .15s;
+            background: #fafafa;
+        }
+        .match-item:hover { border-color: #667eea; background: #f0f2ff; }
+        .match-item.selected { border-color: #667eea; background: #eef0ff; }
+        .match-item input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: #667eea; }
+        .match-item-info { flex: 1; }
+        .match-item-name { font-weight: 700; font-size: 14px; color: #222; }
+        .match-item-meta { font-size: 12px; color: #888; margin-top: 2px; }
+        .match-item-hora { font-size: 13px; font-weight: 700; color: #667eea; white-space: nowrap; }
+
+        .sel-count { font-size: 13px; color: #667eea; font-weight: 600; margin-bottom: 10px; }
+        .btn-analizar-jornada {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; padding: 13px 20px; border-radius: 8px;
+            font-size: 15px; font-weight: bold; cursor: pointer; width: 100%;
+            margin-top: 10px;
+        }
+        .btn-analizar-jornada:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── Multi-partido: resultado cards ── */
+        .multi-partido-card {
+            border: 2px solid #e8e8e8; border-radius: 12px;
+            margin-bottom: 16px; overflow: hidden;
+        }
+        .multi-partido-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 12px 16px; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .multi-partido-header span { font-weight: 700; font-size: 15px; }
+        .multi-partido-header small { opacity: .85; font-size: 12px; }
+        .multi-partido-body { padding: 14px 16px; }
+
+        /* ── Historial ── */
+        .hist-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;
+            border: 2px solid #e8e8e8; background: #fafafa; cursor: pointer;
+            transition: border-color .15s;
+        }
+        .hist-item:hover { border-color: #667eea; }
+        .hist-item-info { flex: 1; }
+        .hist-item-name { font-weight: 700; font-size: 14px; color: #222; }
+        .hist-item-meta { font-size: 12px; color: #888; margin-top: 2px; }
+        .hist-item-actions { display: flex; gap: 6px; }
+        .hist-empty { text-align: center; padding: 32px; color: #aaa; font-size: 14px; }
+        .hist-detail { display: none; }
+        .hist-back { background: #667eea; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+
+        /* ── Guardar análisis ── */
+        .save-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7;
+            padding: 7px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 600; margin-bottom: 10px;
+        }
+        .save-btn:hover { background: #c8e6c9; }
+        .save-btn.saved { background: #c8e6c9; cursor: default; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>Analizador de Partidos</h1>
-        <p>Scalping deportivo · Sofascore tiempo real</p>
+        <h1>⚽ Analizador de Partidos</h1>
+        <p>Scalping deportivo · Sofascore tiempo real · IA Kimi K2</p>
     </div>
 
-    <div class="card">
-        <form id="frm">
-            <div class="form-group">
-                <label>Equipo Local</label>
-                <input type="text" id="eqA" placeholder="Ej: AC Milan" required>
-            </div>
-            <div class="form-group">
-                <label>Equipo Visitante</label>
-                <input type="text" id="eqB" placeholder="Ej: Como" required>
-            </div>
-            <div class="form-group">
-                <label>Liga (opcional)</label>
-                <select id="liga">
-                    <option value="">Auto-detectar</option>
-                    <option value="Premier League">Premier League</option>
-                    <option value="La Liga">La Liga</option>
-                    <option value="Serie A">Serie A</option>
-                    <option value="Bundesliga">Bundesliga</option>
-                    <option value="Ligue 1">Ligue 1</option>
-                    <option value="Champions League">Champions League</option>
-                    <option value="Europa League">Europa League</option>
-                    <option value="Conference League">Conference League</option>
-                    <option value="Primeira Liga">Primeira Liga (Portugal)</option>
-                    <option value="Copa Libertadores">Copa Libertadores</option>
-                    <option value="Copa Sudamericana">Copa Sudamericana</option>
-                    <option value="Brasileirao">Brasileirão Serie A</option>
-                    <option value="Super Lig">Süper Lig (Turquía)</option>
-                    <option value="Liga Profesional Argentina">Liga Profesional Argentina</option>
-                    <option value="MLS">MLS (Estados Unidos)</option>
-                    <option value="Eredivisie">Eredivisie (Holanda)</option>
-                    <option value="Serie A Brasil">Serie B Brasil</option>
-                </select>
-            </div>
-            <button type="submit" id="btn">Analizar Partido</button>
-        </form>
+    <!-- ── TABS ── -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-single')">🔍 Partido Individual</button>
+        <button class="tab-btn" onclick="switchTab('tab-multi')">📋 Analizar Jornada</button>
+        <button class="tab-btn" onclick="switchTab('tab-historial'); loadHistorial()">📁 Historial</button>
     </div>
 
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p id="stepMsg">Buscando equipos...</p>
-        <p id="subMsg"></p>
+    <!-- ═══════════════════════════════════════════
+         TAB 1: PARTIDO INDIVIDUAL
+    ════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-single">
+        <div class="card">
+            <form id="frm">
+                <div class="form-group">
+                    <label>Equipo Local</label>
+                    <input type="text" id="eqA" placeholder="Ej: AC Milan" required>
+                </div>
+                <div class="form-group">
+                    <label>Equipo Visitante</label>
+                    <input type="text" id="eqB" placeholder="Ej: Como" required>
+                </div>
+                <div class="form-group">
+                    <label>Liga (opcional)</label>
+                    <select id="liga">
+                        <option value="">Auto-detectar</option>
+                        <option value="Premier League">Premier League</option>
+                        <option value="La Liga">La Liga</option>
+                        <option value="Serie A">Serie A</option>
+                        <option value="Bundesliga">Bundesliga</option>
+                        <option value="Ligue 1">Ligue 1</option>
+                        <option value="Champions League">Champions League</option>
+                        <option value="Europa League">Europa League</option>
+                        <option value="Conference League">Conference League</option>
+                        <option value="Primeira Liga">Primeira Liga (Portugal)</option>
+                        <option value="Copa Libertadores">Copa Libertadores</option>
+                        <option value="Copa Sudamericana">Copa Sudamericana</option>
+                        <option value="Brasileirao">Brasileirão Serie A</option>
+                        <option value="Super Lig">Süper Lig (Turquía)</option>
+                        <option value="Liga Profesional Argentina">Liga Profesional Argentina</option>
+                        <option value="MLS">MLS (Estados Unidos)</option>
+                        <option value="Eredivisie">Eredivisie (Holanda)</option>
+                        <option value="Serie A Brasil">Serie B Brasil</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn">Analizar Partido</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="stepMsg">Buscando equipos...</p>
+            <p id="subMsg"></p>
+        </div>
+
+        <div class="resultado" id="resultado"></div>
     </div>
 
-    <div class="resultado" id="resultado"></div>
+    <!-- ═══════════════════════════════════════════
+         TAB 2: ANALIZAR JORNADA
+    ════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-multi">
+        <div class="card">
+            <h2>📋 Analizar Jornada / Competición</h2>
+            <form id="frmMulti">
+                <div class="form-group">
+                    <label>Competición</label>
+                    <select id="ligaMulti">
+                        <option value="">Seleccioná una competición</option>
+                        <option value="Premier League">Premier League</option>
+                        <option value="La Liga">La Liga</option>
+                        <option value="Serie A">Serie A</option>
+                        <option value="Bundesliga">Bundesliga</option>
+                        <option value="Ligue 1">Ligue 1</option>
+                        <option value="Champions League">Champions League</option>
+                        <option value="Europa League">Europa League</option>
+                        <option value="Conference League">Conference League</option>
+                        <option value="Primeira Liga">Primeira Liga</option>
+                        <option value="Copa Libertadores">Copa Libertadores</option>
+                        <option value="Copa Sudamericana">Copa Sudamericana</option>
+                        <option value="Brasileirao">Brasileirão Serie A</option>
+                        <option value="Super Lig">Süper Lig</option>
+                        <option value="Liga Profesional Argentina">Liga Profesional Argentina</option>
+                        <option value="MLS">MLS</option>
+                        <option value="Eredivisie">Eredivisie</option>
+                    </select>
+                </div>
+                <button type="submit" id="btnBuscarJornada">Buscar Partidos de Hoy</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loadingMulti">
+            <div class="spinner"></div>
+            <p id="stepMsgM">Buscando partidos...</p>
+            <p id="subMsgM"></p>
+        </div>
+
+        <!-- Lista de partidos para seleccionar -->
+        <div id="listaJornada" style="display:none">
+            <div class="card">
+                <h2 id="ligaJornadaTitulo">Partidos disponibles</h2>
+                <div class="sel-count" id="selCount">0 partidos seleccionados</div>
+                <ul class="match-list" id="matchListUI"></ul>
+                <button class="btn-analizar-jornada" id="btnAnalizarSeleccionados" disabled onclick="analizarSeleccionados()">
+                    Analizar Seleccionados (0)
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultados multi-partido -->
+        <div id="resultadoMulti"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         TAB 3: HISTORIAL
+    ════════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-historial">
+        <div class="card" id="histListCard">
+            <h2>📁 Historial de Análisis</h2>
+            <div id="histListContent">
+                <div class="hist-empty">Cargando...</div>
+            </div>
+        </div>
+        <div class="hist-detail" id="histDetail">
+            <button class="hist-back" onclick="cerrarHistDetail()">← Volver al historial</button>
+            <div id="histDetailContent"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-/* ─── PROXY CORS ────────────────────────────────────────────────────────────
-   Sofascore bloquea requests cross-origin desde browsers.
-   Usamos corsproxy.io que reenvía la request con los headers correctos.
-   Si falla, intentamos allorigins.win como fallback.
-────────────────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   GLOBALS
+════════════════════════════════════════════════════════════════════════════ */
+const KIMI_KEY = '{{ kimi_key }}';
+
+// Mapa de nombre de liga → tournament_id en Sofascore (unique tournament IDs)
+const LIGA_IDS = {
+    'Premier League':           17,
+    'La Liga':                  8,
+    'Serie A':                  23,
+    'Bundesliga':               35,
+    'Ligue 1':                  34,
+    'Champions League':         7,
+    'Europa League':            679,
+    'Conference League':        17015,
+    'Primeira Liga':            238,
+    'Copa Libertadores':        384,
+    'Copa Sudamericana':        480,
+    'Brasileirao':              325,
+    'Super Lig':                52,
+    'Liga Profesional Argentina': 155,
+    'MLS':                      242,
+    'Eredivisie':               37,
+};
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════════════════════════════════ */
+function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const idx = ['tab-single','tab-multi','tab-historial'].indexOf(id);
+    document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   PROXY CORS → nuestro /sf
+════════════════════════════════════════════════════════════════════════════ */
 async function sfGet(path) {
-    // Usamos nuestro propio proxy en /sf para evitar bloqueos CORS y de datacenter
     try {
         const r = await fetch('/sf?path=' + encodeURIComponent(path));
         if (r.ok) {
@@ -220,10 +425,16 @@ function step(msg, sub='') {
     document.getElementById('stepMsg').textContent = msg;
     document.getElementById('subMsg').textContent  = sub;
 }
+function stepM(msg, sub='') {
+    document.getElementById('stepMsgM').textContent = msg;
+    document.getElementById('subMsgM').textContent  = sub;
+}
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function val(x)    { return (x !== null && x !== undefined && x !== '') ? x : '—'; }
 
-/* ─── FORMULARIO ─────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   TAB 1: PARTIDO INDIVIDUAL
+════════════════════════════════════════════════════════════════════════════ */
 document.getElementById('frm').addEventListener('submit', async e => {
     e.preventDefault();
     const eqA  = document.getElementById('eqA').value.trim();
@@ -235,7 +446,6 @@ document.getElementById('frm').addEventListener('submit', async e => {
     btn.disabled = true;
 
     try {
-        /* 1. Buscar equipos */
         step('Buscando equipos en Sofascore...');
         const [rA, rB] = await Promise.all([
             sfGet('/search/all?q=' + encodeURIComponent(eqA)),
@@ -248,76 +458,15 @@ document.getElementById('frm').addEventListener('submit', async e => {
         if (!teamA) { renderError('No se encontró el equipo: ' + eqA); return; }
         if (!teamB) { renderError('No se encontró el equipo: ' + eqB); return; }
 
-        /* 2. Buscar el partido */
         step('Buscando el partido...', teamA.nombre + ' vs ' + teamB.nombre);
         const evento = await buscarPartido(teamA.id, teamB.id);
         if (!evento) { renderError('No se encontró el próximo partido entre ' + eqA + ' y ' + eqB); return; }
 
-        const eventId  = evento.id;
-        const teamAId  = teamA.id;
-        const teamBId  = teamB.id;
-        const eqANom   = evento.homeTeam?.name || teamA.nombre;
-        const eqBNom   = evento.awayTeam?.name || teamB.nombre;
-
-        /* 3. Datos en paralelo */
-        step('Obteniendo forma reciente y alineaciones...', '');
-        const [lastA, lastB, lineups, eventData, h2hData] = await Promise.all([
-            sfGet('/team/' + teamAId + '/events/last/0'),
-            sfGet('/team/' + teamBId + '/events/last/0'),
-            sfGet('/event/' + eventId + '/lineups'),
-            sfGet('/event/' + eventId),
-            sfGet('/event/' + eventId + '/h2h'),
-        ]);
-
-        /* 4. Stats partido a partido (corners/amarillas) */
-        step('Calculando corners y tarjetas...', 'Analizando últimos 5 partidos...');
-        const evA = finished(lastA?.events).slice(-5);
-        const evB = finished(lastB?.events).slice(-5);
-        const [statsA, statsB] = await Promise.all([
-            fetchStats(evA, teamAId),
-            fetchStats(evB, teamBId),
-        ]);
-
-        /* 5. Montar resultado */
-        const ts      = evento.startTimestamp;
-        const fecha   = ts ? new Date(ts * 1000).toISOString() : '';
-        const arbitro = eventData?.event?.referee?.name || '';
-        const estadio = eventData?.event?.venue?.stadium?.name || '';
-        const ciudad  = eventData?.event?.venue?.city?.name || '';
-
-        // Detectar ronda e ida/vuelta desde Sofascore
-        const roundInfo   = evento.roundInfo || {};
-        const rondaNombre = roundInfo.name || '';   // ej: "1st Leg", "2nd Leg", "Round of 16"
-        const rondaNum    = roundInfo.round || '';
-        // Es eliminatoria si tiene nombre de ronda con texto (no solo número)
-        const esEliminatoria = !!rondaNombre && isNaN(rondaNombre);
-        const esIda    = rondaNombre.toLowerCase().includes('1st leg') || rondaNombre.toLowerCase().includes('ida');
-        const esVuelta = rondaNombre.toLowerCase().includes('2nd leg') || rondaNombre.toLowerCase().includes('vuelta');
-
-        const resultado = {
-            meta: { eqA: eqANom, eqB: eqBNom,
-                    competicion: evento.tournament?.name || '',
-                    fecha, estadio, arbitro, ciudad,
-                    rondaNombre, rondaNum, esEliminatoria, esIda, esVuelta },
-            alin: parseLineups(lineups),
-            forma: {
-                fA: forma(lastA?.events, teamAId),
-                fB: forma(lastB?.events, teamBId),
-            },
-            stats: {
-                sA: calcStats(lastA?.events, teamAId),
-                sB: calcStats(lastB?.events, teamBId),
-            },
-            corners: { a: statsA.corners, b: statsB.corners },
-            amarillas: { a: statsA.amarillas, b: statsB.amarillas },
-            h2h: parseH2H(h2hData, eqANom, eqBNom),
-        };
+        const resultado = await fetchResultadoCompleto(evento, teamA.id, teamB.id);
 
         step('Listo!');
-        renderResultado(resultado);
-
-        // Llamar a Kimi en paralelo (no bloquea el render de los stats)
-        pedirAnalisisIA(resultado);
+        renderResultado(resultado, 'resultado', true);
+        pedirAnalisisIA(resultado, 'ia-body', 'ia-loading', true);
 
     } catch(err) {
         renderError('Error: ' + err.message);
@@ -327,7 +476,228 @@ document.getElementById('frm').addEventListener('submit', async e => {
     }
 });
 
-/* ─── HELPERS DE DATOS ───────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   TAB 2: ANALIZAR JORNADA
+════════════════════════════════════════════════════════════════════════════ */
+
+let jornadaEventos = [];   // partidos cargados de la jornada
+let jornadaSeleccionados = new Set();
+
+document.getElementById('frmMulti').addEventListener('submit', async e => {
+    e.preventDefault();
+    const liga = document.getElementById('ligaMulti').value;
+    if (!liga) { alert('Seleccioná una competición'); return; }
+
+    const ligaId = LIGA_IDS[liga];
+    if (!ligaId) { alert('Liga no soportada todavía'); return; }
+
+    document.getElementById('loadingMulti').style.display = 'block';
+    document.getElementById('listaJornada').style.display = 'none';
+    document.getElementById('resultadoMulti').innerHTML = '';
+    document.getElementById('btnBuscarJornada').disabled = true;
+
+    try {
+        stepM('Buscando partidos de hoy en ' + liga + '...');
+
+        // Próximos eventos de la liga
+        const data = await sfGet('/unique-tournament/' + ligaId + '/events/next/0');
+        const todayStr = new Date().toISOString().slice(0,10);
+
+        // Filtrar solo los de hoy (o mañana si no hay hoy) por timestamp
+        const ahora = Date.now() / 1000;
+        const mañana = ahora + 86400;
+
+        let partidos = (data?.events || []).filter(ev => {
+            const ts = ev.startTimestamp || 0;
+            const d = new Date(ts * 1000).toISOString().slice(0,10);
+            return d === todayStr;
+        });
+
+        // Si no hay partidos hoy, mostrar los próximos 10
+        if (!partidos.length) {
+            partidos = (data?.events || []).slice(0, 10);
+        }
+
+        jornadaEventos = partidos;
+        jornadaSeleccionados.clear();
+        renderListaJornada(liga, partidos);
+
+    } catch(err) {
+        alert('Error al buscar partidos: ' + err.message);
+    } finally {
+        document.getElementById('loadingMulti').style.display = 'none';
+        document.getElementById('btnBuscarJornada').disabled = false;
+    }
+});
+
+function renderListaJornada(liga, partidos) {
+    document.getElementById('ligaJornadaTitulo').textContent = liga + ' — Partidos disponibles (' + partidos.length + ')';
+
+    const ul = document.getElementById('matchListUI');
+    ul.innerHTML = '';
+
+    if (!partidos.length) {
+        ul.innerHTML = '<li style="padding:16px;color:#aaa;font-size:14px">No hay partidos disponibles para hoy.</li>';
+        document.getElementById('listaJornada').style.display = 'block';
+        return;
+    }
+
+    partidos.forEach((ev, idx) => {
+        const home = ev.homeTeam?.name || '?';
+        const away = ev.awayTeam?.name || '?';
+        const ts   = ev.startTimestamp;
+        const hora = ts ? new Date(ts * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+        const ronda = ev.roundInfo?.name || (ev.roundInfo?.round ? 'Fecha ' + ev.roundInfo.round : '');
+
+        const li = document.createElement('li');
+        li.className = 'match-item';
+        li.dataset.idx = idx;
+        li.innerHTML = `
+            <input type="checkbox" id="chk${idx}" onchange="togglePartido(${idx})">
+            <div class="match-item-info">
+                <div class="match-item-name">${home} <span style="color:#aaa">vs</span> ${away}</div>
+                <div class="match-item-meta">${ronda}</div>
+            </div>
+            <div class="match-item-hora">${hora}</div>
+        `;
+        li.onclick = (e) => {
+            if (e.target.type !== 'checkbox') {
+                const chk = document.getElementById('chk' + idx);
+                chk.checked = !chk.checked;
+                togglePartido(idx);
+            }
+        };
+        ul.appendChild(li);
+    });
+
+    actualizarBotonAnalizar();
+    document.getElementById('listaJornada').style.display = 'block';
+}
+
+function togglePartido(idx) {
+    const li = document.querySelector(`.match-item[data-idx="${idx}"]`);
+    const chk = document.getElementById('chk' + idx);
+    if (chk.checked) {
+        jornadaSeleccionados.add(idx);
+        li.classList.add('selected');
+    } else {
+        jornadaSeleccionados.delete(idx);
+        li.classList.remove('selected');
+    }
+    actualizarBotonAnalizar();
+}
+
+function actualizarBotonAnalizar() {
+    const n = jornadaSeleccionados.size;
+    document.getElementById('selCount').textContent = n + ' partido' + (n === 1 ? '' : 's') + ' seleccionado' + (n === 1 ? '' : 's');
+    const btn = document.getElementById('btnAnalizarSeleccionados');
+    btn.disabled = n === 0;
+    btn.textContent = 'Analizar Seleccionados (' + n + ')';
+}
+
+async function analizarSeleccionados() {
+    const indices = Array.from(jornadaSeleccionados).sort();
+    const eventos = indices.map(i => jornadaEventos[i]);
+
+    document.getElementById('loadingMulti').style.display = 'block';
+    document.getElementById('btnAnalizarSeleccionados').disabled = true;
+    document.getElementById('resultadoMulti').innerHTML = '';
+
+    const resultados = [];
+
+    try {
+        for (let i = 0; i < eventos.length; i++) {
+            const ev = eventos[i];
+            const home = ev.homeTeam?.name || '?';
+            const away = ev.awayTeam?.name || '?';
+            stepM(`Analizando partido ${i+1}/${eventos.length}...`, home + ' vs ' + away);
+
+            try {
+                const resultado = await fetchResultadoCompleto(ev, ev.homeTeam?.id, ev.awayTeam?.id);
+                resultados.push(resultado);
+            } catch(err) {
+                console.warn('Error en', home, 'vs', away, err);
+            }
+
+            await sleep(500);
+        }
+
+        stepM('Generando análisis IA para cada partido...');
+        document.getElementById('loadingMulti').style.display = 'none';
+        renderMultiResultados(resultados);
+
+    } catch(err) {
+        document.getElementById('loadingMulti').style.display = 'none';
+        document.getElementById('resultadoMulti').innerHTML =
+            '<div class="card error-box">Error: ' + err.message + '</div>';
+    } finally {
+        document.getElementById('btnAnalizarSeleccionados').disabled = false;
+    }
+}
+
+function renderMultiResultados(resultados) {
+    const container = document.getElementById('resultadoMulti');
+    container.innerHTML = '';
+
+    resultados.forEach((r, i) => {
+        const m = r.meta;
+        const divId = 'multi-ia-body-' + i;
+        const loadId = 'multi-ia-load-' + i;
+
+        const div = document.createElement('div');
+        div.className = 'multi-partido-card';
+        div.innerHTML = `
+            <div class="multi-partido-header">
+                <span>${m.eqA} vs ${m.eqB}</span>
+                <small>${m.competicion || ''}</small>
+            </div>
+            <div class="multi-partido-body">
+                <div class="ia-card" style="margin:0">
+                    <h2 style="font-size:14px;margin-bottom:8px">🤖 Análisis Kimi K2 <span class="ia-badge">en curso...</span></h2>
+                    <div class="ia-loading" id="${loadId}">
+                        <div class="ia-spinner"></div>
+                        <span>Analizando ${m.eqA} vs ${m.eqB}...</span>
+                    </div>
+                    <div class="ia-body" id="${divId}" style="display:none"></div>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    // Agregar placeholder para el análisis combinado
+    const combDiv = document.createElement('div');
+    combDiv.id = 'combinado-bloque';
+    combDiv.className = 'ia-card';
+    combDiv.style.display = 'none';
+    combDiv.innerHTML = `
+        <h2>🏆 Análisis Combinado <span class="ia-badge">Jornada completa</span></h2>
+        <div class="ia-loading" id="comb-loading">
+            <div class="ia-spinner"></div>
+            <span>Esperando análisis individuales...</span>
+        </div>
+        <div class="ia-body" id="comb-body" style="display:none"></div>
+    `;
+    container.appendChild(combDiv);
+
+    // Analizar cada partido individualmente (en secuencia para no saturar la API)
+    (async () => {
+        const textos = [];
+        for (let i = 0; i < resultados.length; i++) {
+            const texto = await pedirAnalisisIA(resultados[i], 'multi-ia-body-' + i, 'multi-ia-load-' + i, false);
+            textos.push({ partido: resultados[i].meta.eqA + ' vs ' + resultados[i].meta.eqB, texto });
+            await sleep(1000);
+        }
+
+        // Ahora análisis combinado
+        document.getElementById('combinado-bloque').style.display = 'block';
+        await pedirAnalisisCombinado(resultados, textos, 'comb-body', 'comb-loading');
+    })();
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   HELPERS DATOS
+════════════════════════════════════════════════════════════════════════════ */
 
 function firstTeam(data, fallback) {
     if (!data?.results) return null;
@@ -427,7 +797,6 @@ function parseH2H(data, nomA, nomB) {
         const sh = ev.homeScore?.current||0, sa = ev.awayScore?.current||0;
         const ts = ev.startTimestamp;
         const fecha = ts ? new Date(ts*1000).toLocaleDateString('es-ES') : '';
-        // contar victorias: el equipo A es el que tiene nombre similar a nomA
         const aEsHome = nomA.toLowerCase().slice(0,5).split('').some(c=>home.toLowerCase().includes(c));
         if      (sh > sa) aEsHome ? vA++ : vB++;
         else if (sh < sa) aEsHome ? vB++ : vA++;
@@ -436,6 +805,66 @@ function parseH2H(data, nomA, nomB) {
     });
     return { list, res:{vA,vB,emp,n:list.length} };
 }
+
+async function fetchResultadoCompleto(evento, teamAId, teamBId) {
+    const eventId = evento.id;
+    const eqANom  = evento.homeTeam?.name || '?';
+    const eqBNom  = evento.awayTeam?.name || '?';
+
+    step('Obteniendo forma y alineaciones...', eqANom + ' vs ' + eqBNom);
+
+    const [lastA, lastB, lineups, eventData, h2hData] = await Promise.all([
+        sfGet('/team/' + teamAId + '/events/last/0'),
+        sfGet('/team/' + teamBId + '/events/last/0'),
+        sfGet('/event/' + eventId + '/lineups'),
+        sfGet('/event/' + eventId),
+        sfGet('/event/' + eventId + '/h2h'),
+    ]);
+
+    step('Calculando corners y tarjetas...', 'Analizando últimos 5 partidos...');
+    const evA = finished(lastA?.events).slice(-5);
+    const evB = finished(lastB?.events).slice(-5);
+    const [statsA, statsB] = await Promise.all([
+        fetchStats(evA, teamAId),
+        fetchStats(evB, teamBId),
+    ]);
+
+    const ts      = evento.startTimestamp;
+    const fecha   = ts ? new Date(ts * 1000).toISOString() : '';
+    const arbitro = eventData?.event?.referee?.name || '';
+    const estadio = eventData?.event?.venue?.stadium?.name || '';
+    const ciudad  = eventData?.event?.venue?.city?.name || '';
+
+    const roundInfo   = evento.roundInfo || {};
+    const rondaNombre = roundInfo.name || '';
+    const rondaNum    = roundInfo.round || '';
+    const esEliminatoria = !!rondaNombre && isNaN(rondaNombre);
+    const esIda    = rondaNombre.toLowerCase().includes('1st leg') || rondaNombre.toLowerCase().includes('ida');
+    const esVuelta = rondaNombre.toLowerCase().includes('2nd leg') || rondaNombre.toLowerCase().includes('vuelta');
+
+    return {
+        meta: { eqA: eqANom, eqB: eqBNom,
+                competicion: evento.tournament?.name || '',
+                fecha, estadio, arbitro, ciudad,
+                rondaNombre, rondaNum, esEliminatoria, esIda, esVuelta },
+        alin: parseLineups(lineups),
+        forma: {
+            fA: forma(lastA?.events, teamAId),
+            fB: forma(lastB?.events, teamBId),
+        },
+        stats: {
+            sA: calcStats(lastA?.events, teamAId),
+            sB: calcStats(lastB?.events, teamBId),
+        },
+        corners: { a: statsA.corners, b: statsB.corners },
+        amarillas: { a: statsA.amarillas, b: statsB.amarillas },
+        h2h: parseH2H(h2hData, eqANom, eqBNom),
+    };
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RENDER — PARTIDO INDIVIDUAL
+════════════════════════════════════════════════════════════════════════════ */
 
 function recomendaciones(r) {
     const recs = [];
@@ -475,8 +904,6 @@ function recomendaciones(r) {
     return recs;
 }
 
-/* ─── RENDER ─────────────────────────────────────────────────────────────── */
-
 function sr(l,v_) { return `<div class="srow"><span class="slbl">${l}</span><span class="sval">${val(v_)}</span></div>`; }
 
 function badges(arr) {
@@ -496,12 +923,18 @@ function rcls(c) {
     return c.toLowerCase().includes('alta')?'rec-alta':c.toLowerCase().includes('media')?'rec-media':'rec-baja';
 }
 
-function renderResultado(r) {
+function renderResultado(r, containerId, mostrarGuardar) {
     const recs = recomendaciones(r);
     const m=r.meta, al=r.alin, fo=r.forma, st=r.stats, co=r.corners, am=r.amarillas, h=r.h2h;
     const fecha = m.fecha ? new Date(m.fecha).toLocaleString('es-ES',{dateStyle:'full',timeStyle:'short'}) : '—';
 
-    let html = `
+    let html = '';
+
+    if (mostrarGuardar) {
+        html += `<button class="save-btn" id="saveBtn" onclick="guardarAnalisis()">💾 Guardar análisis</button>`;
+    }
+
+    html += `
     <div class="card match-header">
         <div class="vs-row">
             <div class="team-name">${m.eqA}</div>
@@ -517,7 +950,6 @@ function renderResultado(r) {
         <span class="source-ok">✓ Sofascore tiempo real</span>
     </div>`;
 
-    /* alineaciones */
     if (al.tA.length || al.tB.length) {
         html += `<div class="card"><h2>Alineaciones ${al.confirmadas?'✓ Confirmadas':'(Previstas)'}</h2><div class="two-col">`;
         for (const [nom,tit,form] of [[m.eqA,al.tA,al.fA],[m.eqB,al.tB,al.fB]])
@@ -528,13 +960,11 @@ function renderResultado(r) {
         html += `</div></div>`;
     }
 
-    /* forma */
     html += `<div class="card"><h2>Forma Reciente (últimos 5)</h2><div class="two-col">
     <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
     <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
     </div></div>`;
 
-    /* estadísticas */
     const sA=st.sA, sB=st.sB;
     if (Object.keys(sA).length||Object.keys(sB).length)
         html += `<div class="card"><h2>Estadísticas (últimos 5 partidos)</h2><div class="two-col">
@@ -542,7 +972,6 @@ function renderResultado(r) {
         <div><div class="col-hdr">${m.eqB}</div>${sr('Goles marcados',sB.gf)}${sr('Goles recibidos',sB.gc)}${sr('Promedio GF',sB.pgf)}${sr('Promedio GC',sB.pgc)}${sr('Clean sheets',sB.cs)}</div>
         </div></div>`;
 
-    /* corners/tarjetas */
     if (co.a||co.b||am.a||am.b) {
         const tot = co.a&&co.b ? (co.a+co.b).toFixed(1) : null;
         html += `<div class="card"><h2>Corners y Tarjetas</h2><div class="two-col">
@@ -551,7 +980,6 @@ function renderResultado(r) {
         </div></div>`;
     }
 
-    /* h2h */
     if (h.list.length) {
         const res=h.res;
         html += `<div class="card"><h2>Historial Directo (H2H)</h2>
@@ -566,21 +994,19 @@ function renderResultado(r) {
         <span class="h2h-comp">${p.comp}</span></div>`).join('')}</div></div>`;
     }
 
-    /* recomendaciones */
     html += `<div class="card"><h2>Recomendaciones de Apuesta</h2>
     <p style="font-size:12px;color:#aaa;margin-bottom:12px">Solo orientativo. Las apuestas conllevan riesgo de pérdida económica.</p>`;
-    recs.forEach(r => {
-        html += `<div class="rec-card ${rcls(r.conf)}">
-        <div class="rec-tipo">${r.tipo}</div>
-        <div class="rec-razon">${r.razon}</div>
+    recs.forEach(rec => {
+        html += `<div class="rec-card ${rcls(rec.conf)}">
+        <div class="rec-tipo">${rec.tipo}</div>
+        <div class="rec-razon">${rec.razon}</div>
         <div class="rec-meta">
-            <span>Confianza: <b class="rc ${ccls(r.conf)}">${r.conf}</b></span>
-            <span>Cuota: <b>${r.cuota}</b></span>
+            <span>Confianza: <b class="rc ${ccls(rec.conf)}">${rec.conf}</b></span>
+            <span>Cuota: <b>${rec.cuota}</b></span>
         </div></div>`;
     });
     html += `</div>`;
 
-    // Agregar placeholder del bloque IA al final
     html += `<div class="ia-card" id="ia-bloque">
         <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2</span></h2>
         <div class="ia-loading" id="ia-loading">
@@ -590,14 +1016,17 @@ function renderResultado(r) {
         <div class="ia-body" id="ia-body" style="display:none"></div>
     </div>`;
 
-    const el = document.getElementById('resultado');
+    const el = document.getElementById(containerId);
     el.innerHTML = html;
     el.style.display = 'block';
+
+    // Guardar resultado actual para poder guardarlo en historial
+    window._currentResultado = r;
 }
 
-/* ─── ANÁLISIS DE IA (llamada directa al browser → OpenRouter, sin pasar por Render) ── */
-
-const KIMI_KEY = '{{ kimi_key }}';
+/* ════════════════════════════════════════════════════════════════════════════
+   ANÁLISIS IA — Partido individual y multi-partido
+════════════════════════════════════════════════════════════════════════════ */
 
 function buildPrompt(r) {
     const m = r.meta, fo = r.forma, st = r.stats, co = r.corners, am = r.amarillas, al = r.alin, h = r.h2h;
@@ -617,7 +1046,6 @@ function buildPrompt(r) {
 
     const cornTotal = co.a && co.b ? (co.a + co.b).toFixed(1) : 'N/D';
 
-    // Bloque de tipo de partido (ida/vuelta/eliminatoria)
     let tipoPartidoBloque = '';
     if (m.esEliminatoria) {
         if (m.esIda) {
@@ -636,11 +1064,9 @@ IMPLICACIONES: Verificá si es ida, vuelta o partido único eliminatorio. La tá
         }
     }
 
-    // Bloque de contexto del estadio (ciudad/altura)
     let contextoCiudad = '';
     if (m.ciudad) {
         contextoCiudad = `Ciudad del estadio: ${m.ciudad}`;
-        // Ciudades conocidas por gran altitud (>1500m)
         const ciudadesAltura = ['la paz', 'quito', 'bogotá', 'bogota', 'cusco', 'cuzco',
             'potosí', 'potosi', 'oruro', 'huancayo', 'sucre', 'cochabamba', 'medellín', 'medellin'];
         const ciudadLow = m.ciudad.toLowerCase();
@@ -774,19 +1200,18 @@ Incluí EXACTAMENTE todo esto en tu respuesta:
 IMPORTANTE: Usá los datos de Sofascore como base. Si algo no está confirmado, indicá "sin confirmar". No inventes estadísticas. Las cuotas son aproximadas.`;
 }
 
-async function pedirAnalisisIA(r) {
-    const loading = document.getElementById('ia-loading');
-    const body    = document.getElementById('ia-body');
+// Devuelve el texto completo del análisis (para el análisis combinado)
+async function pedirAnalisisIA(r, bodyId, loadId, guardar) {
+    const loading = document.getElementById(loadId);
+    const body    = document.getElementById(bodyId);
 
     if (!KIMI_KEY) {
         if (loading) loading.style.display = 'none';
         if (body) { body.style.display='block'; body.innerHTML='<div class="ia-error">⚠️ KIMI_API_KEY no configurada</div>'; }
-        return;
+        return '';
     }
 
     try {
-        // Llamada DIRECTA al browser → OpenRouter (sin pasar por Render)
-        // Esto evita el WORKER TIMEOUT de 30s de Render free
         const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -842,20 +1267,145 @@ async function pedirAnalisisIA(r) {
         if (body && textoCompleto) body.innerHTML = markdownToHtml(textoCompleto);
         else if (body) body.innerHTML = '<div class="ia-error">⚠️ Sin respuesta del modelo</div>';
 
+        // Auto-guardar en historial si se pide
+        if (guardar && textoCompleto && window._currentResultado) {
+            window._currentKimiText = textoCompleto;
+        }
+
+        return textoCompleto;
+
     } catch(err) {
         if (loading) loading.style.display = 'none';
         if (body) {
             body.style.display = 'block';
             body.innerHTML = `<div class="ia-error">⚠️ Error: ${err.message}</div>`;
         }
+        return '';
     }
 }
 
-function markdownToHtml(text) {
-    // Detectar secciones numeradas como "1. **TÍTULO**" y envolverlas
-    // Primero separamos por secciones numeradas
-    const secciones = text.split(/(?=\n\d+\.\s+\*\*)/);
+// Análisis combinado para jornada completa
+async function pedirAnalisisCombinado(resultados, textos, bodyId, loadId) {
+    const loading = document.getElementById(loadId);
+    const body    = document.getElementById(bodyId);
 
+    if (!KIMI_KEY) {
+        if (loading) loading.style.display = 'none';
+        if (body) { body.style.display='block'; body.innerHTML='<div class="ia-error">⚠️ KIMI_API_KEY no configurada</div>'; }
+        return;
+    }
+
+    const resumenPartidos = textos.map((t, i) => {
+        const r = resultados[i];
+        const m = r.meta;
+        const sA = r.stats.sA || {}, sB = r.stats.sB || {};
+        const co = r.corners, am = r.amarillas;
+        return `
+━━━━━━━━━━━━━━━━━━━━━━
+PARTIDO ${i+1}: ${m.eqA} vs ${m.eqB}
+Competición: ${m.competicion || 'N/D'}
+Forma ${m.eqA}: ${(r.forma.fA.badges||[]).join(' ')}
+Forma ${m.eqB}: ${(r.forma.fB.badges||[]).join(' ')}
+Goles: ${m.eqA} promedia ${sA.pgf||'?'} GF / ${sA.pgc||'?'} GC | ${m.eqB} promedia ${sB.pgf||'?'} GF / ${sB.pgc||'?'} GC
+Corners combinados: ${co.a && co.b ? (co.a+co.b).toFixed(1) : 'N/D'}/partido
+Amarillas: ${m.eqA} ${am.a||'N/D'} | ${m.eqB} ${am.b||'N/D'}
+${m.esEliminatoria ? '⚠️ ELIMINATORIA: ' + m.rondaNombre : ''}
+
+RESUMEN DEL ANÁLISIS INDIVIDUAL:
+${t.texto ? t.texto.slice(0, 800) + '...' : 'Sin análisis'}`;
+    }).join('\n');
+
+    const prompt = `Tenés los siguientes ${resultados.length} partidos de hoy para analizar en conjunto:
+
+${resumenPartidos}
+
+═══════════════════════════════════════
+TAREA: ANÁLISIS COMBINADO DE LA JORNADA
+═══════════════════════════════════════
+
+Con base en todos estos partidos, generá:
+
+1. 🏆 TOP 5 APUESTAS INDIVIDUALES DE LA JORNADA
+   Las 5 mejores apuestas individuales (una por partido, puede haber más de una del mismo partido si son muy buenas)
+   | # | Partido | Apuesta | Mercado | Cuota ~1.80 | Confianza % |
+   |---|---------|---------|---------|-------------|-------------|
+
+2. 🔗 TOP 3 COMBINADAS RECOMENDADAS
+   Construí 3 combinadas con 2-3 picks cada una, priorizando picks de alta confianza y cuotas ~1.50 cada una.
+   Mostrá la cuota combinada estimada.
+
+   Combinada 1: [picks + cuota total estimada]
+   Combinada 2: [picks + cuota total estimada]
+   Combinada 3: [picks + cuota total estimada]
+
+3. ⚠️ PICKS A EVITAR
+   Apuestas que parecen tentadoras pero tienen riesgos ocultos.
+
+4. 📊 RESUMEN EJECUTIVO
+   2-3 párrafos resumiendo el panorama de la jornada: qué tipo de partidos son, qué mercados están más calientes, qué equipos llegan mejor.
+
+IMPORTANTE: Sé directo y específico. Priorizá confianza sobre cuota. Si un pick es muy arriesgado, no lo incluyas.`;
+
+    try {
+        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + KIMI_KEY,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': window.location.origin,
+            },
+            body: JSON.stringify({
+                model: 'moonshotai/kimi-k2',
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.4,
+                max_tokens: 3000,
+                stream: true,
+            }),
+        });
+
+        if (!resp.ok) throw new Error('OpenRouter ' + resp.status);
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '', textoCompleto = '';
+
+        if (loading) loading.style.display = 'none';
+        if (body) { body.style.display = 'block'; body.innerHTML = '<span style="color:#8888aa">▍</span>'; }
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const dataStr = line.slice(6).trim();
+                if (dataStr === '[DONE]') break;
+                try {
+                    const chunk = JSON.parse(dataStr);
+                    const content = chunk?.choices?.[0]?.delta?.content || '';
+                    if (content) {
+                        textoCompleto += content;
+                        if (body) body.innerHTML = markdownToHtml(textoCompleto) + '<span style="color:#a78bfa">▍</span>';
+                    }
+                } catch(_) {}
+            }
+        }
+
+        if (body && textoCompleto) body.innerHTML = markdownToHtml(textoCompleto);
+
+    } catch(err) {
+        if (loading) loading.style.display = 'none';
+        if (body) { body.style.display = 'block'; body.innerHTML = `<div class="ia-error">⚠️ Error: ${err.message}</div>`; }
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MARKDOWN RENDERER
+════════════════════════════════════════════════════════════════════════════ */
+function markdownToHtml(text) {
+    const secciones = text.split(/(?=\n\d+\.\s+\*\*)/);
     if (secciones.length > 1) {
         return secciones.map(sec => {
             const matchTitulo = sec.match(/^\n?(\d+\.\s+\*\*([^*]+)\*\*)([\s\S]*)/);
@@ -870,21 +1420,179 @@ function markdownToHtml(text) {
             return `<p>${procesarMarkdown(sec)}</p>`;
         }).join('');
     }
-
     return procesarMarkdown(text);
 }
 
 function procesarMarkdown(text) {
     return text
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')   // **negrita**
-        .replace(/\*([^*]+)\*/g, '<em>$1</em>')                 // *cursiva*
-        .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')              // listas
-        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')             // envolver listas
-        .replace(/\n\n+/g, '</p><p>')                           // párrafos
-        .replace(/\n/g, '<br>')                                  // saltos de línea
-        .replace(/^/, '<p>').replace(/$/, '</p>');              // envolver todo
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+        .replace(/\n\n+/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/^/, '<p>').replace(/$/, '</p>');
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   HISTORIAL
+════════════════════════════════════════════════════════════════════════════ */
+
+async function guardarAnalisis() {
+    const btn = document.getElementById('saveBtn');
+    if (!btn || btn.classList.contains('saved')) return;
+
+    const r = window._currentResultado;
+    const kimiText = window._currentKimiText || '';
+    if (!r) return;
+
+    btn.textContent = '💾 Guardando...';
+    btn.style.opacity = '0.6';
+
+    try {
+        const resp = await fetch('/historial', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                partido: r.meta.eqA + ' vs ' + r.meta.eqB,
+                competicion: r.meta.competicion || '',
+                fecha_partido: r.meta.fecha || '',
+                stats_json: r,
+                analisis_ia: kimiText,
+            }),
+        });
+        if (resp.ok) {
+            btn.textContent = '✅ Guardado';
+            btn.classList.add('saved');
+        } else {
+            btn.textContent = '❌ Error al guardar';
+            btn.style.opacity = '1';
+        }
+    } catch(err) {
+        btn.textContent = '❌ Error: ' + err.message;
+        btn.style.opacity = '1';
+    }
+}
+
+async function loadHistorial() {
+    const content = document.getElementById('histListContent');
+    const detail  = document.getElementById('histDetail');
+    detail.style.display = 'none';
+    document.getElementById('histListCard').style.display = 'block';
+    content.innerHTML = '<div class="hist-empty">Cargando...</div>';
+
+    try {
+        const resp = await fetch('/historial');
+        const lista = await resp.json();
+
+        if (!lista.length) {
+            content.innerHTML = '<div class="hist-empty">No hay análisis guardados todavía.<br>Analizá un partido y guardalo con el botón 💾.</div>';
+            return;
+        }
+
+        content.innerHTML = lista.map(item => {
+            const fecha = item.fecha_analisis
+                ? new Date(item.fecha_analisis * 1000).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+                : '—';
+            const fechaPartido = item.fecha_partido
+                ? new Date(item.fecha_partido).toLocaleDateString('es-ES', { dateStyle: 'medium' })
+                : '';
+            return `<div class="hist-item" onclick="verHistorial(${item.id})">
+                <div class="hist-item-info">
+                    <div class="hist-item-name">${item.partido}</div>
+                    <div class="hist-item-meta">${item.competicion || ''}${fechaPartido ? ' · ' + fechaPartido : ''} · Guardado: ${fecha}</div>
+                </div>
+                <div class="hist-item-actions">
+                    <button class="btn-sm btn-danger" onclick="event.stopPropagation(); borrarHistorial(${item.id}, this)">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+
+    } catch(err) {
+        content.innerHTML = '<div class="hist-empty">Error al cargar historial: ' + err.message + '</div>';
+    }
+}
+
+async function verHistorial(id) {
+    document.getElementById('histListCard').style.display = 'none';
+    const detail = document.getElementById('histDetail');
+    const content = document.getElementById('histDetailContent');
+    detail.style.display = 'block';
+    content.innerHTML = '<div class="card"><div class="hist-empty">Cargando análisis...</div></div>';
+
+    try {
+        const resp = await fetch('/historial/' + id);
+        const item = await resp.json();
+
+        if (item.error) throw new Error(item.error);
+
+        const fecha = item.fecha_analisis
+            ? new Date(item.fecha_analisis * 1000).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
+            : '—';
+
+        let html = `<div class="card match-header">
+            <div class="vs-row">
+                <div class="team-name" style="font-size:18px">${item.partido}</div>
+            </div>
+            <div class="match-meta">${item.competicion || ''}<br>Guardado: ${fecha}</div>
+            <span class="source-ok">📁 Historial</span>
+        </div>`;
+
+        // Si tenemos stats_json, renderizar el partido completo
+        if (item.stats_json && typeof item.stats_json === 'object') {
+            // Renderizar las tarjetas de stats
+            const r = item.stats_json;
+            const m = r.meta, fo = r.forma, st = r.stats, co = r.corners, am = r.amarillas, h = r.h2h;
+            if (fo && fo.fA) {
+                html += `<div class="card"><h2>Forma Reciente</h2><div class="two-col">
+                <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div></div>
+                <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div></div>
+                </div></div>`;
+            }
+            if (co && (co.a || co.b)) {
+                const tot = co.a&&co.b ? (co.a+co.b).toFixed(1) : null;
+                html += `<div class="card"><h2>Corners y Tarjetas</h2><div class="two-col">
+                <div><div class="col-hdr">Corners</div>${sr(m.eqA,co.a)}${sr(m.eqB,co.b)}${tot?sr('Total',tot):''}</div>
+                <div><div class="col-hdr">Amarillas</div>${sr(m.eqA,am.a)}${sr(m.eqB,am.b)}</div>
+                </div></div>`;
+            }
+        }
+
+        // Mostrar análisis IA guardado
+        if (item.analisis_ia) {
+            html += `<div class="ia-card">
+                <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2 · Guardado</span></h2>
+                <div class="ia-body">${markdownToHtml(item.analisis_ia)}</div>
+            </div>`;
+        }
+
+        content.innerHTML = html;
+
+    } catch(err) {
+        content.innerHTML = '<div class="card error-box">Error: ' + err.message + '</div>';
+    }
+}
+
+async function borrarHistorial(id, btn) {
+    if (!confirm('¿Borrar este análisis del historial?')) return;
+    btn.disabled = true;
+    try {
+        await fetch('/historial/' + id, { method: 'DELETE' });
+        loadHistorial();
+    } catch(err) {
+        alert('Error al borrar: ' + err.message);
+        btn.disabled = false;
+    }
+}
+
+function cerrarHistDetail() {
+    document.getElementById('histDetail').style.display = 'none';
+    document.getElementById('histListCard').style.display = 'block';
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ERROR
+════════════════════════════════════════════════════════════════════════════ */
 function renderError(msg) {
     const el = document.getElementById('resultado');
     el.innerHTML = `<div class="card error-box">${msg}</div>`;
