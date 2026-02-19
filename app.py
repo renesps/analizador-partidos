@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 import os, requests, json, time, threading
 
 app = Flask(__name__)
@@ -155,7 +155,10 @@ def sf_get(path):
 # ── Rutas principales ────────────────────────────────────────────────────────
 @app.route('/')
 def index():
-    return render_template('index.html', kimi_key=KIMI_API_KEY)
+    resp = make_response(render_template('index.html', kimi_key=KIMI_API_KEY))
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 @app.route('/sf')
 def proxy():

@@ -579,8 +579,10 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
             _seen.add(ev.id); return true;
         });
 
+        // Ordenar por timestamp ascendente (last/0 y next/0 vienen mezclados)
+        allEvents.sort((a, b) => (a.startTimestamp || 0) - (b.startTimestamp || 0));
+
         // Filtrar por hoy — usar fecha LOCAL (no UTC) para evitar edge cases de timezone
-        // ej: usuario en Argentina a las 01:00 local = 04:00 UTC del día siguiente
         const _now = new Date();
         const todayStr = _now.getFullYear() + '-' +
             String(_now.getMonth() + 1).padStart(2, '0') + '-' +
@@ -595,9 +597,16 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
             return dStr === todayStr;
         });
 
-        // Si no hay hoy, mostrar los próximos 10 (pueden ser de mañana)
+        // Si no hay hoy, mostrar los 10 más cercanos a ahora (próximos primero, recientes después)
         if (!partidos.length) {
-            partidos = allEvents.slice(0, 10);
+            const ahoraSec = Date.now() / 1000;
+            const futuros = allEvents
+                .filter(ev => (ev.startTimestamp || 0) >= ahoraSec)
+                .sort((a, b) => a.startTimestamp - b.startTimestamp);
+            const pasados = allEvents
+                .filter(ev => (ev.startTimestamp || 0) < ahoraSec)
+                .sort((a, b) => b.startTimestamp - a.startTimestamp);
+            partidos = [...futuros, ...pasados].slice(0, 10);
         }
 
         jornadaEventos = partidos;
