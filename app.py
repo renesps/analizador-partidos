@@ -228,37 +228,55 @@ IMPORTANTE:
 - Para el árbitro, usá el nombre que te di y buscá su historial en tu conocimiento
 - Las cuotas son aproximadas de mercado, no exactas"""
 
-    try:
-        r = requests.post(
-            'https://openrouter.ai/api/v1/chat/completions',
-            headers={
-                'Authorization': f'Bearer {KIMI_API_KEY}',
-                'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://analizador-partidos.onrender.com',
-            },
-            json={
-                'model': 'moonshotai/kimi-k2',
-                'messages': [{'role': 'user', 'content': prompt}],
-                'temperature': 0.4,
-                'max_tokens': 6000,
-            },
-            timeout=180
-        )
-        # Verificar que la respuesta tiene contenido antes de parsear JSON
-        if not r.content:
-            return jsonify({'error': 'Respuesta vacía de la API'}), 502
-        data = r.json()
-        if r.status_code != 200:
-            return jsonify({'error': data.get('error', {}).get('message', 'Error de API')}), 502
-        choices = data.get('choices', [])
-        if not choices:
-            return jsonify({'error': 'Sin respuesta del modelo'}), 502
-        texto = choices[0].get('message', {}).get('content', '')
-        if not texto:
-            return jsonify({'error': 'Respuesta vacía del modelo'}), 502
-        return jsonify({'analisis': texto})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 502
+    def generar():
+        """Genera la respuesta en streaming: manda chunks SSE al browser."""
+        try:
+            r = requests.post(
+                'https://openrouter.ai/api/v1/chat/completions',
+                headers={
+                    'Authorization': f'Bearer {KIMI_API_KEY}',
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': 'https://analizador-partidos.onrender.com',
+                },
+                json={
+                    'model': 'moonshotai/kimi-k2',
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.4,
+                    'max_tokens': 6000,
+                    'stream': True,
+                },
+                stream=True,
+                timeout=180
+            )
+            for line in r.iter_lines():
+                if not line:
+                    continue
+                line = line.decode('utf-8')
+                if line.startswith('data: '):
+                    data_str = line[6:]
+                    if data_str.strip() == '[DONE]':
+                        yield 'data: [DONE]\n\n'
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                        delta = chunk.get('choices', [{}])[0].get('delta', {})
+                        content = delta.get('content', '')
+                        if content:
+                            # Mandar cada fragmento como SSE
+                            yield f'data: {json.dumps({"t": content})}\n\n'
+                    except Exception:
+                        continue
+        except Exception as e:
+            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+
+    return app.response_class(
+        generar(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+        }
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

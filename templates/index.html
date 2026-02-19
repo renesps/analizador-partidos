@@ -605,42 +605,64 @@ async function pedirAnalisisIA(r) {
         h2h: r.h2h,
     };
 
+    const loading = document.getElementById('ia-loading');
+    const body    = document.getElementById('ia-body');
+
     try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 200000); // 200 segundos
         const resp = await fetch('/analisis-ia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
-            signal: controller.signal
         });
-        clearTimeout(timer);
-        const text = await resp.text();
-        if (!text) throw new Error('Respuesta vacía del servidor');
-        const data = JSON.parse(text);
 
-        const loading = document.getElementById('ia-loading');
-        const body    = document.getElementById('ia-body');
-        if (!loading || !body) return;
+        if (!resp.ok) throw new Error('Error ' + resp.status);
 
-        loading.style.display = 'none';
-        body.style.display    = 'block';
+        // Leer el stream de a chunks
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let textoCompleto = '';
 
-        if (data.error) {
-            body.innerHTML = `<div class="ia-error">⚠️ Error al obtener análisis: ${data.error}</div>`;
-            return;
+        // Mostrar el cuerpo apenas llega el primer chunk
+        if (loading) loading.style.display = 'none';
+        if (body) { body.style.display = 'block'; body.innerHTML = '<span style="color:#8888aa">▍</span>'; }
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // guardar línea incompleta
+
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const dataStr = line.slice(6).trim();
+                if (dataStr === '[DONE]') break;
+                try {
+                    const chunk = JSON.parse(dataStr);
+                    if (chunk.error) {
+                        if (body) body.innerHTML = `<div class="ia-error">⚠️ ${chunk.error}</div>`;
+                        return;
+                    }
+                    if (chunk.t) {
+                        textoCompleto += chunk.t;
+                        // Actualizar en tiempo real con cursor parpadeante
+                        if (body) body.innerHTML = markdownToHtml(textoCompleto) + '<span style="color:#a78bfa">▍</span>';
+                    }
+                } catch(_) {}
+            }
         }
 
-        // Convertir markdown básico a HTML
-        body.innerHTML = markdownToHtml(data.analisis);
+        // Render final sin cursor
+        if (body && textoCompleto) body.innerHTML = markdownToHtml(textoCompleto);
+        else if (body) body.innerHTML = '<div class="ia-error">⚠️ Sin respuesta del modelo</div>';
 
     } catch(err) {
-        const loading = document.getElementById('ia-loading');
-        const body    = document.getElementById('ia-body');
         if (loading) loading.style.display = 'none';
         if (body) {
             body.style.display = 'block';
-            body.innerHTML = `<div class="ia-error">⚠️ No se pudo conectar con Kimi: ${err.message}</div>`;
+            body.innerHTML = `<div class="ia-error">⚠️ Error: ${err.message}</div>`;
         }
     }
 }
