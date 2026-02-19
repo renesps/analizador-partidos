@@ -578,52 +578,181 @@ function renderResultado(r) {
     el.style.display = 'block';
 }
 
-/* ─── ANÁLISIS DE IA ─────────────────────────────────────────────────────── */
+/* ─── ANÁLISIS DE IA (llamada directa al browser → OpenRouter, sin pasar por Render) ── */
+
+const KIMI_KEY = '{{ kimi_key }}';
+
+function buildPrompt(r) {
+    const m = r.meta, fo = r.forma, st = r.stats, co = r.corners, am = r.amarillas, al = r.alin, h = r.h2h;
+    const sA = st.sA || {}, sB = st.sB || {};
+    const h2h_res = h.res || {};
+    const h2h_str = `${m.eqA} ${h2h_res.vA||0} - Empates ${h2h_res.emp||0} - ${m.eqB} ${h2h_res.vB||0}`;
+    const h2h_det = (h.list||[]).slice(0,6).map(p=>`  ${p.fecha} ${p.home} ${p.sc} ${p.away} (${p.comp})`).join('\n');
+
+    const formaStr = (badges, detalle) => {
+        const b = (badges||[]).join(' ') || 'Sin datos';
+        const d = (detalle||[]).map(x=>`  ${x.fecha} ${x.local?'vs':'en'} ${x.rival}: ${x.res}`).join('\n');
+        return b + (d ? '\n'+d : '');
+    };
+    const titStr = (lista) => lista && lista.length
+        ? lista.map(j=>`${j.num||''}.${j.nombre||'?'}(${j.pos||''})`).join(', ')
+        : 'No disponible';
+
+    const cornTotal = co.a && co.b ? (co.a + co.b).toFixed(1) : 'N/D';
+
+    return `Haceme un análisis profundo del partido ${m.eqA} vs ${m.eqB}.
+
+A continuación tenés todos los datos recopilados de Sofascore para este partido. Usá ESTOS datos como base y complementá con tu conocimiento del fútbol:
+
+═══════════════════════════════════════
+DATOS DEL PARTIDO (fuente: Sofascore)
+═══════════════════════════════════════
+Competición: ${m.competicion||'N/D'}
+Fecha: ${m.fecha||'N/D'}
+${m.estadio ? 'Estadio: '+m.estadio : ''}
+${m.arbitro ? 'Árbitro: '+m.arbitro : 'Árbitro: sin confirmar'}
+
+FORMA RECIENTE — ${m.eqA} (últimos 5):
+${formaStr(fo.fA.badges, fo.fA.detalle)}
+
+FORMA RECIENTE — ${m.eqB} (últimos 5):
+${formaStr(fo.fB.badges, fo.fB.detalle)}
+
+ESTADÍSTICAS ÚLTIMOS 5 PARTIDOS:
+${m.eqA}: ${sA.gf||'?'} goles marcados, ${sA.gc||'?'} recibidos | Prom: ${sA.pgf||'?'} GF / ${sA.pgc||'?'} GC | Clean sheets: ${sA.cs||'?'}
+${m.eqB}: ${sB.gf||'?'} goles marcados, ${sB.gc||'?'} recibidos | Prom: ${sB.pgf||'?'} GF / ${sB.pgc||'?'} GC | Clean sheets: ${sB.cs||'?'}
+
+CORNERS PROMEDIO (últimos 5):
+${m.eqA}: ${co.a||'N/D'} corners/partido | ${m.eqB}: ${co.b||'N/D'} corners/partido
+Total combinado: ${cornTotal} corners/partido
+
+TARJETAS AMARILLAS PROMEDIO (últimos 5):
+${m.eqA}: ${am.a||'N/D'} | ${m.eqB}: ${am.b||'N/D'}
+
+ALINEACIONES (Sofascore):
+${m.eqA} (${al.fA||'formación no confirmada'}): ${titStr(al.tA)}
+${m.eqB} (${al.fB||'formación no confirmada'}): ${titStr(al.tB)}
+
+HISTORIAL DIRECTO (H2H):
+${h2h_str}
+${h2h_det}
+═══════════════════════════════════════
+
+Incluí EXACTAMENTE todo esto en tu respuesta:
+
+1. 📊 CONTEXTO DEL PARTIDO
+   - Competición, fecha, horario y estadio
+   - Árbitro (nombre completo y su estilo: cardista, permisivo, estricto)
+   - Qué se juega cada equipo (motivación, presión, necesidad de puntos)
+
+2. 📈 POSICIONES Y FORMA
+   - Tabla de posiciones actual en la ${m.competicion||'competición'}
+   - Forma de últimos 5 partidos con resultados detallados
+   - Rendimiento local/visitante específico
+
+3. ⚽ ALINEACIONES CONFIRMADAS/PREDICHAS
+   - Formación táctica y titulares por posición
+   - BAJAS CONFIRMADAS (lesiones, suspensiones, dudas) con detalle
+
+4. 📊 ESTADÍSTICAS CLAVE
+   - Basate en los datos de Sofascore que te di
+   - xG estimado, posesión, clean sheets y tendencia defensiva
+
+5. 🎯 ANÁLISIS TÁCTICO
+   - Sistema de juego, fortalezas y debilidades de cada equipo
+   - Jugadores clave y matchups individuales importantes
+
+6. 🚩 ANÁLISIS DE CÓRNERS ⭐
+   **${m.eqA}:** Promedio ${co.a||'N/D'} corners/partido. Tendencia 1er vs 2do tiempo.
+   **${m.eqB}:** Promedio ${co.b||'N/D'} corners/partido. Tendencia 1er vs 2do tiempo.
+   **COMBINADO:** Total ${cornTotal} corners/partido.
+   - % estimado Over 8.5, 9.5, 10.5 corners totales
+   - % estimado Over 4.5 corners al descanso
+   - Mercados recomendados: Over/Under corners 1er tiempo y partido completo
+
+7. ⚽ ANÁLISIS DE GOLES
+   - ${m.eqA} promedia ${sA.pgf||'?'} GF y ${sA.pgc||'?'} GC | ${m.eqB} promedia ${sB.pgf||'?'} GF y ${sB.pgc||'?'} GC
+   - % estimado Over 1.5, 2.5, 3.5 goles
+   - BTTS probabilidad estimada. Minutos donde más marcan.
+
+8. 🟨 ANÁLISIS DE TARJETAS Y ÁRBITRO ⭐
+   - ${m.arbitro ? 'Árbitro: '+m.arbitro+'. Su historial, estilo y promedio de tarjetas.' : 'Árbitro sin confirmar, usar promedio de la competición.'}
+   - ${m.eqA} promedia ${am.a||'N/D'} amarillas | ${m.eqB} promedia ${am.b||'N/D'} amarillas
+   - % estimado Over 3.5, 4.5, 5.5 tarjetas totales
+   - Jugadores propensos a tarjetas de cada equipo
+
+9. 🎯 MERCADOS Y APUESTAS
+   - 1X2, handicap, over/under goles, BTTS, corners, tarjetas
+   - Cuotas aproximadas y seguridad ⭐ del 1 al 5
+
+10. ⚠️ RIESGOS IDENTIFICADOS
+    | Riesgo | Probabilidad | Impacto |
+    |--------|-------------|---------|
+    (3-4 riesgos reales del partido)
+
+11. ✅ VEREDICTO FINAL
+    Tabla resumen con mejores apuestas, cuota estimada, confianza y recomendación.
+
+═══════════════════════════════════════
+🏆 CUADRO FINAL — TOP 3 APUESTAS (cuota ~1.80)
+═══════════════════════════════════════
+| # | Apuesta | Mercado | Cuota ~1.80 | Confianza % | Razonamiento |
+|---|---------|---------|-------------|-------------|--------------|
+| 1 | ...     | ...     | ~1.80       | XX%         | ...          |
+| 2 | ...     | ...     | ~1.80       | XX%         | ...          |
+| 3 | ...     | ...     | ~1.80       | XX%         | ...          |
+
+═══════════════════════════════════════
+🔗 CUADRO PARA COMBINAR — 3 APUESTAS SEGURAS (cuota ~1.50)
+═══════════════════════════════════════
+| # | Apuesta | Mercado | Cuota ~1.50 | Confianza % | Para combinar con |
+|---|---------|---------|-------------|-------------|-------------------|
+| 1 | ...     | ...     | ~1.50       | XX%         | ...               |
+| 2 | ...     | ...     | ~1.50       | XX%         | ...               |
+| 3 | ...     | ...     | ~1.50       | XX%         | ...               |
+
+IMPORTANTE: Usá los datos de Sofascore como base. Si algo no está confirmado, indicá "sin confirmar". No inventes estadísticas. Las cuotas son aproximadas.`;
+}
 
 async function pedirAnalisisIA(r) {
-    const payload = {
-        eqA: r.meta.eqA,
-        eqB: r.meta.eqB,
-        fecha: r.meta.fecha,
-        competicion: r.meta.competicion,
-        estadio: r.meta.estadio,
-        arbitro: r.meta.arbitro,
-        formaA: r.forma.fA.badges,
-        formaB: r.forma.fB.badges,
-        detA: r.forma.fA.detalle,
-        detB: r.forma.fB.detalle,
-        statsA: r.stats.sA,
-        statsB: r.stats.sB,
-        cornersA: r.corners.a,
-        cornersB: r.corners.b,
-        amarillasA: r.amarillas.a,
-        amarillasB: r.amarillas.b,
-        formacionA: r.alin.fA,
-        formacionB: r.alin.fB,
-        titularesA: r.alin.tA,
-        titularesB: r.alin.tB,
-        h2h: r.h2h,
-    };
-
     const loading = document.getElementById('ia-loading');
     const body    = document.getElementById('ia-body');
 
+    if (!KIMI_KEY) {
+        if (loading) loading.style.display = 'none';
+        if (body) { body.style.display='block'; body.innerHTML='<div class="ia-error">⚠️ KIMI_API_KEY no configurada</div>'; }
+        return;
+    }
+
     try {
-        const resp = await fetch('/analisis-ia', {
+        // Llamada DIRECTA al browser → OpenRouter (sin pasar por Render)
+        // Esto evita el WORKER TIMEOUT de 30s de Render free
+        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            headers: {
+                'Authorization': 'Bearer ' + KIMI_KEY,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': window.location.origin,
+            },
+            body: JSON.stringify({
+                model: 'moonshotai/kimi-k2',
+                messages: [{ role: 'user', content: buildPrompt(r) }],
+                temperature: 0.4,
+                max_tokens: 6000,
+                stream: true,
+            }),
         });
 
-        if (!resp.ok) throw new Error('Error ' + resp.status);
+        if (!resp.ok) {
+            const err = await resp.text();
+            throw new Error('OpenRouter ' + resp.status + ': ' + err.slice(0,100));
+        }
 
-        // Leer el stream de a chunks
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         let textoCompleto = '';
 
-        // Mostrar el cuerpo apenas llega el primer chunk
         if (loading) loading.style.display = 'none';
         if (body) { body.style.display = 'block'; body.innerHTML = '<span style="color:#8888aa">▍</span>'; }
 
@@ -633,7 +762,7 @@ async function pedirAnalisisIA(r) {
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-            buffer = lines.pop(); // guardar línea incompleta
+            buffer = lines.pop();
 
             for (const line of lines) {
                 if (!line.startsWith('data: ')) continue;
@@ -641,20 +770,15 @@ async function pedirAnalisisIA(r) {
                 if (dataStr === '[DONE]') break;
                 try {
                     const chunk = JSON.parse(dataStr);
-                    if (chunk.error) {
-                        if (body) body.innerHTML = `<div class="ia-error">⚠️ ${chunk.error}</div>`;
-                        return;
-                    }
-                    if (chunk.t) {
-                        textoCompleto += chunk.t;
-                        // Actualizar en tiempo real con cursor parpadeante
+                    const content = chunk?.choices?.[0]?.delta?.content || '';
+                    if (content) {
+                        textoCompleto += content;
                         if (body) body.innerHTML = markdownToHtml(textoCompleto) + '<span style="color:#a78bfa">▍</span>';
                     }
                 } catch(_) {}
             }
         }
 
-        // Render final sin cursor
         if (body && textoCompleto) body.innerHTML = markdownToHtml(textoCompleto);
         else if (body) body.innerHTML = '<div class="ia-error">⚠️ Sin respuesta del modelo</div>';
 
