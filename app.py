@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, jsonify
-import os, requests, sqlite3, json, time
+import os, requests, sqlite3, json, time, threading
 
 app = Flask(__name__)
 
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY', '')
+SCRAPE_DO_KEY   = os.environ.get('SCRAPE_DO_KEY', '')
 KIMI_API_KEY    = os.environ.get('KIMI_API_KEY', '')
-
-DB_PATH = os.environ.get('DB_PATH', 'historial.db')
+DB_PATH         = os.environ.get('DB_PATH', 'historial.db')
 
 # ── Base de datos ────────────────────────────────────────────────────────────
 def get_db():
@@ -38,19 +38,107 @@ def purge_old():
 
 init_db()
 
-# ── Sofascore proxy ──────────────────────────────────────────────────────────
+# ── Caché en memoria (TTL 5 min) ─────────────────────────────────────────────
+_cache      = {}          # { url: (timestamp, response_bytes, status_code) }
+_cache_lock = threading.Lock()
+CACHE_TTL   = 300         # segundos
+
+def cache_get(url):
+    with _cache_lock:
+        entry = _cache.get(url)
+        if entry and (time.time() - entry[0]) < CACHE_TTL:
+            return entry[1], entry[2]   # (content_bytes, status_code)
+    return None, None
+
+def cache_set(url, content_bytes, status_code):
+    with _cache_lock:
+        _cache[url] = (time.time(), content_bytes, status_code)
+
+# ── Rate limiting (mín. 1 s entre requests reales) ───────────────────────────
+_last_req_time = 0.0
+_rate_lock     = threading.Lock()
+MIN_INTERVAL   = 1.0      # segundos
+
+def rate_limit():
+    global _last_req_time
+    with _rate_lock:
+        wait = MIN_INTERVAL - (time.time() - _last_req_time)
+        if wait > 0:
+            time.sleep(wait)
+        _last_req_time = time.time()
+
+# ── Headers que imitan Chrome en Windows ─────────────────────────────────────
+SF_HEADERS = {
+    'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept':          'application/json, text/plain, */*',
+    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Referer':         'https://www.sofascore.com/',
+    'Origin':          'https://www.sofascore.com',
+    'Cache-Control':   'no-cache',
+    'Sec-Fetch-Dest':  'empty',
+    'Sec-Fetch-Mode':  'cors',
+    'Sec-Fetch-Site':  'same-site',
+    'Connection':      'keep-alive',
+}
+
+# ── Sofascore proxy con fallback chain ───────────────────────────────────────
+class FakeResponse:
+    """Objeto mínimo compatible con requests.Response para el proxy."""
+    def __init__(self, content, status_code):
+        self.content     = content
+        self.status_code = status_code
+
 def sf_get(path):
     sf_url = 'https://api.sofascore.com/api/v1' + path
+
+    # 1. Caché
+    cached_content, cached_status = cache_get(sf_url)
+    if cached_content is not None:
+        return FakeResponse(cached_content, cached_status)
+
+    # 2. Rate limit solo para requests reales
+    rate_limit()
+
+    # 3. Intento directo (gratis, sin proxy)
+    try:
+        r = requests.get(sf_url, headers=SF_HEADERS, timeout=15)
+        if r.status_code == 200:
+            cache_set(sf_url, r.content, r.status_code)
+            return r
+    except Exception:
+        pass
+
+    # 4. Fallback: Scrape.do (1 000 req/mes gratis)
+    if SCRAPE_DO_KEY:
+        try:
+            r = requests.get(
+                'https://api.scrape.do/',
+                params={'token': SCRAPE_DO_KEY, 'url': sf_url},
+                timeout=30,
+            )
+            if r.status_code == 200:
+                cache_set(sf_url, r.content, r.status_code)
+                return r
+        except Exception:
+            pass
+
+    # 5. Fallback final: ScraperAPI (preservar créditos, solo si los anteriores fallan)
     if SCRAPER_API_KEY:
-        r = requests.get('https://api.scraperapi.com',
-            params={'api_key': SCRAPER_API_KEY, 'url': sf_url, 'render': 'false'},
-            timeout=30)
-    else:
-        r = requests.get(sf_url, headers={
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-            'Referer': 'https://www.sofascore.com/',
-        }, timeout=15)
-    return r
+        try:
+            r = requests.get(
+                'https://api.scraperapi.com',
+                params={'api_key': SCRAPER_API_KEY, 'url': sf_url, 'render': 'false'},
+                timeout=30,
+            )
+            if r.status_code == 200:
+                cache_set(sf_url, r.content, r.status_code)
+            return r
+        except Exception as e:
+            return FakeResponse(b'{"error":"scraperapi failed"}', 502)
+
+    # Sin ningún proxy disponible, devolver lo que tengamos
+    return FakeResponse(b'{"error":"no proxy available"}', 503)
 
 # ── Rutas principales ────────────────────────────────────────────────────────
 @app.route('/')
