@@ -277,11 +277,22 @@ document.getElementById('frm').addEventListener('submit', async e => {
         const fecha   = ts ? new Date(ts * 1000).toISOString() : '';
         const arbitro = eventData?.event?.referee?.name || '';
         const estadio = eventData?.event?.venue?.stadium?.name || '';
+        const ciudad  = eventData?.event?.venue?.city?.name || '';
+
+        // Detectar ronda e ida/vuelta desde Sofascore
+        const roundInfo   = evento.roundInfo || {};
+        const rondaNombre = roundInfo.name || '';   // ej: "1st Leg", "2nd Leg", "Round of 16"
+        const rondaNum    = roundInfo.round || '';
+        // Es eliminatoria si tiene nombre de ronda con texto (no solo número)
+        const esEliminatoria = !!rondaNombre && isNaN(rondaNombre);
+        const esIda    = rondaNombre.toLowerCase().includes('1st leg') || rondaNombre.toLowerCase().includes('ida');
+        const esVuelta = rondaNombre.toLowerCase().includes('2nd leg') || rondaNombre.toLowerCase().includes('vuelta');
 
         const resultado = {
             meta: { eqA: eqANom, eqB: eqBNom,
                     competicion: evento.tournament?.name || '',
-                    fecha, estadio, arbitro },
+                    fecha, estadio, arbitro, ciudad,
+                    rondaNombre, rondaNum, esEliminatoria, esIda, esVuelta },
             alin: parseLineups(lineups),
             forma: {
                 fA: forma(lastA?.events, teamAId),
@@ -600,6 +611,38 @@ function buildPrompt(r) {
 
     const cornTotal = co.a && co.b ? (co.a + co.b).toFixed(1) : 'N/D';
 
+    // Bloque de tipo de partido (ida/vuelta/eliminatoria)
+    let tipoPartidoBloque = '';
+    if (m.esEliminatoria) {
+        if (m.esIda) {
+            tipoPartidoBloque = `\n⚠️ TIPO DE PARTIDO: ES PARTIDO DE IDA (hay vuelta pendiente)
+Ronda: ${m.rondaNombre}
+IMPLICACIONES TÁCTICAS: Los equipos pueden especular con el resultado, proteger jugadores de tarjetas y lesiones, buscar no perder en casa más que ganar amplio. El resultado de la ida condiciona completamente la vuelta.
+IMPLICACIONES PARA APUESTAS: Menor número de goles esperado (los equipos son más cautelosos), más posibilidad de empate o victoria mínima, el handicap asiático puede ser más interesante que el 1X2.`;
+        } else if (m.esVuelta) {
+            tipoPartidoBloque = `\n⚠️ TIPO DE PARTIDO: ES PARTIDO DE VUELTA (eliminatoria)
+Ronda: ${m.rondaNombre}
+IMPLICACIONES TÁCTICAS: El resultado de la vuelta se analiza en conjunto con la ida. El equipo que perdió la ida necesita remontar, lo que puede generar más ataques y más goles. Verificá el resultado de la ida en el H2H y calculá quién clasifica con qué resultados.`;
+        } else {
+            tipoPartidoBloque = `\n⚠️ TIPO DE PARTIDO: PARTIDO DE ELIMINATORIA/COPA
+Ronda: ${m.rondaNombre || m.rondaNum}
+IMPLICACIONES: Verificá si es ida, vuelta o partido único eliminatorio. La táctica y las apuestas cambian completamente según el formato.`;
+        }
+    }
+
+    // Bloque de contexto del estadio (ciudad/altura)
+    let contextoCiudad = '';
+    if (m.ciudad) {
+        contextoCiudad = `Ciudad del estadio: ${m.ciudad}`;
+        // Ciudades conocidas por gran altitud (>1500m)
+        const ciudadesAltura = ['la paz', 'quito', 'bogotá', 'bogota', 'cusco', 'cuzco',
+            'potosí', 'potosi', 'oruro', 'huancayo', 'sucre', 'cochabamba', 'medellín', 'medellin'];
+        const ciudadLow = m.ciudad.toLowerCase();
+        if (ciudadesAltura.some(c => ciudadLow.includes(c))) {
+            contextoCiudad += `\n🏔️ ALERTA ALTURA: ${m.ciudad} está a gran altura sobre el nivel del mar. Esto impacta directamente en el ritmo de juego (menor presión), resistencia física de los visitantes no acostumbrados, mayor desgaste, posibles cambios tácticos. El local tiene ventaja significativa por adaptación.`;
+        }
+    }
+
     return `Haceme un análisis profundo del partido ${m.eqA} vs ${m.eqB}.
 
 A continuación tenés todos los datos recopilados de Sofascore para este partido. Usá ESTOS datos como base y complementá con tu conocimiento del fútbol:
@@ -610,7 +653,9 @@ DATOS DEL PARTIDO (fuente: Sofascore)
 Competición: ${m.competicion||'N/D'}
 Fecha: ${m.fecha||'N/D'}
 ${m.estadio ? 'Estadio: '+m.estadio : ''}
+${contextoCiudad ? contextoCiudad : ''}
 ${m.arbitro ? 'Árbitro: '+m.arbitro : 'Árbitro: sin confirmar'}
+${tipoPartidoBloque}
 
 FORMA RECIENTE — ${m.eqA} (últimos 5):
 ${formaStr(fo.fA.badges, fo.fA.detalle)}
@@ -638,12 +683,21 @@ ${h2h_str}
 ${h2h_det}
 ═══════════════════════════════════════
 
+⚠️ ATENCIÓN ESPECIAL ANTES DE ANALIZAR:
+- Si es partido de IDA o VUELTA de una eliminatoria, analizá TODO en función de eso (táctica, apuestas, mercados)
+- Si el estadio está en una ciudad a gran altura (>1500m sobre el nivel del mar), mencionalo y analizá su impacto real en el juego
+- Si hay condiciones climáticas o geográficas especiales del estadio, incluilas
+- NUNCA asumas que es un partido de liga regular sin antes verificar el tipo de competición
+- Usá el H2H para detectar si ya jugaron ida y cuál fue el resultado, para analizar la vuelta correctamente
+
 Incluí EXACTAMENTE todo esto en tu respuesta:
 
 1. 📊 CONTEXTO DEL PARTIDO
    - Competición, fecha, horario y estadio
    - Árbitro (nombre completo y su estilo: cardista, permisivo, estricto)
    - Qué se juega cada equipo (motivación, presión, necesidad de puntos)
+   - Si es ida/vuelta: explicar qué implica tácticamente y para las apuestas
+   - Si el estadio tiene condiciones especiales (altura, clima, superficie): analizarlo
 
 2. 📈 POSICIONES Y FORMA
    - Tabla de posiciones actual en la ${m.competicion||'competición'}
