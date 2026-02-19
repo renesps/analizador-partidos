@@ -499,23 +499,41 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
     try {
         stepM('Buscando partidos de hoy en ' + liga + '...');
 
-        // Próximos eventos de la liga
-        const data = await sfGet('/unique-tournament/' + ligaId + '/events/next/0');
+        // 1. Obtener la season activa (la primera de la lista)
+        const seasonsData = await sfGet('/unique-tournament/' + ligaId + '/seasons');
+        const seasons = seasonsData?.seasons || [];
+        const seasonId = seasons.length ? seasons[0].id : null;
+
+        let allEvents = [];
+
+        if (seasonId) {
+            // 2a. Intentar next/0 con season
+            const nextData = await sfGet('/unique-tournament/' + ligaId + '/season/' + seasonId + '/events/next/0');
+            allEvents = nextData?.events || [];
+
+            // Si viene vacío, probar también la season anterior (a veces hay solapamiento)
+            if (!allEvents.length && seasons.length > 1) {
+                const prevData = await sfGet('/unique-tournament/' + ligaId + '/season/' + seasons[1].id + '/events/next/0');
+                allEvents = prevData?.events || [];
+            }
+        } else {
+            // Fallback: sin season
+            const data = await sfGet('/unique-tournament/' + ligaId + '/events/next/0');
+            allEvents = data?.events || [];
+        }
+
         const todayStr = new Date().toISOString().slice(0,10);
 
-        // Filtrar solo los de hoy (o mañana si no hay hoy) por timestamp
-        const ahora = Date.now() / 1000;
-        const mañana = ahora + 86400;
-
-        let partidos = (data?.events || []).filter(ev => {
+        // Filtrar los de hoy
+        let partidos = allEvents.filter(ev => {
             const ts = ev.startTimestamp || 0;
             const d = new Date(ts * 1000).toISOString().slice(0,10);
             return d === todayStr;
         });
 
-        // Si no hay partidos hoy, mostrar los próximos 10
+        // Si no hay hoy, mostrar los próximos 10 (pueden ser de mañana)
         if (!partidos.length) {
-            partidos = (data?.events || []).slice(0, 10);
+            partidos = allEvents.slice(0, 10);
         }
 
         jornadaEventos = partidos;
