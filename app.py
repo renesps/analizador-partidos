@@ -90,63 +90,31 @@ class FakeResponse:
         self.status_code = status_code
 
 def sf_get(path):
+    """
+    Las llamadas a Sofascore ahora se hacen desde el browser del usuario (IP residencial).
+    Este endpoint /sf queda como fallback server-side por si acaso, pero en condiciones
+    normales ya no se usa — el JS llama directo a api.sofascore.com.
+    """
     sf_url = 'https://api.sofascore.com/api/v1' + path
 
-    # 1. Caché
+    # Caché
     cached_content, cached_status = cache_get(sf_url)
     if cached_content is not None:
-        app.logger.debug('SF CACHE hit: %s', path)
         return FakeResponse(cached_content, cached_status)
 
-    # 2. Rate limit solo para requests reales
     rate_limit()
 
-    # 3. Intento directo (gratis, sin proxy)
     try:
         r = requests.get(sf_url, headers=SF_HEADERS, timeout=15)
         if r.status_code == 200:
             cache_set(sf_url, r.content, r.status_code)
-            app.logger.info('SF DIRECT ok: %s', path)
+            app.logger.info('SF ok: %s', path)
             return r
-        app.logger.warning('SF DIRECT %s: %s', r.status_code, path)
+        app.logger.warning('SF %s: %s', r.status_code, path)
+        return r
     except Exception as e:
-        app.logger.warning('SF DIRECT error: %s | %s', e, path)
-
-    # 4. Fallback: Scrape.do (1 000 req/mes gratis)
-    if SCRAPE_DO_KEY:
-        try:
-            r = requests.get(
-                'https://api.scrape.do/',
-                params={'token': SCRAPE_DO_KEY, 'url': sf_url},
-                timeout=30,
-            )
-            if r.status_code == 200:
-                cache_set(sf_url, r.content, r.status_code)
-                app.logger.info('SF SCRAPE.DO ok: %s', path)
-                return r
-            app.logger.warning('SF SCRAPE.DO %s: %s', r.status_code, path)
-        except Exception as e:
-            app.logger.warning('SF SCRAPE.DO error: %s | %s', e, path)
-
-    # 5. Fallback final: ScraperAPI (preservar créditos, solo si los anteriores fallan)
-    if SCRAPER_API_KEY:
-        try:
-            r = requests.get(
-                'https://api.scraperapi.com',
-                params={'api_key': SCRAPER_API_KEY, 'url': sf_url, 'render': 'false'},
-                timeout=30,
-            )
-            if r.status_code == 200:
-                cache_set(sf_url, r.content, r.status_code)
-            app.logger.info('SF SCRAPERAPI %s: %s', r.status_code, path)
-            return r
-        except Exception as e:
-            app.logger.error('SF SCRAPERAPI error: %s | %s', e, path)
-            return FakeResponse(b'{"error":"scraperapi failed"}', 502)
-
-    # Sin ningún proxy disponible
-    app.logger.error('SF NO PROXY AVAILABLE: %s', path)
-    return FakeResponse(b'{"error":"no proxy available"}', 503)
+        app.logger.error('SF error: %s | %s', e, path)
+        return FakeResponse(b'{"error":"sofascore unavailable"}', 503)
 
 # ── Rutas principales ────────────────────────────────────────────────────────
 @app.route('/')

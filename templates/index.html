@@ -408,14 +408,36 @@ function switchTab(id) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   PROXY CORS → nuestro /sf
+   SOFASCORE — llamada directa desde el browser del usuario (IP residencial)
+   Sofascore tiene CORS abierto (ACAO: *) y solo bloquea IPs de datacenter.
+   El browser del usuario siempre obtiene 200, sin proxies ni créditos.
 ════════════════════════════════════════════════════════════════════════════ */
+const SF_BASE = 'https://api.sofascore.com/api/v1';
+const SF_HDRS = {
+    'Accept':          'application/json, text/plain, */*',
+    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+};
+
+// Caché browser-side: evita requests duplicados dentro del mismo análisis
+const _sfCache = {};
+const SF_CACHE_TTL = 300000; // 5 minutos en ms
+
 async function sfGet(path) {
+    const url = SF_BASE + path;
+
+    // 1. Caché en memoria del browser
+    const cached = _sfCache[url];
+    if (cached && (Date.now() - cached.ts) < SF_CACHE_TTL) return cached.data;
+
+    // 2. Request directo desde el browser (IP residencial del usuario)
     try {
-        const r = await fetch('/sf?path=' + encodeURIComponent(path));
+        const r = await fetch(url, { headers: SF_HDRS });
         if (r.ok) {
             const j = await r.json();
-            if (j && !j.error) return j;
+            if (j && !j.error) {
+                _sfCache[url] = { ts: Date.now(), data: j };
+                return j;
+            }
         }
     } catch(_) {}
     return null;
