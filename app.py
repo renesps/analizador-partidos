@@ -29,6 +29,13 @@ def init_db():
         ''')
         conn.commit()
 
+def purge_old():
+    """Borra entradas con más de 24 horas de antigüedad."""
+    cutoff = int(time.time()) - 86400
+    with get_db() as conn:
+        conn.execute('DELETE FROM historial WHERE fecha_analisis < ?', (cutoff,))
+        conn.commit()
+
 init_db()
 
 # ── Sofascore proxy ──────────────────────────────────────────────────────────
@@ -65,6 +72,7 @@ def proxy():
 @app.route('/historial', methods=['GET'])
 def historial_list():
     """Devuelve la lista de análisis guardados (sin el texto completo de IA)."""
+    purge_old()
     try:
         with get_db() as conn:
             rows = conn.execute('''
