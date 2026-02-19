@@ -606,12 +606,18 @@ async function pedirAnalisisIA(r) {
     };
 
     try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 200000); // 200 segundos
         const resp = await fetch('/analisis-ia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controller.signal
         });
-        const data = await resp.json();
+        clearTimeout(timer);
+        const text = await resp.text();
+        if (!text) throw new Error('Respuesta vacía del servidor');
+        const data = JSON.parse(text);
 
         const loading = document.getElementById('ia-loading');
         const body    = document.getElementById('ia-body');

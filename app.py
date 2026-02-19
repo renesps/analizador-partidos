@@ -242,12 +242,20 @@ IMPORTANTE:
                 'temperature': 0.4,
                 'max_tokens': 6000,
             },
-            timeout=60
+            timeout=180
         )
+        # Verificar que la respuesta tiene contenido antes de parsear JSON
+        if not r.content:
+            return jsonify({'error': 'Respuesta vacía de la API'}), 502
         data = r.json()
         if r.status_code != 200:
             return jsonify({'error': data.get('error', {}).get('message', 'Error de API')}), 502
-        texto = data['choices'][0]['message']['content']
+        choices = data.get('choices', [])
+        if not choices:
+            return jsonify({'error': 'Sin respuesta del modelo'}), 502
+        texto = choices[0].get('message', {}).get('content', '')
+        if not texto:
+            return jsonify({'error': 'Respuesta vacía del modelo'}), 502
         return jsonify({'analisis': texto})
     except Exception as e:
         return jsonify({'error': str(e)}), 502
