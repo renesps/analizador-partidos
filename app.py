@@ -127,30 +127,48 @@ class FakeResponse:
 
 def sf_get(path):
     """
-    Las llamadas a Sofascore ahora se hacen desde el browser del usuario (IP residencial).
-    Este endpoint /sf queda como fallback server-side por si acaso, pero en condiciones
-    normales ya no se usa — el JS llama directo a api.sofascore.com.
+    Proxy server-side para Sofascore.
+    Intenta directo primero; si da 403 (IP datacenter bloqueada), usa ScraperAPI como fallback.
     """
     sf_url = 'https://api.sofascore.com/api/v1' + path
 
-    # Caché
+    # 1. Caché
     cached_content, cached_status = cache_get(sf_url)
     if cached_content is not None:
         return FakeResponse(cached_content, cached_status)
 
     rate_limit()
 
+    # 2. Intento directo
     try:
         r = requests.get(sf_url, headers=SF_HEADERS, timeout=15)
         if r.status_code == 200:
             cache_set(sf_url, r.content, r.status_code)
-            app.logger.info('SF ok: %s', path)
+            app.logger.info('SF directo ok: %s', path)
             return r
-        app.logger.warning('SF %s: %s', r.status_code, path)
-        return r
+        app.logger.warning('SF directo %s: %s', r.status_code, path)
     except Exception as e:
-        app.logger.error('SF error: %s | %s', e, path)
-        return FakeResponse(b'{"error":"sofascore unavailable"}', 503)
+        app.logger.error('SF directo error: %s | %s', e, path)
+
+    # 3. Fallback: ScraperAPI (IPs residenciales, bypasea bloqueo de datacenter)
+    if SCRAPER_API_KEY:
+        try:
+            params = {
+                'api_key': SCRAPER_API_KEY,
+                'url': sf_url,
+                'keep_headers': 'true',
+            }
+            r2 = requests.get('http://api.scraperapi.com', params=params,
+                              headers=SF_HEADERS, timeout=25)
+            if r2.status_code == 200:
+                cache_set(sf_url, r2.content, 200)
+                app.logger.info('SF via ScraperAPI ok: %s', path)
+                return r2
+            app.logger.warning('ScraperAPI %s: %s', r2.status_code, path)
+        except Exception as e:
+            app.logger.error('ScraperAPI error: %s | %s', e, path)
+
+    return FakeResponse(b'{"error":"sofascore unavailable"}', 503)
 
 # ── Rutas principales ────────────────────────────────────────────────────────
 @app.route('/')
