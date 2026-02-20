@@ -442,6 +442,19 @@ async function sfGet(path) {
             }
         }
     } catch(_) {}
+
+    // 3. Fallback: proxy del servidor Flask (si el directo da 403 por falta de cookies)
+    try {
+        const r2 = await fetch('/sf?path=' + encodeURIComponent(path));
+        if (r2.ok) {
+            const j2 = await r2.json();
+            if (j2 && !j2.error) {
+                _sfCache[url] = { ts: Date.now(), data: j2 };
+                return j2;
+            }
+        }
+    } catch(_) {}
+
     return null;
 }
 
