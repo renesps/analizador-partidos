@@ -431,9 +431,9 @@ async function sfGet(path) {
     const cached = _sfCache[url];
     if (cached && (Date.now() - cached.ts) < SF_CACHE_TTL) return cached.data;
 
-    // 2. Request directo desde el browser (IP residencial del usuario)
+    // 2. Request directo desde el browser con credentials (envía cookies de sofascore.com si existen)
     try {
-        const r = await fetch(url, { headers: SF_HDRS });
+        const r = await fetch(url, { headers: SF_HDRS, credentials: 'include' });
         if (r.ok) {
             const j = await r.json();
             if (j && !j.error) {
@@ -546,6 +546,22 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
         // Filtramos por uniqueTournament.id === ligaId para obtener partidos de hoy
         let partidos = [];
         const schedData = await sfGet('/sport/football/scheduled-events/' + todayStr);
+
+        // Si schedData es null, Sofascore bloqueó ambos intentos (browser + servidor)
+        // Esto pasa en modo incógnito sin cookies de sofascore.com
+        if (!schedData) {
+            document.getElementById('listaJornada').style.display = 'block';
+            document.getElementById('matchListUI').innerHTML = `
+                <li style="padding:16px;color:#f0c040;font-size:14px;list-style:none;line-height:1.6">
+                    ⚠️ <strong>Sofascore bloqueó la conexión</strong><br>
+                    Esto ocurre en modo incógnito o sin haber visitado sofascore.com antes.<br><br>
+                    <strong>Solución:</strong> Abrí el app en una ventana normal (no incógnito)
+                    o visitá <a href="https://www.sofascore.com" target="_blank" style="color:#4a9eff">www.sofascore.com</a>
+                    una vez y volvé a intentar.
+                </li>`;
+            return;
+        }
+
         if (schedData?.events?.length) {
             partidos = schedData.events.filter(ev =>
                 ev.tournament?.uniqueTournament?.id === ligaId
