@@ -416,6 +416,8 @@ const SF_BASE = 'https://api.sofascore.com/api/v1';
 const SF_HDRS = {
     'Accept':          'application/json, text/plain, */*',
     'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+    'Referer':         'https://www.sofascore.com/',
+    'Origin':          'https://www.sofascore.com',
 };
 
 // Caché browser-side: evita requests duplicados dentro del mismo análisis
