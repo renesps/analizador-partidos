@@ -431,9 +431,9 @@ async function sfGet(path) {
     const cached = _sfCache[url];
     if (cached && (Date.now() - cached.ts) < SF_CACHE_TTL) return cached.data;
 
-    // 2. Request directo desde el browser con credentials (envía cookies de sofascore.com si existen)
+    // 2. Request directo desde el browser (IP residencial del usuario)
     try {
-        const r = await fetch(url, { headers: SF_HDRS, credentials: 'include' });
+        const r = await fetch(url, { headers: SF_HDRS });
         if (r.ok) {
             const j = await r.json();
             if (j && !j.error) {
