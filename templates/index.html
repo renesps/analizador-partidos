@@ -611,7 +611,17 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
 
         jornadaEventos = partidos;
         jornadaSeleccionados.clear();
-        renderListaJornada(liga, partidos);
+        // Detectar si los partidos son de hoy o del fallback
+        const _todayCheck = new Date();
+        const _todayStrCheck = _todayCheck.getFullYear() + '-' +
+            String(_todayCheck.getMonth()+1).padStart(2,'0') + '-' +
+            String(_todayCheck.getDate()).padStart(2,'0');
+        const sonDeHoy = partidos.length > 0 && partidos.every(ev => {
+            const d = new Date((ev.startTimestamp||0)*1000);
+            const dStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+            return dStr === _todayStrCheck;
+        });
+        renderListaJornada(liga, partidos, sonDeHoy);
 
     } catch(err) {
         alert('Error al buscar partidos: ' + err.message);
@@ -621,7 +631,7 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
     }
 });
 
-function renderListaJornada(liga, partidos) {
+function renderListaJornada(liga, partidos, sonDeHoy) {
     document.getElementById('ligaJornadaTitulo').textContent = liga + ' — Partidos disponibles (' + partidos.length + ')';
 
     const ul = document.getElementById('matchListUI');
@@ -633,12 +643,29 @@ function renderListaJornada(liga, partidos) {
         return;
     }
 
+    // Banner cuando no hay partidos hoy y se muestra el fallback
+    if (!sonDeHoy) {
+        const fechaProx = new Date(partidos[0].startTimestamp * 1000).toLocaleDateString('es-AR', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        });
+        const banner = document.createElement('li');
+        banner.style.cssText = 'padding:10px 16px;background:#2a2a1a;border-left:3px solid #f0c040;color:#f0c040;font-size:13px;list-style:none;border-radius:4px;margin-bottom:4px';
+        banner.textContent = '⚠️ No hay partidos hoy. Mostrando próximos partidos: ' + fechaProx;
+        ul.appendChild(banner);
+    }
+
     partidos.forEach((ev, idx) => {
         const home = ev.homeTeam?.name || '?';
         const away = ev.awayTeam?.name || '?';
         const ts   = ev.startTimestamp;
         const hora = ts ? new Date(ts * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--';
         const ronda = ev.roundInfo?.name || (ev.roundInfo?.round ? 'Fecha ' + ev.roundInfo.round : '');
+
+        // Mostrar fecha del partido si no son de hoy (pueden ser de distintos días en el fallback)
+        let fechaLabel = '';
+        if (!sonDeHoy && ts) {
+            fechaLabel = new Date(ts * 1000).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ';
+        }
 
         const li = document.createElement('li');
         li.className = 'match-item';
@@ -649,7 +676,7 @@ function renderListaJornada(liga, partidos) {
                 <div class="match-item-name">${home} <span style="color:#aaa">vs</span> ${away}</div>
                 <div class="match-item-meta">${ronda}</div>
             </div>
-            <div class="match-item-hora">${hora}</div>
+            <div class="match-item-hora">${fechaLabel}${hora}</div>
         `;
         li.onclick = (e) => {
             if (e.target.type !== 'checkbox') {
