@@ -523,84 +523,66 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
     try {
         stepM('Buscando partidos de hoy en ' + liga + '...');
 
-        // 1. Obtener la season activa (la primera de la lista)
-        const seasonsData = await sfGet('/unique-tournament/' + ligaId + '/seasons');
-        const seasons = seasonsData?.seasons || [];
-        const seasonId = seasons.length ? seasons[0].id : null;
-
-        let allEvents = [];
-
-        if (seasonId) {
-            // 2a. Pedir next/0, next/1, last/0 y last/1 en paralelo:
-            // - next/* = partidos que aún no empezaron
-            // - last/* = partidos que ya empezaron o terminaron hoy
-            // Necesario para ver la jornada completa (no solo los que faltan)
-            const base = '/unique-tournament/' + ligaId + '/season/' + seasonId + '/events/';
-            const [next0, next1, last0, last1] = await Promise.all([
-                sfGet(base + 'next/0'),
-                sfGet(base + 'next/1'),
-                sfGet(base + 'last/0'),
-                sfGet(base + 'last/1'),
-            ]);
-            allEvents = [
-                ...(last1?.events || []),  // partidos ya jugados (página 2)
-                ...(last0?.events || []),  // partidos ya jugados (página 1)
-                ...(next0?.events || []),  // partidos próximos (página 1)
-                ...(next1?.events || []),  // partidos próximos (página 2)
-            ];
-
-            // Si sigue vacío, probar la season anterior (solapamiento de temporadas)
-            if (!allEvents.length && seasons.length > 1) {
-                const base2 = '/unique-tournament/' + ligaId + '/season/' + seasons[1].id + '/events/';
-                const [p0, p1, pl0, pl1] = await Promise.all([
-                    sfGet(base2 + 'next/0'), sfGet(base2 + 'next/1'),
-                    sfGet(base2 + 'last/0'), sfGet(base2 + 'last/1'),
-                ]);
-                allEvents = [
-                    ...(pl1?.events || []), ...(pl0?.events || []),
-                    ...(p0?.events || []),  ...(p1?.events || []),
-                ];
-            }
-        } else {
-            // Fallback: sin season
-            const base = '/unique-tournament/' + ligaId + '/events/';
-            const [p0, p1, pl0, pl1] = await Promise.all([
-                sfGet(base + 'next/0'), sfGet(base + 'next/1'),
-                sfGet(base + 'last/0'), sfGet(base + 'last/1'),
-            ]);
-            allEvents = [
-                ...(pl1?.events || []), ...(pl0?.events || []),
-                ...(p0?.events || []),  ...(p1?.events || []),
-            ];
-        }
-
-        // Deduplicar por id (por si hay solapamiento entre páginas)
-        const _seen = new Set();
-        allEvents = allEvents.filter(ev => {
-            if (_seen.has(ev.id)) return false;
-            _seen.add(ev.id); return true;
-        });
-
-        // Ordenar por timestamp ascendente (last/0 y next/0 vienen mezclados)
-        allEvents.sort((a, b) => (a.startTimestamp || 0) - (b.startTimestamp || 0));
-
-        // Filtrar por hoy — usar fecha LOCAL (no UTC) para evitar edge cases de timezone
+        // Fecha de hoy en formato YYYY-MM-DD (local del browser)
         const _now = new Date();
         const todayStr = _now.getFullYear() + '-' +
             String(_now.getMonth() + 1).padStart(2, '0') + '-' +
             String(_now.getDate()).padStart(2, '0');
 
-        let partidos = allEvents.filter(ev => {
-            const ts = ev.startTimestamp || 0;
-            const d = new Date(ts * 1000);
-            const dStr = d.getFullYear() + '-' +
-                String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                String(d.getDate()).padStart(2, '0');
-            return dStr === todayStr;
-        });
+        // ── PASO 1: scheduled-events de hoy (no requiere cookies ni sesión) ──
+        // Filtramos por uniqueTournament.id === ligaId para obtener partidos de hoy
+        let partidos = [];
+        const schedData = await sfGet('/sport/football/scheduled-events/' + todayStr);
+        if (schedData?.events?.length) {
+            partidos = schedData.events.filter(ev =>
+                ev.tournament?.uniqueTournament?.id === ligaId
+            );
+            // Ordenar por hora
+            partidos.sort((a, b) => (a.startTimestamp || 0) - (b.startTimestamp || 0));
+        }
 
-        // Si no hay hoy, mostrar los 10 más cercanos a ahora (próximos primero, recientes después)
+        // ── PASO 2: si no hay partidos hoy, buscar próximos via season ──
+        let sonDeHoy = partidos.length > 0;
         if (!partidos.length) {
+            stepM('No hay partidos hoy, buscando próximos...');
+            const seasonsData = await sfGet('/unique-tournament/' + ligaId + '/seasons');
+            const seasons = seasonsData?.seasons || [];
+            const seasonId = seasons.length ? seasons[0].id : null;
+
+            let allEvents = [];
+            if (seasonId) {
+                const base = '/unique-tournament/' + ligaId + '/season/' + seasonId + '/events/';
+                const [next0, next1, last0, last1] = await Promise.all([
+                    sfGet(base + 'next/0'), sfGet(base + 'next/1'),
+                    sfGet(base + 'last/0'), sfGet(base + 'last/1'),
+                ]);
+                allEvents = [
+                    ...(last1?.events || []), ...(last0?.events || []),
+                    ...(next0?.events || []), ...(next1?.events || []),
+                ];
+                // Si sigue vacío, probar season anterior
+                if (!allEvents.length && seasons.length > 1) {
+                    const base2 = '/unique-tournament/' + ligaId + '/season/' + seasons[1].id + '/events/';
+                    const [p0, p1, pl0, pl1] = await Promise.all([
+                        sfGet(base2 + 'next/0'), sfGet(base2 + 'next/1'),
+                        sfGet(base2 + 'last/0'), sfGet(base2 + 'last/1'),
+                    ]);
+                    allEvents = [
+                        ...(pl1?.events || []), ...(pl0?.events || []),
+                        ...(p0?.events || []),  ...(p1?.events || []),
+                    ];
+                }
+            }
+
+            // Deduplicar y ordenar
+            const _seen = new Set();
+            allEvents = allEvents.filter(ev => {
+                if (_seen.has(ev.id)) return false;
+                _seen.add(ev.id); return true;
+            });
+            allEvents.sort((a, b) => (a.startTimestamp || 0) - (b.startTimestamp || 0));
+
+            // Mostrar próximos (futuros primero, luego recientes)
             const ahoraSec = Date.now() / 1000;
             const futuros = allEvents
                 .filter(ev => (ev.startTimestamp || 0) >= ahoraSec)
@@ -609,20 +591,11 @@ document.getElementById('frmMulti').addEventListener('submit', async e => {
                 .filter(ev => (ev.startTimestamp || 0) < ahoraSec)
                 .sort((a, b) => b.startTimestamp - a.startTimestamp);
             partidos = [...futuros, ...pasados].slice(0, 10);
+            sonDeHoy = false;
         }
 
         jornadaEventos = partidos;
         jornadaSeleccionados.clear();
-        // Detectar si los partidos son de hoy o del fallback
-        const _todayCheck = new Date();
-        const _todayStrCheck = _todayCheck.getFullYear() + '-' +
-            String(_todayCheck.getMonth()+1).padStart(2,'0') + '-' +
-            String(_todayCheck.getDate()).padStart(2,'0');
-        const sonDeHoy = partidos.length > 0 && partidos.every(ev => {
-            const d = new Date((ev.startTimestamp||0)*1000);
-            const dStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-            return dStr === _todayStrCheck;
-        });
         renderListaJornada(liga, partidos, sonDeHoy);
 
     } catch(err) {
