@@ -316,6 +316,80 @@
         .save-btn:hover { background: rgba(34,197,94,0.14); transform: none; box-shadow: none; }
         .save-btn.saved { background: rgba(34,197,94,0.14); cursor: default; opacity: 0.7; }
 
+        /* ── Fase 2: Tracker de rendimiento ── */
+        .tracker-box {
+            margin: 0 0 16px;
+            min-height: 0;
+        }
+        .tracker-hint { font-size: 11px; color: #3d3d5a; font-style: italic; }
+        .tracker-stats {
+            display: flex; align-items: center; gap: 0;
+            background: #0d0e1a; border: 1px solid #252638; border-radius: 10px;
+            padding: 12px 0; overflow: hidden;
+        }
+        .tracker-stat { flex: 1; text-align: center; padding: 0 12px; }
+        .tracker-num  { display: block; font-size: 22px; font-weight: 800; color: #eaeaf5; letter-spacing: -0.5px; line-height: 1.1; }
+        .tracker-lbl  { display: block; font-size: 10px; color: #5a5a78; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+        .tracker-sep  { width: 1px; background: #252638; align-self: stretch; }
+
+        /* ── Resultado real badges ── */
+        .res-badge   { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; letter-spacing: .3px; cursor: default; }
+        .res-local   { background: rgba(74,222,128,.12); color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
+        .res-empate  { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.3); }
+        .res-visit   { background: rgba(248,113,113,.12); color: #f87171; border: 1px solid rgba(248,113,113,.3); }
+        .res-pending { background: rgba(124,109,234,.12); color: #9d8ef5; border: 1px dashed rgba(124,109,234,.4); cursor: pointer; }
+        .res-pending:hover { background: rgba(124,109,234,.2); }
+
+        /* ── Popover resultado rápido ── */
+        .res-popover {
+            position: absolute; background: #1a1b2a; border: 1px solid #7c6dea;
+            border-radius: 10px; padding: 10px 12px; z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,.5);
+            margin-top: 4px;
+        }
+        .res-pop-title { font-size: 11px; color: #5a5a78; font-weight: 600; margin-bottom: 8px; }
+        .res-pop-btns  { display: flex; gap: 6px; }
+        .res-pop-btns button {
+            background: #252638; color: #eaeaf5; border: 1px solid #3d3d5a;
+            border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
+            transition: background .12s;
+        }
+        .res-pop-btns button:hover { background: #7c6dea; border-color: #7c6dea; }
+
+        /* ── Card resultado en detalle ── */
+        .card-resultado h2 { margin-bottom: 12px; }
+        .res-selector { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .res-btn {
+            flex: 1; background: #1a1b2a; color: #9d8ef5; border: 1px solid #252638;
+            border-radius: 8px; padding: 9px 12px; font-size: 12px; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; text-align: center;
+        }
+        .res-btn:hover { border-color: #7c6dea; background: #1e2038; }
+        .res-btn-active { background: #7c6dea !important; color: #fff !important; border-color: #7c6dea !important; }
+        .res-confirmado { font-size: 12px; color: #9d8ef5; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .res-hint       { font-size: 11px; color: #3d3d5a; font-style: italic; margin-bottom: 4px; }
+
+        /* ── Notas personales ── */
+        .notas-input {
+            width: 100%; min-height: 80px; background: #0d0e1a; border: 1px solid #252638;
+            border-radius: 8px; padding: 10px 12px; color: #eaeaf5; font-family: 'Inter', sans-serif;
+            font-size: 13px; resize: vertical; margin: 10px 0 8px; line-height: 1.5;
+            transition: border-color .15s;
+        }
+        .notas-input:focus { outline: none; border-color: #7c6dea; box-shadow: 0 0 0 3px rgba(124,109,234,.15); }
+        .notas-input::placeholder { color: #3d3d5a; }
+        .btn-notas {
+            background: rgba(124,109,234,.15); color: #9d8ef5; border: 1px solid rgba(124,109,234,.35);
+            border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif; transition: background .15s;
+        }
+        .btn-notas:hover { background: rgba(124,109,234,.25); }
+
+        /* ── hist-item — posición relativa para popover ── */
+        .hist-item { position: relative; }
+        .hist-item-actions { position: relative; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
         /* ── xG Card ── */
         .card-xg .sval, .xg-combined { color: #a78bfa; font-weight: 700; }
 
@@ -513,7 +587,8 @@
     <div class="tab-panel" id="tab-historial">
         <div class="card" id="histListCard">
             <h2 id="histTitulo">📁 Recientes (0/5)</h2>
-            <p style="font-size:12px; color:#5a5a78; margin: -8px 0 14px; font-weight:500;">Los últimos 5 análisis se guardan automáticamente en este dispositivo</p>
+            <p style="font-size:12px; color:#5a5a78; margin: -8px 0 10px; font-weight:500;">Los últimos 5 análisis se guardan automáticamente en este dispositivo</p>
+            <div id="trackerBox" class="tracker-box"></div>
             <div id="histListContent">
                 <div class="hist-empty">Cargando...</div>
             </div>
@@ -1861,47 +1936,132 @@ function procesarMarkdown(text) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   HISTORIAL — localStorage (últimos 5 automáticos)
+   HISTORIAL — localStorage (últimos 5 automáticos) · Fase 2
 ════════════════════════════════════════════════════════════════════════════ */
 
 const HIST_KEY = 'historial_auto';
 const HIST_MAX = 5;
 
+// ── Helpers de acceso a localStorage ──────────────────────────────────────
+function histGetAll() {
+    try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(_) { return []; }
+}
+function histSaveAll(lista) {
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(lista)); } catch(e) { console.warn(e); }
+}
+function histUpdate(id, patch) {
+    const lista = histGetAll();
+    const idx   = lista.findIndex(h => h.id === id);
+    if (idx === -1) return;
+    lista[idx] = { ...lista[idx], ...patch };
+    histSaveAll(lista);
+}
+
+// ── Auto-guardar al terminar análisis IA ──────────────────────────────────
 function autoGuardarAnalisis(resultado, kimiText) {
     if (!resultado || !kimiText) return;
     const entrada = {
-        id: Date.now(),
-        partido: resultado.meta.eqA + ' vs ' + resultado.meta.eqB,
-        competicion: resultado.meta.competicion || '',
+        id:            Date.now(),
+        partido:       resultado.meta.eqA + ' vs ' + resultado.meta.eqB,
+        competicion:   resultado.meta.competicion || '',
         fecha_partido: resultado.meta.fecha || '',
         fecha_analisis: Date.now(),
-        stats_json: resultado,
-        analisis_ia: kimiText,
+        stats_json:    resultado,
+        analisis_ia:   kimiText,
+        // Fase 2: campos extra (vacíos al crear)
+        resultado_real: null,  // 'local'|'empate'|'visitante'|null
+        notas:          '',
     };
     try {
-        const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+        const hist = histGetAll();
         hist.unshift(entrada);
-        localStorage.setItem(HIST_KEY, JSON.stringify(hist.slice(0, HIST_MAX)));
+        histSaveAll(hist.slice(0, HIST_MAX));
     } catch(e) { console.warn('autoGuardar error:', e); }
 }
 
+// ── Tracker: calcula estadísticas de rendimiento ──────────────────────────
+function calcTracker() {
+    const lista = histGetAll().filter(h => h.resultado_real);
+    if (!lista.length) return null;
+
+    // Para el tracker contamos si la recomendación top de la IA coincidió con el resultado real.
+    // Como proxy simple: la IA en su texto menciona el equipo ganador / empate como primera apuesta.
+    // Usamos el campo resultado_real para calcular métricas generales.
+    const total    = lista.length;
+    const conRes   = lista.filter(h => h.resultado_real).length;
+
+    // "Acierto IA" = la primera recomendación del análisis coincide con resultado real.
+    // Dado que no parseamos el texto de la IA, usamos las recomendaciones automáticas (stats_json).
+    let aciertos = 0;
+    for (const h of lista) {
+        if (!h.stats_json) continue;
+        const recs   = recomendaciones(h.stats_json);
+        const top    = (recs[0]?.tipo || '').toLowerCase();
+        const res    = h.resultado_real;
+        const eqA    = (h.stats_json?.meta?.eqA || '').toLowerCase();
+        // Mapeo simple: si la rec dice "local gana" o el nombre del equipo A
+        const recLocal     = top.includes('local') || top.includes(eqA.slice(0,4));
+        const recEmpate    = top.includes('empate');
+        const recVisitante = top.includes('visitante') || (!recLocal && !recEmpate);
+        if ((res === 'local'     && recLocal)     ||
+            (res === 'empate'    && recEmpate)    ||
+            (res === 'visitante' && recVisitante)) aciertos++;
+    }
+
+    const pct = total ? Math.round((aciertos / total) * 100) : 0;
+    return { total, conRes, aciertos, pct };
+}
+
+// ── Renderizar tracker en el header del Tab 3 ─────────────────────────────
+function renderTracker() {
+    const el = document.getElementById('trackerBox');
+    if (!el) return;
+    const t = calcTracker();
+    if (!t || !t.conRes) {
+        el.innerHTML = '<span class="tracker-hint">Marcá resultados reales para ver tu rendimiento</span>';
+        return;
+    }
+    const color = t.pct >= 60 ? '#4ade80' : t.pct >= 40 ? '#fbbf24' : '#f87171';
+    el.innerHTML = `
+        <div class="tracker-stats">
+            <div class="tracker-stat">
+                <span class="tracker-num" style="color:${color}">${t.pct}%</span>
+                <span class="tracker-lbl">Acierto IA</span>
+            </div>
+            <div class="tracker-sep"></div>
+            <div class="tracker-stat">
+                <span class="tracker-num">${t.aciertos}/${t.conRes}</span>
+                <span class="tracker-lbl">Con resultado</span>
+            </div>
+            <div class="tracker-sep"></div>
+            <div class="tracker-stat">
+                <span class="tracker-num">${t.total}</span>
+                <span class="tracker-lbl">Analizados</span>
+            </div>
+        </div>`;
+}
+
+// ── Lista principal del historial ─────────────────────────────────────────
 function loadHistorial() {
     const content = document.getElementById('histListContent');
     const detail  = document.getElementById('histDetail');
     detail.style.display = 'none';
     document.getElementById('histListCard').style.display = 'block';
 
-    let lista = [];
-    try { lista = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(_) {}
+    const lista = histGetAll();
 
-    // Actualizar título con contador
     const titulo = document.getElementById('histTitulo');
     if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/${HIST_MAX})`;
+
+    renderTracker();
 
     if (!lista.length) {
         content.innerHTML = '<div class="hist-empty">Aún no hay análisis guardados.<br>Analizá un partido en la pestaña <strong>Partido</strong> y aparecerá aquí automáticamente.</div>';
         return;
     }
+
+    const BADGE = { local: '🏠 Local', empate: '🤝 Empate', visitante: '✈️ Visitante' };
+    const BCLS  = { local: 'res-local', empate: 'res-empate', visitante: 'res-visit' };
 
     content.innerHTML = lista.map(item => {
         const fecha = item.fecha_analisis
@@ -1910,32 +2070,67 @@ function loadHistorial() {
         const fechaPartido = item.fecha_partido
             ? new Date(item.fecha_partido).toLocaleDateString('es-ES', { dateStyle: 'medium' })
             : '';
+        const resBadge = item.resultado_real
+            ? `<span class="res-badge ${BCLS[item.resultado_real]}">${BADGE[item.resultado_real]}</span>`
+            : `<span class="res-badge res-pending" onclick="event.stopPropagation(); abrirResultado(${item.id}, this)">+ Resultado</span>`;
         return `<div class="hist-item" onclick="verHistorial(${item.id})">
             <div class="hist-item-info">
                 <div class="hist-item-name">${item.partido}</div>
                 <div class="hist-item-meta">${item.competicion || ''}${fechaPartido ? ' · ' + fechaPartido : ''} · ${fecha}</div>
             </div>
             <div class="hist-item-actions">
+                ${resBadge}
                 <button class="btn-sm btn-danger" onclick="event.stopPropagation(); borrarHistorial(${item.id})">🗑️</button>
             </div>
         </div>`;
     }).join('');
 }
 
+// ── Popover inline para marcar resultado real ─────────────────────────────
+function abrirResultado(id, btn) {
+    // Si ya hay un popover abierto, cerrarlo
+    document.querySelectorAll('.res-popover').forEach(p => p.remove());
+
+    const pop = document.createElement('div');
+    pop.className = 'res-popover';
+    pop.innerHTML = `
+        <div class="res-pop-title">¿Cuál fue el resultado?</div>
+        <div class="res-pop-btns">
+            <button onclick="guardarResultado(${id},'local')">🏠 Local</button>
+            <button onclick="guardarResultado(${id},'empate')">🤝 Empate</button>
+            <button onclick="guardarResultado(${id},'visitante')">✈️ Visitante</button>
+        </div>`;
+    btn.parentNode.insertBefore(pop, btn.nextSibling);
+
+    // Cerrar al hacer click fuera
+    setTimeout(() => document.addEventListener('click', function h(e) {
+        if (!pop.contains(e.target)) { pop.remove(); document.removeEventListener('click', h); }
+    }), 50);
+}
+
+function guardarResultado(id, resultado) {
+    histUpdate(id, { resultado_real: resultado });
+    document.querySelectorAll('.res-popover').forEach(p => p.remove());
+    loadHistorial();
+}
+
+// ── Detalle de un análisis ────────────────────────────────────────────────
 function verHistorial(id) {
-    let lista = [];
-    try { lista = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(_) {}
-    const item = lista.find(h => h.id === id);
+    const lista = histGetAll();
+    const item  = lista.find(h => h.id === id);
     if (!item) return;
 
     document.getElementById('histListCard').style.display = 'none';
-    const detail = document.getElementById('histDetail');
+    const detail  = document.getElementById('histDetail');
     const content = document.getElementById('histDetailContent');
     detail.style.display = 'block';
 
     const fecha = item.fecha_analisis
         ? new Date(item.fecha_analisis).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
         : '—';
+
+    const BADGE = { local: '🏠 Local ganó', empate: '🤝 Empate', visitante: '✈️ Visitante ganó' };
+    const BCLS  = { local: 'res-local', empate: 'res-empate', visitante: 'res-visit' };
 
     let html = `<div class="card match-header">
         <div class="vs-row">
@@ -1945,7 +2140,22 @@ function verHistorial(id) {
         <span class="source-ok">📁 Recientes</span>
     </div>`;
 
-    // Renderizar stats si existen
+    // ── Resultado real + notas ──
+    const resActual = item.resultado_real;
+    html += `<div class="card card-resultado">
+        <h2>Resultado real del partido</h2>
+        <div class="res-selector">
+            <button class="res-btn ${resActual==='local'?'res-btn-active':''}"     onclick="guardarResultadoDetalle(${item.id},'local',     this)">🏠 Local</button>
+            <button class="res-btn ${resActual==='empate'?'res-btn-active':''}"    onclick="guardarResultadoDetalle(${item.id},'empate',    this)">🤝 Empate</button>
+            <button class="res-btn ${resActual==='visitante'?'res-btn-active':''}" onclick="guardarResultadoDetalle(${item.id},'visitante', this)">✈️ Visitante</button>
+        </div>
+        ${resActual ? `<div class="res-confirmado">Resultado registrado: <span class="res-badge ${BCLS[resActual]}">${BADGE[resActual]}</span></div>` : '<div class="res-hint">Marcá el resultado real para actualizar tu tracker de aciertos</div>'}
+        <h2 style="margin-top:18px">Notas personales</h2>
+        <textarea class="notas-input" id="notasInput_${item.id}" placeholder="Aposté Over 2.5 a 1.85... resultado: ganado ✓">${item.notas || ''}</textarea>
+        <button class="btn-notas" onclick="guardarNotas(${item.id})">💾 Guardar notas</button>
+    </div>`;
+
+    // ── Stats ──
     if (item.stats_json && typeof item.stats_json === 'object') {
         const r = item.stats_json;
         const m = r.meta, fo = r.forma, co = r.corners, am = r.amarillas;
@@ -1964,7 +2174,7 @@ function verHistorial(id) {
         }
     }
 
-    // Mostrar análisis IA
+    // ── Análisis IA ──
     if (item.analisis_ia) {
         html += `<div class="ia-card">
             <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2 · Auto-guardado</span></h2>
@@ -1975,17 +2185,42 @@ function verHistorial(id) {
     content.innerHTML = html;
 }
 
+// Guardar resultado desde la vista de detalle (resalta botón activo)
+function guardarResultadoDetalle(id, resultado, btn) {
+    histUpdate(id, { resultado_real: resultado });
+    // Actualizar botones visualmente
+    btn.closest('.res-selector').querySelectorAll('.res-btn').forEach(b => b.classList.remove('res-btn-active'));
+    btn.classList.add('res-btn-active');
+    // Actualizar el texto de confirmación
+    const BADGE = { local: '🏠 Local ganó', empate: '🤝 Empate', visitante: '✈️ Visitante ganó' };
+    const BCLS  = { local: 'res-local', empate: 'res-empate', visitante: 'res-visit' };
+    const conf  = btn.closest('.card-resultado').querySelector('.res-confirmado, .res-hint');
+    if (conf) {
+        conf.className = 'res-confirmado';
+        conf.innerHTML = `Resultado registrado: <span class="res-badge ${BCLS[resultado]}">${BADGE[resultado]}</span>`;
+    }
+    renderTracker();
+}
+
+// Guardar notas personales
+function guardarNotas(id) {
+    const ta  = document.getElementById('notasInput_' + id);
+    const btn = ta?.nextElementSibling;
+    if (!ta) return;
+    histUpdate(id, { notas: ta.value });
+    if (btn) { btn.textContent = '✅ Guardado'; setTimeout(() => btn.textContent = '💾 Guardar notas', 1800); }
+}
+
 function borrarHistorial(id) {
-    try {
-        const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-        localStorage.setItem(HIST_KEY, JSON.stringify(hist.filter(h => h.id !== id)));
-    } catch(_) {}
+    const hist = histGetAll();
+    histSaveAll(hist.filter(h => h.id !== id));
     loadHistorial();
 }
 
 function cerrarHistDetail() {
     document.getElementById('histDetail').style.display = 'none';
     document.getElementById('histListCard').style.display = 'block';
+    loadHistorial(); // Refrescar la lista por si cambió resultado/notas
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
