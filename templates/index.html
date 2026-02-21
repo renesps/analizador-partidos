@@ -316,6 +316,60 @@
         .save-btn:hover { background: rgba(34,197,94,0.14); transform: none; box-shadow: none; }
         .save-btn.saved { background: rgba(34,197,94,0.14); cursor: default; opacity: 0.7; }
 
+        /* ── xG Card ── */
+        .card-xg .sval, .xg-combined { color: #a78bfa; font-weight: 700; }
+
+        /* ── Odds Card ── */
+        .card-odds h2 { margin-bottom: 16px; }
+        .odds-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .odds-box {
+            background: #0d0e1a;
+            border: 1px solid #252638;
+            border-radius: 10px;
+            padding: 14px 8px;
+            text-align: center;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .odds-box:hover { border-color: #7c6dea; box-shadow: 0 0 12px rgba(124,109,234,.15); }
+        .odds-label { font-size: 10px; color: #5a5a78; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+        .odds-val   { font-size: 24px; font-weight: 800; color: #eaeaf5; letter-spacing: -0.5px; line-height: 1.1; }
+        .odds-impl  { font-size: 11px; color: #3d3d5a; margin-top: 4px; font-weight: 600; }
+        .odds-totals {
+            display: flex; align-items: center; gap: 8px;
+            padding-top: 10px; border-top: 1px solid #1a1b2a;
+            font-size: 12px; flex-wrap: wrap;
+        }
+
+        /* ── Value Bet Banner ── */
+        .value-bet-banner {
+            background: linear-gradient(135deg, rgba(251,191,36,.08) 0%, rgba(124,109,234,.05) 100%);
+            border: 1px solid rgba(251,191,36,.35) !important;
+            border-left: 4px solid #fbbf24 !important;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex; gap: 14px; align-items: flex-start;
+            box-shadow: 0 0 24px rgba(251,191,36,.08);
+            margin-bottom: 16px;
+        }
+        .vbet-icon {
+            background: rgba(251,191,36,.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,.4);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 9px; font-weight: 800; letter-spacing: 1px;
+            white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+        }
+        .vbet-title   { font-size: 15px; font-weight: 800; color: #fde68a; margin-bottom: 5px; letter-spacing: -.3px; }
+        .vbet-detail  { font-size: 12px; color: #d4d4f0; margin-bottom: 5px; line-height: 1.6; }
+        .vbet-detail strong { color: #fbbf24; }
+        .vbet-disclaimer { font-size: 10px; color: #3d3d5a; font-style: italic; }
+
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0d0e1a; }
@@ -328,6 +382,9 @@
             .team-name  { font-size: 16px; }
             .h2h-num    { font-size: 22px; }
             .tab-btn    { font-size: 10px; padding: 10px 4px; }
+            .odds-val   { font-size: 18px; }
+            .odds-grid  { gap: 6px; }
+            .value-bet-banner { flex-direction: column; gap: 8px; }
         }
     </style>
 </head>
@@ -947,23 +1004,27 @@ function finished(events) {
 }
 
 async function fetchStats(events, teamId) {
-    const corners = [], amarillas = [];
+    const corners = [], amarillas = [], xgList = [];
     for (const ev of events) {
         const data = await sfGet('/event/' + ev.id + '/statistics');
         if (!data?.statistics) { await sleep(300); continue; }
         const lado = ev.homeTeam?.id === teamId ? 'home' : 'away';
-        for (const grupo of data.statistics)
-            for (const grp of (grupo.groups || []))
+        for (const periodo of data.statistics) {
+            // Solo período "ALL" para no duplicar valores de los tiempos parciales
+            if (periodo.period && periodo.period !== 'ALL') continue;
+            for (const grp of (periodo.groups || []))
                 for (const st of (grp.statisticsItems || [])) {
                     const n = (st.name || '').toLowerCase();
                     const v = parseFloat((st[lado] || '0').toString().replace(',','.')) || 0;
                     if (n.includes('corner')) corners.push(v);
                     if (n.includes('yellow')) amarillas.push(v);
+                    if (n === 'expected goals' || n === 'xg') xgList.push(v);
                 }
+        }
         await sleep(300);
     }
-    const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
-    return { corners: avg(corners), amarillas: avg(amarillas) };
+    const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : null;
+    return { corners: avg(corners), amarillas: avg(amarillas), xg: avg(xgList) };
 }
 
 function forma(events, teamId) {
@@ -1031,14 +1092,16 @@ async function fetchResultadoCompleto(evento, teamAId, teamBId) {
     const eqANom  = evento.homeTeam?.name || '?';
     const eqBNom  = evento.awayTeam?.name || '?';
 
-    step('Obteniendo forma y alineaciones...', eqANom + ' vs ' + eqBNom);
+    step('Obteniendo forma, alineaciones y cuotas...', eqANom + ' vs ' + eqBNom);
 
-    const [lastA, lastB, lineups, eventData, h2hData] = await Promise.all([
+    const matchParam = encodeURIComponent(eqANom + '_vs_' + eqBNom);
+    const [lastA, lastB, lineups, eventData, h2hData, oddsData] = await Promise.all([
         sfGet('/team/' + teamAId + '/events/last/0'),
         sfGet('/team/' + teamBId + '/events/last/0'),
         sfGet('/event/' + eventId + '/lineups'),
         sfGet('/event/' + eventId),
         sfGet('/event/' + eventId + '/h2h'),
+        fetch('/odds?match=' + matchParam).then(r => r.ok ? r.json() : null).catch(() => null),
     ]);
 
     step('Calculando corners y tarjetas...', 'Analizando últimos 5 partidos...');
@@ -1076,15 +1139,83 @@ async function fetchResultadoCompleto(evento, teamAId, teamBId) {
             sA: calcStats(lastA?.events, teamAId),
             sB: calcStats(lastB?.events, teamBId),
         },
-        corners: { a: statsA.corners, b: statsB.corners },
+        corners:   { a: statsA.corners,   b: statsB.corners },
         amarillas: { a: statsA.amarillas, b: statsB.amarillas },
-        h2h: parseH2H(h2hData, eqANom, eqBNom),
+        xg:        { a: statsA.xg,        b: statsB.xg },
+        odds:      (oddsData && !oddsData.error) ? oddsData : null,
+        h2h:       parseH2H(h2hData, eqANom, eqBNom),
     };
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
    RENDER — PARTIDO INDIVIDUAL
 ════════════════════════════════════════════════════════════════════════════ */
+
+function computeModelProbabilities(r) {
+    const sA = r.stats?.sA || {}, sB = r.stats?.sB || {};
+    const fA = r.forma?.fA?.badges || [], fB = r.forma?.fB?.badges || [];
+    const h  = r.h2h?.res || {};
+
+    // Forma: V=3pts, E=1pt, D=0 — normalizado a [0,1]
+    const formaScore = arr => {
+        if (!arr.length) return 0.5;
+        const pts = arr.reduce((s,b) => s + (b==='V'?3:b==='E'?1:0), 0);
+        return pts / (arr.length * 3);
+    };
+    const fsA = formaScore(fA), fsB = formaScore(fB);
+
+    // Ataque vs defensa
+    const atkA = sA.pgf ?? 1.2, defA = sA.pgc ?? 1.2;
+    const atkB = sB.pgf ?? 1.2, defB = sB.pgc ?? 1.2;
+    const xgA  = (atkA + defB) / 2;
+    const xgB  = (atkB + defA) / 2;
+
+    // H2H bias: positivo favorece A
+    let h2hBias = 0;
+    if ((h.n || 0) >= 3) h2hBias = ((h.vA||0) - (h.vB||0)) / h.n;
+
+    // Score compuesto: 40% forma, 40% ataque/defensa, 20% H2H
+    const scoreA = 0.40*fsA + 0.40*(xgA/(xgA+xgB)) + 0.20*(0.5 + h2hBias*0.5);
+    const scoreB = 0.40*fsB + 0.40*(xgB/(xgA+xgB)) + 0.20*(0.5 - h2hBias*0.5);
+
+    // Probabilidad de empate estimada por ritmo de goles combinado
+    const combined  = xgA + xgB;
+    const drawProb  = Math.max(0.10, Math.min(0.35, 0.35 - 0.04*combined));
+    const remainder = 1 - drawProb;
+    const total     = scoreA + scoreB;
+    return {
+        probA:    +(scoreA/total * remainder).toFixed(3),
+        probDraw: +drawProb.toFixed(3),
+        probB:    +(scoreB/total * remainder).toFixed(3),
+    };
+}
+
+function detectValueBets(r) {
+    if (!r.odds) return null;
+    const od = r.odds;
+    if (!od.home && !od.draw && !od.away) return null;
+
+    const { probA, probDraw, probB } = computeModelProbabilities(r);
+    const m = r.meta;
+
+    const implA    = od.home ? 1/od.home : null;
+    const implDraw = od.draw ? 1/od.draw : null;
+    const implB    = od.away ? 1/od.away : null;
+
+    const THRESHOLD = 0.06;  // 6 puntos porcentuales de edge mínimo
+    const MIN_ODD   = 1.55;  // no marcar cuotas muy cortas
+
+    const alerts = [];
+    if (implA    !== null && probA    - implA    > THRESHOLD && od.home >= MIN_ODD)
+        alerts.push({ outcome: m.eqA + ' gana',  cuota: od.home, probModel: probA,    probImplied: implA,    edge: probA-implA });
+    if (implDraw !== null && probDraw - implDraw > THRESHOLD && od.draw >= MIN_ODD)
+        alerts.push({ outcome: 'Empate',           cuota: od.draw, probModel: probDraw, probImplied: implDraw, edge: probDraw-implDraw });
+    if (implB    !== null && probB    - implB    > THRESHOLD && od.away >= MIN_ODD)
+        alerts.push({ outcome: m.eqB + ' gana',  cuota: od.away, probModel: probB,    probImplied: implB,    edge: probB-implB });
+
+    alerts.sort((a,b) => b.edge - a.edge);
+    return alerts.length ? alerts[0] : null;
+}
 
 function recomendaciones(r) {
     const recs = [];
@@ -1145,6 +1276,7 @@ function rcls(c) {
 
 function renderResultado(r, containerId, mostrarGuardar) {
     const recs = recomendaciones(r);
+    const vbet = r.odds ? detectValueBets(r) : null;
     const m=r.meta, al=r.alin, fo=r.forma, st=r.stats, co=r.corners, am=r.amarillas, h=r.h2h;
     const fecha = m.fecha ? new Date(m.fecha).toLocaleString('es-ES',{dateStyle:'full',timeStyle:'short'}) : '—';
 
@@ -1166,6 +1298,52 @@ function renderResultado(r, containerId, mostrarGuardar) {
         <span class="source-ok">✓ Sofascore tiempo real</span>
     </div>`;
 
+    // ── Cuotas en vivo ──
+    if (r.odds) {
+        const od = r.odds;
+        const fo2 = v => v ? v.toFixed(2) : '—';
+        const pct = v => v ? (100/v).toFixed(0)+'%' : '';
+        html += `<div class="card card-odds">
+            <h2>Cuotas en Vivo · <span style="color:#9d8ef5;font-weight:600;font-size:13px">${od.source || 'mercado europeo'}</span></h2>
+            <div class="odds-grid">
+                <div class="odds-box">
+                    <div class="odds-label">${m.eqA}</div>
+                    <div class="odds-val">${fo2(od.home)}</div>
+                    <div class="odds-impl">${pct(od.home)}</div>
+                </div>
+                <div class="odds-box">
+                    <div class="odds-label">Empate</div>
+                    <div class="odds-val">${fo2(od.draw)}</div>
+                    <div class="odds-impl">${pct(od.draw)}</div>
+                </div>
+                <div class="odds-box">
+                    <div class="odds-label">${m.eqB}</div>
+                    <div class="odds-val">${fo2(od.away)}</div>
+                    <div class="odds-impl">${pct(od.away)}</div>
+                </div>
+            </div>
+            ${(od.over25||od.under25)?`<div class="odds-totals">
+                <span class="slbl">Over 2.5 goles</span><span class="sval">${fo2(od.over25)}</span>
+                <span class="slbl" style="margin-left:16px">Under 2.5</span><span class="sval">${fo2(od.under25)}</span>
+            </div>`:''}
+        </div>`;
+    }
+
+    // ── Value Bet banner ──
+    if (vbet) {
+        const pctM = (vbet.probModel*100).toFixed(0);
+        const pctI = (vbet.probImplied*100).toFixed(0);
+        const edge = (vbet.edge*100).toFixed(0);
+        html += `<div class="value-bet-banner">
+            <div class="vbet-icon">VALUE BET</div>
+            <div class="vbet-content">
+                <div class="vbet-title">Value bet detectado: ${vbet.outcome}</div>
+                <div class="vbet-detail">Cuota <strong>${vbet.cuota.toFixed(2)}</strong> · Prob. modelo <strong>${pctM}%</strong> · Prob. implícita <strong>${pctI}%</strong> · Edge <strong>+${edge}%</strong></div>
+                <div class="vbet-disclaimer">Solo orientativo. Modelo basado en forma + stats + H2H. No garantiza resultado.</div>
+            </div>
+        </div>`;
+    }
+
     if (al.tA.length || al.tB.length) {
         html += `<div class="card"><h2>Alineaciones ${al.confirmadas?'✓ Confirmadas':'(Previstas)'}</h2><div class="two-col">`;
         for (const [nom,tit,form] of [[m.eqA,al.tA,al.fA],[m.eqB,al.tB,al.fB]])
@@ -1180,6 +1358,22 @@ function renderResultado(r, containerId, mostrarGuardar) {
     <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
     <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
     </div></div>`;
+
+    // ── xG card ──
+    const xg = r.xg || {};
+    if (xg.a != null || xg.b != null) {
+        const xgTot = (xg.a != null && xg.b != null) ? (xg.a + xg.b).toFixed(2) : null;
+        html += `<div class="card card-xg"><h2>Expected Goals — xG promedio (últimos 5)</h2>
+        <div class="two-col">
+            <div><div class="col-hdr">${m.eqA}</div>${sr('xG por partido', xg.a)}</div>
+            <div><div class="col-hdr">${m.eqB}</div>${sr('xG por partido', xg.b)}</div>
+        </div>
+        ${xgTot?`<div class="srow" style="margin-top:8px;border-top:1px solid #1a1b2a;padding-top:8px">
+            <span class="slbl">xG combinado (ambos)</span>
+            <span class="sval xg-combined">${xgTot}</span>
+        </div>`:''}
+        </div>`;
+    }
 
     const sA=st.sA, sB=st.sB;
     if (Object.keys(sA).length||Object.keys(sB).length)
@@ -1247,6 +1441,8 @@ function renderResultado(r, containerId, mostrarGuardar) {
 function buildPrompt(r) {
     const m = r.meta, fo = r.forma, st = r.stats, co = r.corners, am = r.amarillas, al = r.alin, h = r.h2h;
     const sA = st.sA || {}, sB = st.sB || {};
+    const xg = r.xg || {};
+    const od = r.odds || null;
     const h2h_res = h.res || {};
     const h2h_str = `${m.eqA} ${h2h_res.vA||0} - Empates ${h2h_res.emp||0} - ${m.eqB} ${h2h_res.vB||0}`;
     const h2h_det = (h.list||[]).slice(0,6).map(p=>`  ${p.fecha} ${p.home} ${p.sc} ${p.away} (${p.comp})`).join('\n');
@@ -1315,12 +1511,21 @@ ESTADÍSTICAS ÚLTIMOS 5 PARTIDOS:
 ${m.eqA}: ${sA.gf||'?'} goles marcados, ${sA.gc||'?'} recibidos | Prom: ${sA.pgf||'?'} GF / ${sA.pgc||'?'} GC | Clean sheets: ${sA.cs||'?'}
 ${m.eqB}: ${sB.gf||'?'} goles marcados, ${sB.gc||'?'} recibidos | Prom: ${sB.pgf||'?'} GF / ${sB.pgc||'?'} GC | Clean sheets: ${sB.cs||'?'}
 
+XG — EXPECTED GOALS PROMEDIO (últimos 5 partidos):
+${m.eqA}: ${xg.a??'N/D'} xG/partido | ${m.eqB}: ${xg.b??'N/D'} xG/partido
+xG combinado total: ${(xg.a!=null&&xg.b!=null)?(xg.a+xg.b).toFixed(2):'N/D'}
+
 CORNERS PROMEDIO (últimos 5):
 ${m.eqA}: ${co.a||'N/D'} corners/partido | ${m.eqB}: ${co.b||'N/D'} corners/partido
 Total combinado: ${cornTotal} corners/partido
 
 TARJETAS AMARILLAS PROMEDIO (últimos 5):
 ${m.eqA}: ${am.a||'N/D'} | ${m.eqB}: ${am.b||'N/D'}
+
+CUOTAS DE MERCADO EN VIVO${od?` (${od.source||'bookmaker europeo'})`:''}:
+${od?`Local (${m.eqA}): ${od.home??'N/D'} | Empate: ${od.draw??'N/D'} | Visitante (${m.eqB}): ${od.away??'N/D'}
+Over 2.5 goles: ${od.over25??'N/D'} | Under 2.5 goles: ${od.under25??'N/D'}
+Probabilidades implícitas: ${m.eqA} ${od.home?(100/od.home).toFixed(1)+'%':'N/D'} | Empate ${od.draw?(100/od.draw).toFixed(1)+'%':'N/D'} | ${m.eqB} ${od.away?(100/od.away).toFixed(1)+'%':'N/D'}`:'No disponibles'}
 
 ALINEACIONES (Sofascore):
 ${m.eqA} (${al.fA||'formación no confirmada'}): ${titStr(al.tA)}
@@ -1372,8 +1577,10 @@ Incluí EXACTAMENTE todo esto en tu respuesta:
    - % estimado Over 4.5 corners al descanso
    - Mercados recomendados: Over/Under corners 1er tiempo y partido completo
 
-7. ⚽ ANÁLISIS DE GOLES
+7. ⚽ ANÁLISIS DE GOLES Y XG
    - ${m.eqA} promedia ${sA.pgf||'?'} GF y ${sA.pgc||'?'} GC | ${m.eqB} promedia ${sB.pgf||'?'} GF y ${sB.pgc||'?'} GC
+   - xG real: ${m.eqA} ${xg.a??'N/D'} | ${m.eqB} ${xg.b??'N/D'} (comparar GF real vs xG para detectar si sobre/subrendimiento)
+   - xG combinado: ${(xg.a!=null&&xg.b!=null)?(xg.a+xg.b).toFixed(2):'N/D'} — indicador Over/Under goles
    - % estimado Over 1.5, 2.5, 3.5 goles
    - BTTS probabilidad estimada. Minutos donde más marcan.
 
@@ -1384,8 +1591,10 @@ Incluí EXACTAMENTE todo esto en tu respuesta:
    - Jugadores propensos a tarjetas de cada equipo
 
 9. 🎯 MERCADOS Y APUESTAS
+   - Cuotas de mercado REALES disponibles: ${od?`Local ${od.home??'N/D'} | X ${od.draw??'N/D'} | Visitante ${od.away??'N/D'} | Over 2.5: ${od.over25??'N/D'}`:'no disponibles'}
+   - Comparar tus probabilidades estimadas con las probabilidades implícitas del mercado (1/cuota)
+   - Identificar mercados con VALUE (tu estimación > probabilidad implícita)
    - 1X2, handicap, over/under goles, BTTS, corners, tarjetas
-   - Cuotas aproximadas y seguridad ⭐ del 1 al 5
 
 10. ⚠️ RIESGOS IDENTIFICADOS
     | Riesgo | Probabilidad | Impacto |

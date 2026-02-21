@@ -6,6 +6,7 @@ app = Flask(__name__)
 SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY', '')
 SCRAPE_DO_KEY   = os.environ.get('SCRAPE_DO_KEY', '')
 KIMI_API_KEY    = os.environ.get('KIMI_API_KEY', '')
+ODDS_API_KEY    = os.environ.get('ODDS_API_KEY', '')   # The Odds API (free tier 500 req/mes)
 DATABASE_URL    = os.environ.get('DATABASE_URL', '')  # PostgreSQL en Supabase
 DB_PATH         = os.environ.get('DB_PATH', 'historial.db')  # SQLite fallback local
 
@@ -188,6 +189,110 @@ def proxy():
         return app.response_class(response=r.content, status=r.status_code, mimetype='application/json')
     except Exception as e:
         return jsonify({'error': str(e)}), 502
+
+# ── Cuotas en vivo — The Odds API ────────────────────────────────────────────
+@app.route('/odds')
+def get_odds():
+    """
+    Obtiene cuotas en vivo de The Odds API.
+    Query param: ?match=TEAM_A_vs_TEAM_B
+    Retorna: { home, draw, away, over25, under25, source }
+    """
+    if not ODDS_API_KEY:
+        return jsonify({'error': 'ODDS_API_KEY no configurada'}), 503
+
+    match_param = request.args.get('match', '').strip()
+    if not match_param or '_vs_' not in match_param:
+        return jsonify({'error': 'Parámetro match inválido'}), 400
+
+    # Caché por 10 minutos para las cuotas
+    cache_key = 'odds:' + match_param
+    cached, _ = cache_get(cache_key)
+    if cached:
+        return app.response_class(response=cached, status=200, mimetype='application/json')
+
+    parts       = match_param.split('_vs_', 1)
+    team_a_raw  = parts[0].strip().lower()
+    team_b_raw  = parts[1].strip().lower()
+
+    import re
+    def normalize(s):
+        s = s.lower().strip()
+        for suffix in [' fc', ' cf', ' sc', ' ac', ' united', ' city', ' f.c.', ' s.a.', ' sad']:
+            s = s.replace(suffix, '')
+        return re.sub(r'[^a-z0-9 ]', '', s).strip()
+
+    na = normalize(team_a_raw)
+    nb = normalize(team_b_raw)
+
+    try:
+        params = {
+            'apiKey':      ODDS_API_KEY,
+            'regions':     'eu',
+            'markets':     'h2h,totals',
+            'oddsFormat':  'decimal',
+        }
+        # Fetch all active soccer odds in one request
+        resp = requests.get(
+            'https://api.the-odds-api.com/v4/sports/soccer/odds/',
+            params=params, timeout=12
+        )
+        if not resp.ok:
+            return jsonify({'error': f'Odds API HTTP {resp.status_code}'}), 502
+
+        events = resp.json()
+        if not isinstance(events, list):
+            return jsonify({'error': 'Respuesta inesperada de Odds API'}), 502
+
+        # Fuzzy match por nombre de equipo
+        best_event = None
+        best_score = 0
+        for ev in events:
+            hn = normalize(ev.get('home_team', ''))
+            an = normalize(ev.get('away_team', ''))
+            score = 0
+            if na in hn or hn in na: score += 3
+            if nb in an or an in nb: score += 3
+            if na[:4] in hn:         score += 1
+            if nb[:4] in an:         score += 1
+            if score > best_score:
+                best_score  = score
+                best_event  = ev
+
+        if not best_event or best_score < 3:
+            return jsonify({'error': 'Partido no encontrado en The Odds API'}), 404
+
+        # Extraer cuotas del primer bookmaker disponible
+        home_odd = draw_odd = away_odd = None
+        over25   = under25  = None
+        source   = ''
+
+        for bk in best_event.get('bookmakers', []):
+            for mkt in bk.get('markets', []):
+                if mkt['key'] == 'h2h' and home_odd is None:
+                    outs = {o['name']: o['price'] for o in mkt.get('outcomes', [])}
+                    home_odd = outs.get(best_event['home_team'])
+                    draw_odd = outs.get('Draw')
+                    away_odd = outs.get(best_event['away_team'])
+                    source   = bk.get('title', '')
+                if mkt['key'] == 'totals' and over25 is None:
+                    for o in mkt.get('outcomes', []):
+                        pt = abs(o.get('point', 0) - 2.5)
+                        if o['name'] == 'Over'  and pt < 0.01: over25  = o['price']
+                        if o['name'] == 'Under' and pt < 0.01: under25 = o['price']
+            if home_odd and over25:
+                break  # Tenemos todo lo que necesitamos
+
+        result = json.dumps({
+            'home': home_odd, 'draw': draw_odd, 'away': away_odd,
+            'over25': over25, 'under25': under25, 'source': source,
+        }).encode()
+        cache_set(cache_key, result, 200)
+        return app.response_class(response=result, status=200, mimetype='application/json')
+
+    except Exception as e:
+        app.logger.error('Odds API error: %s', e)
+        return jsonify({'error': str(e)}), 500
 
 # ── Historial ────────────────────────────────────────────────────────────────
 @app.route('/historial', methods=['GET'])
