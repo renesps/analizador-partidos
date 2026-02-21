@@ -455,7 +455,8 @@
     ════════════════════════════════════════════ -->
     <div class="tab-panel" id="tab-historial">
         <div class="card" id="histListCard">
-            <h2>📁 Historial de Análisis</h2>
+            <h2 id="histTitulo">📁 Recientes (0/5)</h2>
+            <p style="font-size:12px; color:#5a5a78; margin: -8px 0 14px; font-weight:500;">Los últimos 5 análisis se guardan automáticamente en este dispositivo</p>
             <div id="histListContent">
                 <div class="hist-empty">Cargando...</div>
             </div>
@@ -1149,10 +1150,6 @@ function renderResultado(r, containerId, mostrarGuardar) {
 
     let html = '';
 
-    if (mostrarGuardar) {
-        html += `<button class="save-btn" id="saveBtn" onclick="guardarAnalisis()">💾 Guardar análisis</button>`;
-    }
-
     html += `
     <div class="card match-header">
         <div class="vs-row">
@@ -1489,6 +1486,7 @@ async function pedirAnalisisIA(r, bodyId, loadId, guardar) {
         // Auto-guardar en historial si se pide
         if (guardar && textoCompleto && window._currentResultado) {
             window._currentKimiText = textoCompleto;
+            autoGuardarAnalisis(window._currentResultado, textoCompleto);
         }
 
         return textoCompleto;
@@ -1654,154 +1652,126 @@ function procesarMarkdown(text) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   HISTORIAL
+   HISTORIAL — localStorage (últimos 5 automáticos)
 ════════════════════════════════════════════════════════════════════════════ */
 
-async function guardarAnalisis() {
-    const btn = document.getElementById('saveBtn');
-    if (!btn || btn.classList.contains('saved')) return;
+const HIST_KEY = 'historial_auto';
+const HIST_MAX = 5;
 
-    const r = window._currentResultado;
-    const kimiText = window._currentKimiText || '';
-    if (!r) return;
-
-    btn.textContent = '💾 Guardando...';
-    btn.style.opacity = '0.6';
-
+function autoGuardarAnalisis(resultado, kimiText) {
+    if (!resultado || !kimiText) return;
+    const entrada = {
+        id: Date.now(),
+        partido: resultado.meta.eqA + ' vs ' + resultado.meta.eqB,
+        competicion: resultado.meta.competicion || '',
+        fecha_partido: resultado.meta.fecha || '',
+        fecha_analisis: Date.now(),
+        stats_json: resultado,
+        analisis_ia: kimiText,
+    };
     try {
-        const resp = await fetch('/historial', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                partido: r.meta.eqA + ' vs ' + r.meta.eqB,
-                competicion: r.meta.competicion || '',
-                fecha_partido: r.meta.fecha || '',
-                stats_json: r,
-                analisis_ia: kimiText,
-            }),
-        });
-        if (resp.ok) {
-            btn.textContent = '✅ Guardado';
-            btn.classList.add('saved');
-        } else {
-            btn.textContent = '❌ Error al guardar';
-            btn.style.opacity = '1';
-        }
-    } catch(err) {
-        btn.textContent = '❌ Error: ' + err.message;
-        btn.style.opacity = '1';
-    }
+        const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+        hist.unshift(entrada);
+        localStorage.setItem(HIST_KEY, JSON.stringify(hist.slice(0, HIST_MAX)));
+    } catch(e) { console.warn('autoGuardar error:', e); }
 }
 
-async function loadHistorial() {
+function loadHistorial() {
     const content = document.getElementById('histListContent');
     const detail  = document.getElementById('histDetail');
     detail.style.display = 'none';
     document.getElementById('histListCard').style.display = 'block';
-    content.innerHTML = '<div class="hist-empty">Cargando...</div>';
 
-    try {
-        const resp = await fetch('/historial');
-        const lista = await resp.json();
+    let lista = [];
+    try { lista = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(_) {}
 
-        if (!lista.length) {
-            content.innerHTML = '<div class="hist-empty">No hay análisis guardados todavía.<br>Analizá un partido y guardalo con el botón 💾.</div>';
-            return;
-        }
+    // Actualizar título con contador
+    const titulo = document.getElementById('histTitulo');
+    if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/${HIST_MAX})`;
 
-        content.innerHTML = lista.map(item => {
-            const fecha = item.fecha_analisis
-                ? new Date(item.fecha_analisis * 1000).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
-                : '—';
-            const fechaPartido = item.fecha_partido
-                ? new Date(item.fecha_partido).toLocaleDateString('es-ES', { dateStyle: 'medium' })
-                : '';
-            return `<div class="hist-item" onclick="verHistorial(${item.id})">
-                <div class="hist-item-info">
-                    <div class="hist-item-name">${item.partido}</div>
-                    <div class="hist-item-meta">${item.competicion || ''}${fechaPartido ? ' · ' + fechaPartido : ''} · Guardado: ${fecha}</div>
-                </div>
-                <div class="hist-item-actions">
-                    <button class="btn-sm btn-danger" onclick="event.stopPropagation(); borrarHistorial(${item.id}, this)">🗑️</button>
-                </div>
-            </div>`;
-        }).join('');
-
-    } catch(err) {
-        content.innerHTML = '<div class="hist-empty">Error al cargar historial: ' + err.message + '</div>';
+    if (!lista.length) {
+        content.innerHTML = '<div class="hist-empty">Aún no hay análisis guardados.<br>Analizá un partido en la pestaña <strong>Partido</strong> y aparecerá aquí automáticamente.</div>';
+        return;
     }
+
+    content.innerHTML = lista.map(item => {
+        const fecha = item.fecha_analisis
+            ? new Date(item.fecha_analisis).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+            : '—';
+        const fechaPartido = item.fecha_partido
+            ? new Date(item.fecha_partido).toLocaleDateString('es-ES', { dateStyle: 'medium' })
+            : '';
+        return `<div class="hist-item" onclick="verHistorial(${item.id})">
+            <div class="hist-item-info">
+                <div class="hist-item-name">${item.partido}</div>
+                <div class="hist-item-meta">${item.competicion || ''}${fechaPartido ? ' · ' + fechaPartido : ''} · ${fecha}</div>
+            </div>
+            <div class="hist-item-actions">
+                <button class="btn-sm btn-danger" onclick="event.stopPropagation(); borrarHistorial(${item.id})">🗑️</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
-async function verHistorial(id) {
+function verHistorial(id) {
+    let lista = [];
+    try { lista = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(_) {}
+    const item = lista.find(h => h.id === id);
+    if (!item) return;
+
     document.getElementById('histListCard').style.display = 'none';
     const detail = document.getElementById('histDetail');
     const content = document.getElementById('histDetailContent');
     detail.style.display = 'block';
-    content.innerHTML = '<div class="card"><div class="hist-empty">Cargando análisis...</div></div>';
 
-    try {
-        const resp = await fetch('/historial/' + id);
-        const item = await resp.json();
+    const fecha = item.fecha_analisis
+        ? new Date(item.fecha_analisis).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
+        : '—';
 
-        if (item.error) throw new Error(item.error);
+    let html = `<div class="card match-header">
+        <div class="vs-row">
+            <div class="team-name" style="font-size:18px">${item.partido}</div>
+        </div>
+        <div class="match-meta">${item.competicion || ''}<br>Analizado: ${fecha}</div>
+        <span class="source-ok">📁 Recientes</span>
+    </div>`;
 
-        const fecha = item.fecha_analisis
-            ? new Date(item.fecha_analisis * 1000).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
-            : '—';
-
-        let html = `<div class="card match-header">
-            <div class="vs-row">
-                <div class="team-name" style="font-size:18px">${item.partido}</div>
-            </div>
-            <div class="match-meta">${item.competicion || ''}<br>Guardado: ${fecha}</div>
-            <span class="source-ok">📁 Historial</span>
-        </div>`;
-
-        // Si tenemos stats_json, renderizar el partido completo
-        if (item.stats_json && typeof item.stats_json === 'object') {
-            // Renderizar las tarjetas de stats
-            const r = item.stats_json;
-            const m = r.meta, fo = r.forma, st = r.stats, co = r.corners, am = r.amarillas, h = r.h2h;
-            if (fo && fo.fA) {
-                html += `<div class="card"><h2>Forma Reciente</h2><div class="two-col">
-                <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div></div>
-                <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div></div>
-                </div></div>`;
-            }
-            if (co && (co.a || co.b)) {
-                const tot = co.a&&co.b ? (co.a+co.b).toFixed(1) : null;
-                html += `<div class="card"><h2>Corners y Tarjetas</h2><div class="two-col">
-                <div><div class="col-hdr">Corners</div>${sr(m.eqA,co.a)}${sr(m.eqB,co.b)}${tot?sr('Total',tot):''}</div>
-                <div><div class="col-hdr">Amarillas</div>${sr(m.eqA,am.a)}${sr(m.eqB,am.b)}</div>
-                </div></div>`;
-            }
+    // Renderizar stats si existen
+    if (item.stats_json && typeof item.stats_json === 'object') {
+        const r = item.stats_json;
+        const m = r.meta, fo = r.forma, co = r.corners, am = r.amarillas;
+        if (fo && fo.fA) {
+            html += `<div class="card"><h2>Forma Reciente</h2><div class="two-col">
+            <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div></div>
+            <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div></div>
+            </div></div>`;
         }
-
-        // Mostrar análisis IA guardado
-        if (item.analisis_ia) {
-            html += `<div class="ia-card">
-                <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2 · Guardado</span></h2>
-                <div class="ia-body">${markdownToHtml(item.analisis_ia)}</div>
-            </div>`;
+        if (co && (co.a || co.b)) {
+            const tot = co.a && co.b ? (co.a + co.b).toFixed(1) : null;
+            html += `<div class="card"><h2>Corners y Tarjetas</h2><div class="two-col">
+            <div><div class="col-hdr">Corners</div>${sr(m.eqA,co.a)}${sr(m.eqB,co.b)}${tot?sr('Total',tot):''}</div>
+            <div><div class="col-hdr">Amarillas</div>${sr(m.eqA,am.a)}${sr(m.eqB,am.b)}</div>
+            </div></div>`;
         }
-
-        content.innerHTML = html;
-
-    } catch(err) {
-        content.innerHTML = '<div class="card error-box">Error: ' + err.message + '</div>';
     }
+
+    // Mostrar análisis IA
+    if (item.analisis_ia) {
+        html += `<div class="ia-card">
+            <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2 · Auto-guardado</span></h2>
+            <div class="ia-body">${markdownToHtml(item.analisis_ia)}</div>
+        </div>`;
+    }
+
+    content.innerHTML = html;
 }
 
-async function borrarHistorial(id, btn) {
-    if (!confirm('¿Borrar este análisis del historial?')) return;
-    btn.disabled = true;
+function borrarHistorial(id) {
     try {
-        await fetch('/historial/' + id, { method: 'DELETE' });
-        loadHistorial();
-    } catch(err) {
-        alert('Error al borrar: ' + err.message);
-        btn.disabled = false;
-    }
+        const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+        localStorage.setItem(HIST_KEY, JSON.stringify(hist.filter(h => h.id !== id)));
+    } catch(_) {}
+    loadHistorial();
 }
 
 function cerrarHistDetail() {
