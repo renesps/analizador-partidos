@@ -444,6 +444,107 @@
         .vbet-detail strong { color: #fbbf24; }
         .vbet-disclaimer { font-size: 10px; color: #3d3d5a; font-style: italic; }
 
+        /* ── Fase 3: Watchlist ── */
+        .watch-btn {
+            background: none; border: none; cursor: pointer; font-size: 18px;
+            line-height: 1; padding: 2px 4px; opacity: .45; transition: opacity .15s, transform .15s;
+            flex-shrink: 0;
+        }
+        .watch-btn:hover  { opacity: 1; transform: scale(1.2); }
+        .watch-btn.active { opacity: 1; filter: drop-shadow(0 0 4px rgba(251,191,36,.7)); }
+        .watchlist-section {
+            background: #13141f; border: 1px solid rgba(251,191,36,.25); border-radius: 12px;
+            padding: 16px 18px; margin-bottom: 14px;
+        }
+        .watchlist-section h3 {
+            font-size: 11px; font-weight: 700; color: #fbbf24; letter-spacing: .8px;
+            text-transform: uppercase; margin-bottom: 10px;
+        }
+        .watchlist-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 12px; border-radius: 8px; background: #1a1b2a;
+            border: 1px solid #252638; margin-bottom: 6px; cursor: pointer;
+            transition: border-color .15s;
+        }
+        .watchlist-item:hover { border-color: #fbbf24; }
+        .watchlist-item-name { font-size: 13px; font-weight: 700; color: #eaeaf5; }
+        .watchlist-item-meta { font-size: 11px; color: #5a5a78; margin-top: 2px; }
+        .watchlist-empty { font-size: 12px; color: #3d3d5a; font-style: italic; padding: 4px 0; }
+
+        /* ── Fase 3: Comparador ── */
+        .comparador-header {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
+        }
+        .comparador-select {
+            flex: 1; background: #1a1b2a; border: 1px solid #252638; color: #eaeaf5;
+            border-radius: 8px; padding: 8px 12px; font-family: 'Inter', sans-serif;
+            font-size: 12px; min-width: 160px;
+        }
+        .comparador-select:focus { outline: none; border-color: #7c6dea; }
+        .comparador-vs { color: #7c6dea; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+        .btn-comparar {
+            background: linear-gradient(135deg, #7c6dea, #5b3fa6); color: #fff;
+            border: none; border-radius: 8px; padding: 9px 18px; font-size: 12px;
+            font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: opacity .15s; white-space: nowrap;
+        }
+        .btn-comparar:hover { opacity: .85; }
+        .comparador-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+        }
+        @media (max-width: 600px) { .comparador-grid { grid-template-columns: 1fr; } }
+        .cmp-col-header {
+            font-size: 12px; font-weight: 800; color: #9d8ef5; text-align: center;
+            padding: 10px; background: #1a1b2a; border-radius: 8px; margin-bottom: 10px;
+            border: 1px solid #252638;
+        }
+        .cmp-row {
+            display: flex; justify-content: space-between; padding: 7px 0;
+            border-bottom: 1px solid #1a1b2a; font-size: 12px; align-items: center;
+        }
+        .cmp-row:last-child { border-bottom: none; }
+        .cmp-lbl { color: #5a5a78; font-weight: 500; }
+        .cmp-val { color: #eaeaf5; font-weight: 700; }
+        .cmp-val.highlight { color: #4ade80; }
+        .cmp-ia { font-size: 12px; line-height: 1.7; color: #c4c4e0; }
+
+        /* ── Fase 3: PDF Export ── */
+        .btn-pdf {
+            background: rgba(124,109,234,.12); color: #9d8ef5;
+            border: 1px solid rgba(124,109,234,.3); border-radius: 8px;
+            padding: 7px 14px; font-size: 11px; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: background .15s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-pdf:hover { background: rgba(124,109,234,.22); }
+
+        /* ── Print / PDF styles ── */
+        @media print {
+            body { background: #fff !important; color: #111 !important; padding: 0 !important; }
+            .container { max-width: 100% !important; }
+            .tabs, .header p, #frm, .loading, .btn, .btn-pdf,
+            .hist-back, .btn-notas, .res-selector, .tracker-box,
+            .tab-btn, .save-btn, .ia-loading, .watch-btn,
+            .comparador-header { display: none !important; }
+            .tab-panel { display: block !important; }
+            .card, .ia-card, .value-bet-banner {
+                background: #fff !important; border: 1px solid #ccc !important;
+                box-shadow: none !important; page-break-inside: avoid;
+            }
+            .card h2, .ia-card h2 { color: #333 !important; border-color: #ddd !important; }
+            .team-name, .vs-badge, .ia-seccion-titulo { color: #111 !important; }
+            .ia-body, .ia-seccion, .sval, .slbl { color: #222 !important; }
+            .badge-V { background: #d1fae5 !important; color: #065f46 !important; }
+            .badge-E { background: #fef3c7 !important; color: #92400e !important; }
+            .badge-D { background: #fee2e2 !important; color: #991b1b !important; }
+            .match-meta, .source-ok { color: #666 !important; }
+            .odds-val { color: #111 !important; }
+            .odds-box { background: #f9f9f9 !important; border-color: #ddd !important; }
+            .vbet-title { color: #92400e !important; }
+            .ia-badge { background: #ede9fe !important; color: #4c1d95 !important; }
+            a { color: #1d4ed8 !important; }
+        }
+
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0d0e1a; }
@@ -472,8 +573,8 @@
     <!-- ── TABS ── -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('tab-single')">🔍 Partido Individual</button>
-        <button class="tab-btn" onclick="switchTab('tab-multi')">📋 Analizar Jornada</button>
-        <button class="tab-btn" onclick="switchTab('tab-historial'); loadHistorial()">📁 Historial</button>
+        <button class="tab-btn" onclick="switchTab('tab-multi'); renderWatchlist()">📋 Analizar Jornada</button>
+        <button class="tab-btn" onclick="switchTab('tab-historial'); loadHistorial(); initComparador()">📁 Historial</button>
     </div>
 
     <!-- ═══════════════════════════════════════════
@@ -530,6 +631,12 @@
          TAB 2: ANALIZAR JORNADA
     ════════════════════════════════════════════ -->
     <div class="tab-panel" id="tab-multi">
+        <!-- Watchlist -->
+        <div class="watchlist-section" id="watchlistSection" style="display:none">
+            <h3>⭐ Partidos Seguidos</h3>
+            <div id="watchlistContent"></div>
+        </div>
+
         <div class="card">
             <h2>📋 Analizar Jornada / Competición</h2>
             <form id="frmMulti">
@@ -596,6 +703,19 @@
         <div class="hist-detail" id="histDetail">
             <button class="hist-back" onclick="cerrarHistDetail()">← Volver al historial</button>
             <div id="histDetailContent"></div>
+        </div>
+        <!-- Comparador -->
+        <div id="comparadorSection" style="display:none">
+            <div class="card">
+                <h2>🆚 Comparar Análisis</h2>
+                <div class="comparador-header">
+                    <select class="comparador-select" id="cmpA"></select>
+                    <span class="comparador-vs">VS</span>
+                    <select class="comparador-select" id="cmpB"></select>
+                    <button class="btn-comparar" onclick="ejecutarComparador()">Comparar</button>
+                </div>
+                <div id="comparadorResult"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -901,6 +1021,7 @@ function renderListaJornada(liga, partidos, sonDeHoy) {
             fechaLabel = new Date(ts * 1000).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ';
         }
 
+        const isWatched = watchlistHas(ev.id);
         const li = document.createElement('li');
         li.className = 'match-item';
         li.dataset.idx = idx;
@@ -911,9 +1032,11 @@ function renderListaJornada(liga, partidos, sonDeHoy) {
                 <div class="match-item-meta">${ronda}</div>
             </div>
             <div class="match-item-hora">${fechaLabel}${hora}</div>
+            <button class="watch-btn ${isWatched?'active':''}" title="${isWatched?'Quitar de seguidos':'Seguir partido'}"
+                onclick="event.stopPropagation(); toggleWatch(${ev.id},'${home} vs ${away}','${hora}','${ronda}',this)">⭐</button>
         `;
         li.onclick = (e) => {
-            if (e.target.type !== 'checkbox') {
+            if (e.target.type !== 'checkbox' && !e.target.classList.contains('watch-btn')) {
                 const chk = document.getElementById('chk' + idx);
                 chk.checked = !chk.checked;
                 togglePartido(idx);
@@ -1493,7 +1616,9 @@ function renderResultado(r, containerId, mostrarGuardar) {
     html += `</div>`;
 
     html += `<div class="ia-card" id="ia-bloque">
-        <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2</span></h2>
+        <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2</span>
+            <button class="btn-pdf" onclick="exportarPDF()" title="Exportar a PDF" style="float:right;margin-top:-2px">📄 PDF</button>
+        </h2>
         <div class="ia-loading" id="ia-loading">
             <div class="ia-spinner"></div>
             <span>Kimi está analizando todos los datos del partido...</span>
@@ -2221,6 +2346,207 @@ function cerrarHistDetail() {
     document.getElementById('histDetail').style.display = 'none';
     document.getElementById('histListCard').style.display = 'block';
     loadHistorial(); // Refrescar la lista por si cambió resultado/notas
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FASE 3 — Watchlist, Comparador, PDF
+════════════════════════════════════════════════════════════════════════════ */
+
+// ── Watchlist (localStorage key: 'watchlist') ─────────────────────────────
+const WL_KEY = 'watchlist';
+
+function wlGetAll()       { try { return JSON.parse(localStorage.getItem(WL_KEY)||'[]'); } catch(_){ return []; } }
+function wlSaveAll(lista) { try { localStorage.setItem(WL_KEY, JSON.stringify(lista)); } catch(e){ console.warn(e); } }
+function watchlistHas(id) { return wlGetAll().some(w => w.id === id); }
+
+function toggleWatch(id, nombre, hora, ronda, btn) {
+    let lista = wlGetAll();
+    if (lista.some(w => w.id === id)) {
+        lista = lista.filter(w => w.id !== id);
+        btn.classList.remove('active');
+        btn.title = 'Seguir partido';
+    } else {
+        lista.unshift({ id, nombre, hora, ronda, savedAt: Date.now() });
+        btn.classList.add('active');
+        btn.title = 'Quitar de seguidos';
+    }
+    wlSaveAll(lista);
+    renderWatchlist();
+}
+
+function renderWatchlist() {
+    const lista = wlGetAll();
+    const section = document.getElementById('watchlistSection');
+    const content = document.getElementById('watchlistContent');
+    if (!section || !content) return;
+
+    if (!lista.length) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'block';
+
+    content.innerHTML = lista.map(w => `
+        <div class="watchlist-item">
+            <div>
+                <div class="watchlist-item-name">${w.nombre}</div>
+                <div class="watchlist-item-meta">${w.ronda || ''}${w.ronda && w.hora ? ' · ' : ''}${w.hora || ''}</div>
+            </div>
+            <button class="watch-btn active" title="Quitar" onclick="toggleWatchById(${w.id}, this)">⭐</button>
+        </div>`).join('');
+}
+
+function toggleWatchById(id, btn) {
+    let lista = wlGetAll();
+    lista = lista.filter(w => w.id !== id);
+    wlSaveAll(lista);
+    // También actualizar el botón en la lista de partidos si está visible
+    document.querySelectorAll(`.watch-btn`).forEach(b => {
+        if (b.getAttribute('onclick')?.includes('toggleWatch(' + id + ',')) {
+            b.classList.remove('active');
+        }
+    });
+    renderWatchlist();
+}
+
+// Inicializar watchlist al cargar la página
+document.addEventListener('DOMContentLoaded', renderWatchlist);
+
+// ── Comparador ────────────────────────────────────────────────────────────
+function initComparador() {
+    const lista  = histGetAll();
+    const section = document.getElementById('comparadorSection');
+    if (!section) return;
+
+    if (lista.length < 2) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'block';
+
+    const opts = lista.map((h,i) => `<option value="${i}">${h.partido}</option>`).join('');
+    const selA = document.getElementById('cmpA');
+    const selB = document.getElementById('cmpB');
+    if (!selA || !selB) return;
+    selA.innerHTML = opts;
+    selB.innerHTML = opts;
+    // Por defecto seleccionar primero y segundo
+    selA.value = '0';
+    selB.value = lista.length > 1 ? '1' : '0';
+}
+
+function ejecutarComparador() {
+    const lista = histGetAll();
+    const idxA  = parseInt(document.getElementById('cmpA').value);
+    const idxB  = parseInt(document.getElementById('cmpB').value);
+
+    if (idxA === idxB) {
+        document.getElementById('comparadorResult').innerHTML =
+            '<p style="color:#f87171;font-size:12px;padding:8px">Seleccioná dos análisis diferentes.</p>';
+        return;
+    }
+
+    const a = lista[idxA], b = lista[idxB];
+    const ra = a.stats_json, rb = b.stats_json;
+
+    // Helper para comparar dos valores — resalta el mayor en verde
+    const cmpVal = (va, vb, inverse=false) => {
+        const better = inverse ? va < vb : va > vb;
+        const worse  = inverse ? va > vb : va < vb;
+        return [
+            `<span class="cmp-val${better?' highlight':''}">${val(va)}</span>`,
+            `<span class="cmp-val${worse?' highlight':''}">${val(vb)}</span>`,
+        ];
+    };
+
+    const row = (label, va, vb, inv=false) => {
+        const [ca, cb] = cmpVal(va, vb, inv);
+        return `<div class="cmp-row">
+            <span class="cmp-lbl">${label}</span>
+            <span style="display:flex;gap:32px">${ca}${cb}</span>
+        </div>`;
+    };
+
+    const sA_a = ra?.stats?.sA || {}, sB_a = ra?.stats?.sB || {};
+    const sA_b = rb?.stats?.sA || {}, sB_b = rb?.stats?.sB || {};
+    const co_a = ra?.corners || {}, co_b = rb?.corners || {};
+    const am_a = ra?.amarillas || {}, am_b = rb?.amarillas || {};
+    const xg_a = ra?.xg || {}, xg_b = rb?.xg || {};
+    const h_a  = ra?.h2h?.res || {}, h_b  = rb?.h2h?.res || {};
+
+    let html = `<div class="comparador-grid">
+        <div>
+            <div class="cmp-col-header">${a.partido}</div>
+            <div></div>
+        </div>
+        <div>
+            <div class="cmp-col-header">${b.partido}</div>
+        </div>
+    </div>`;
+
+    // Tabla de comparación fila a fila
+    html += `<div class="card" style="margin-top:0">
+        <h2>Estadísticas comparadas</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:11px;margin-bottom:8px;font-weight:700;color:#5a5a78;text-transform:uppercase;letter-spacing:.5px">
+            <span>Métrica</span><span style="text-align:right">${a.partido.split(' vs ')[0]}</span><span style="text-align:right">${b.partido.split(' vs ')[0]}</span>
+        </div>`;
+
+    const rows3 = (label, va, vb, inv=false) => {
+        const na = va ?? null, nb = vb ?? null;
+        const hlA = na !== null && nb !== null && (inv ? na < nb : na > nb);
+        const hlB = na !== null && nb !== null && (inv ? nb < na : nb > na);
+        return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:7px 0;border-bottom:1px solid #1a1b2a;align-items:center">
+            <span style="color:#5a5a78;font-size:12px">${label}</span>
+            <span style="text-align:right;font-weight:700;color:${hlA?'#4ade80':'#eaeaf5'};font-size:12px">${val(na)}</span>
+            <span style="text-align:right;font-weight:700;color:${hlB?'#4ade80':'#eaeaf5'};font-size:12px">${val(nb)}</span>
+        </div>`;
+    };
+
+    html += rows3('GF promedio (local)', sA_a.pgf, sA_b.pgf);
+    html += rows3('GC promedio (local)', sA_a.pgc, sA_b.pgc, true);
+    html += rows3('Clean sheets (local)', sA_a.cs, sA_b.cs);
+    html += rows3('GF promedio (visit.)', sB_a.pgf, sB_b.pgf);
+    html += rows3('GC promedio (visit.)', sB_a.pgc, sB_b.pgc, true);
+    html += rows3('Corners local', co_a.a, co_b.a);
+    html += rows3('Corners visitante', co_a.b, co_b.b);
+    html += rows3('Corners combinado', (co_a.a||0)+(co_a.b||0), (co_b.a||0)+(co_b.b||0));
+    html += rows3('Amarillas local', am_a.a, am_b.a);
+    html += rows3('xG local', xg_a.a, xg_b.a);
+    html += rows3('xG visitante', xg_a.b, xg_b.b);
+    html += rows3('H2H victorias local', h_a.vA, h_b.vA);
+
+    html += `</div>`;
+
+    // Resumen IA lado a lado (primer párrafo del análisis)
+    const snippetIA = (texto) => {
+        if (!texto) return '<em style="color:#3d3d5a">Sin análisis IA guardado</em>';
+        const lines = texto.split('\n').filter(l => l.trim()).slice(0, 6).join('<br>');
+        return `<div class="cmp-ia">${lines}…</div>`;
+    };
+
+    html += `<div class="comparador-grid" style="margin-top:0">
+        <div class="card" style="margin-bottom:0">
+            <h2>${a.partido}</h2>
+            ${snippetIA(a.analisis_ia)}
+        </div>
+        <div class="card" style="margin-bottom:0">
+            <h2>${b.partido}</h2>
+            ${snippetIA(b.analisis_ia)}
+        </div>
+    </div>`;
+
+    document.getElementById('comparadorResult').innerHTML = html;
+}
+
+// ── Export PDF ────────────────────────────────────────────────────────────
+function exportarPDF() {
+    const titulo = window._currentResultado?.meta
+        ? `${window._currentResultado.meta.eqA} vs ${window._currentResultado.meta.eqB}`
+        : 'Análisis';
+    const prev = document.title;
+    document.title = titulo + ' — Analizador de Partidos';
+    window.print();
+    document.title = prev;
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
