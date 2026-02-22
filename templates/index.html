@@ -2,8 +2,20 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Analizador de Partidos</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#7c6dea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Analizador">
+    <link rel="apple-touch-icon" href="/static/icons/icon-152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2559,6 +2571,104 @@ function renderError(msg) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('btn').disabled = false;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   PWA — Service Worker + Install Banner
+════════════════════════════════════════════════════════════════════════════ */
+
+// Registrar Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => {
+                console.log('[PWA] SW registrado, scope:', reg.scope);
+                // Si hay una nueva versión disponible, notificar al usuario
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateBanner();
+                        }
+                    });
+                });
+            })
+            .catch(err => console.warn('[PWA] SW error:', err));
+    });
+}
+
+// Banner de instalación (evento beforeinstallprompt)
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _installPrompt = e;
+    showInstallBanner();
+});
+
+window.addEventListener('appinstalled', () => {
+    hideInstallBanner();
+    _installPrompt = null;
+});
+
+function showInstallBanner() {
+    if (document.getElementById('pwa-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwa-banner';
+    banner.innerHTML = `
+        <span>📲 Instalá la app en tu celular</span>
+        <div style="display:flex;gap:8px">
+            <button onclick="instalarPWA()" style="background:#7c6dea;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Instalar</button>
+            <button onclick="hideInstallBanner()" style="background:transparent;color:#5a5a78;border:none;font-size:16px;cursor:pointer;line-height:1">✕</button>
+        </div>`;
+    document.body.prepend(banner);
+}
+
+function hideInstallBanner() {
+    document.getElementById('pwa-banner')?.remove();
+}
+
+function instalarPWA() {
+    if (!_installPrompt) return;
+    _installPrompt.prompt();
+    _installPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') hideInstallBanner();
+        _installPrompt = null;
+    });
+}
+
+function showUpdateBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'pwa-update-banner';
+    banner.innerHTML = `
+        <span>🔄 Nueva versión disponible</span>
+        <button onclick="location.reload()" style="background:#4ade80;color:#052e16;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Actualizar</button>`;
+    document.body.prepend(banner);
+}
+
+// Deeplink desde shortcuts del manifest (?tab=partido / ?tab=historial)
+(function handleDeeplinks() {
+    const params = new URLSearchParams(location.search);
+    const tab    = params.get('tab');
+    if (tab === 'historial') {
+        switchTab('tab-historial');
+        loadHistorial();
+        initComparador();
+    }
+})();
 </script>
+
+<!-- PWA banners CSS -->
+<style>
+#pwa-banner, #pwa-update-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: #13141f; border-bottom: 1px solid #7c6dea;
+    padding: 10px 16px; display: flex; align-items: center;
+    justify-content: space-between; font-size: 13px; font-weight: 600;
+    color: #eaeaf5; font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 16px rgba(124,109,234,.25);
+    safe-area-inset-top: env(safe-area-inset-top);
+}
+</style>
+
 </body>
 </html>

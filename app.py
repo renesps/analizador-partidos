@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 import os, requests, json, time, threading
 
 app = Flask(__name__)
@@ -177,6 +177,21 @@ def index():
     resp = make_response(render_template('index.html', kimi_key=KIMI_API_KEY))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     resp.headers['Pragma'] = 'no-cache'
+    return resp
+
+@app.route('/service-worker.js')
+def service_worker():
+    """Sirve el SW desde la raíz (requerido para que tenga scope '/')."""
+    resp = make_response(send_from_directory('static', 'service-worker.js'))
+    resp.headers['Content-Type']  = 'application/javascript'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
+
+@app.route('/manifest.json')
+def manifest():
+    resp = make_response(send_from_directory('static', 'manifest.json'))
+    resp.headers['Content-Type']  = 'application/manifest+json'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
     return resp
 
 @app.route('/sf')
