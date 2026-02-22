@@ -1543,6 +1543,7 @@ function computeModelProbabilities(r) {
     const sA = r.stats?.sA || {}, sB = r.stats?.sB || {};
     const fA = r.forma?.fA?.badges || [], fB = r.forma?.fB?.badges || [];
     const h  = r.h2h?.res || {};
+    const od = r.odds;  // usar cuotas del mercado como prior
 
     // Forma: V=3pts, E=1pt, D=0 — normalizado a [0,1]
     const formaScore = arr => {
@@ -1562,9 +1563,21 @@ function computeModelProbabilities(r) {
     let h2hBias = 0;
     if ((h.n || 0) >= 3) h2hBias = ((h.vA||0) - (h.vB||0)) / h.n;
 
-    // Score compuesto: 40% forma, 40% ataque/defensa, 20% H2H
-    const scoreA = 0.40*fsA + 0.40*(xgA/(xgA+xgB)) + 0.20*(0.5 + h2hBias*0.5);
-    const scoreB = 0.40*fsB + 0.40*(xgB/(xgA+xgB)) + 0.20*(0.5 - h2hBias*0.5);
+    // Prior del mercado: las cuotas implícitas son la mejor señal del nivel real
+    // Normalizadas solo entre local/visitante (ignorar margen de la casa)
+    let marketA = 0.5, marketB = 0.5;
+    if (od?.home && od?.away) {
+        const rawA = 1 / od.home, rawB = 1 / od.away;
+        const rawSum = rawA + rawB;
+        marketA = rawA / rawSum;
+        marketB = rawB / rawSum;
+    }
+
+    // Score compuesto: 25% forma, 25% ataque/defensa, 15% H2H, 35% prior de mercado
+    // El prior de mercado ancla el modelo cerca del consensus — evita señalar
+    // value bets irrisorios en underdogs extremos que el mercado ya descontó.
+    const scoreA = 0.25*fsA + 0.25*(xgA/(xgA+xgB)) + 0.15*(0.5 + h2hBias*0.5) + 0.35*marketA;
+    const scoreB = 0.25*fsB + 0.25*(xgB/(xgA+xgB)) + 0.15*(0.5 - h2hBias*0.5) + 0.35*marketB;
 
     // Probabilidad de empate estimada por ritmo de goles combinado
     const combined  = xgA + xgB;
@@ -1590,15 +1603,16 @@ function detectValueBets(r) {
     const implDraw = od.draw ? 1/od.draw : null;
     const implB    = od.away ? 1/od.away : null;
 
-    const THRESHOLD = 0.06;  // 6 puntos porcentuales de edge mínimo
+    const THRESHOLD = 0.10;  // 10pp de edge mínimo (antes 6pp — demasiado bajo para este modelo)
     const MIN_ODD   = 1.55;  // no marcar cuotas muy cortas
+    const MAX_ODD   = 5.00;  // no señalar underdogs extremos — el mercado es eficiente ahí
 
     const alerts = [];
-    if (implA    !== null && probA    - implA    > THRESHOLD && od.home >= MIN_ODD)
+    if (implA    !== null && probA    - implA    > THRESHOLD && od.home >= MIN_ODD && od.home <= MAX_ODD)
         alerts.push({ outcome: m.eqA + ' gana',  cuota: od.home, probModel: probA,    probImplied: implA,    edge: probA-implA });
-    if (implDraw !== null && probDraw - implDraw > THRESHOLD && od.draw >= MIN_ODD)
+    if (implDraw !== null && probDraw - implDraw > THRESHOLD && od.draw >= MIN_ODD && od.draw <= MAX_ODD)
         alerts.push({ outcome: 'Empate',           cuota: od.draw, probModel: probDraw, probImplied: implDraw, edge: probDraw-implDraw });
-    if (implB    !== null && probB    - implB    > THRESHOLD && od.away >= MIN_ODD)
+    if (implB    !== null && probB    - implB    > THRESHOLD && od.away >= MIN_ODD && od.away <= MAX_ODD)
         alerts.push({ outcome: m.eqB + ' gana',  cuota: od.away, probModel: probB,    probImplied: implB,    edge: probB-implB });
 
     alerts.sort((a,b) => b.edge - a.edge);
