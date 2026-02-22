@@ -534,10 +534,10 @@
         @media print {
             body { background: #fff !important; color: #111 !important; padding: 0 !important; }
             .container { max-width: 100% !important; }
-            .tabs, .header p, #frm, .loading, .btn, .btn-pdf,
+            .tabs, .header p, #frm, .loading, .btn, .btn-pdf, .btn-share,
             .hist-back, .btn-notas, .res-selector, .tracker-box,
             .tab-btn, .save-btn, .ia-loading, .watch-btn,
-            .comparador-header { display: none !important; }
+            .comparador-header, .theme-toggle, .match-alert-banner { display: none !important; }
             .tab-panel { display: block !important; }
             .card, .ia-card, .value-bet-banner {
                 background: #fff !important; border: 1px solid #ccc !important;
@@ -573,11 +573,168 @@
             .odds-grid  { gap: 6px; }
             .value-bet-banner { flex-direction: column; gap: 8px; }
         }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 8: Dark / Light mode
+        ══════════════════════════════════════════════════════════════════ */
+        .theme-toggle {
+            position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+            background: #1a1b2a; border: 1px solid #252638; border-radius: 8px;
+            padding: 6px 10px; cursor: pointer; font-size: 16px; line-height: 1;
+            width: auto; box-shadow: none; transition: background .2s;
+        }
+        .theme-toggle:hover { background: #252638; transform: translateY(-50%); }
+
+        body.light-mode { background: #f5f5f0; color: #1a1a2e; }
+        body.light-mode .header h1  { color: #1a1a2e; }
+        body.light-mode .header p, body.light-mode .match-meta { color: #6b6b99; }
+        body.light-mode .card       { background: #ffffff; border-color: #e0e0ed; }
+        body.light-mode .card h2    { color: #6b6b99; border-bottom-color: #e0e0ed; }
+        body.light-mode .ia-card    { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode input, body.light-mode select, body.light-mode textarea {
+            background: #ffffff; color: #1a1a2e; border-color: #c8c8dd; }
+        body.light-mode .team-name  { color: #1a1a2e; }
+        body.light-mode .tabs       { border-bottom-color: #e0e0ed; }
+        body.light-mode .tab-btn    { color: #6b6b99; }
+        body.light-mode .srow       { border-bottom-color: #e8e8f0; }
+        body.light-mode .slbl       { color: #6b6b99; }
+        body.light-mode .sval       { color: #1a1a2e; }
+        body.light-mode .hist-item  { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode .hist-item:hover { background: #e8e8f5; }
+        body.light-mode .hist-item-name  { color: #1a1a2e; }
+        body.light-mode .hist-item-meta  { color: #6b6b99; }
+        body.light-mode .match-item      { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode .tracker-stats   { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode .tracker-lbl     { color: #6b6b99; }
+        body.light-mode .tracker-sep     { background: #e0e0ed; }
+        body.light-mode .odds-box        { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode .odds-val        { color: #1a1a2e; }
+        body.light-mode .odds-impl       { color: #9090aa; }
+        body.light-mode .h2h-box         { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode .h2h-item        { color: #444466; border-bottom-color: #e0e0ed; }
+        body.light-mode .h2h-score       { color: #1a1a2e; }
+        body.light-mode .ia-body         { color: #2a2a4a; }
+        body.light-mode .vs-badge        { background: #e8e8f5; color: #7c6dea; border-color: #e0e0ed; }
+        body.light-mode .rec-baja        { background: rgba(0,0,0,0.03); }
+        body.light-mode .comparador-select { background: #f0f0fa; border-color: #e0e0ed; color: #1a1a2e; }
+        body.light-mode .watchlist-section { border-color: rgba(251,191,36,.4); }
+        body.light-mode .watchlist-item    { background: #f0f0fa; border-color: #e0e0ed; }
+        body.light-mode ::-webkit-scrollbar-track { background: #f5f5f0; }
+        body.light-mode ::-webkit-scrollbar-thumb { background: #c8c8dd; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 1: Confidence score badge
+        ══════════════════════════════════════════════════════════════════ */
+        .confianza-badge {
+            display: inline-flex; flex-direction: column; align-items: center;
+            border: 1px solid; border-radius: 10px; padding: 6px 10px;
+            position: relative; cursor: default; margin-top: 10px;
+        }
+        .confianza-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-top: -2px; }
+        .confianza-warning { font-size: 10px; color: #f87171; font-weight: 600; margin-top: 4px; text-align: center; max-width: 160px; }
+        .conf-tooltip {
+            display: none; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+            background: #1a1b2a; border: 1px solid #252638; border-radius: 8px;
+            padding: 10px 12px; min-width: 220px; z-index: 200;
+            box-shadow: 0 8px 24px rgba(0,0,0,.5); font-size: 11px;
+        }
+        .confianza-badge:hover .conf-tooltip { display: block; }
+        .conf-tooltip-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px solid #1e1f31; }
+        .conf-tooltip-row:last-child { border-bottom: none; }
+        .conf-tooltip-icon  { width: 14px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+        .conf-tooltip-label { flex: 1; color: #8e8eaa; }
+        .conf-tooltip-pts   { font-weight: 700; min-width: 24px; text-align: right; }
+        body.light-mode .conf-tooltip { background: #fff; border-color: #e0e0ed; }
+        body.light-mode .conf-tooltip-label { color: #6b6b99; }
+        body.light-mode .conf-tooltip-row   { border-bottom-color: #e8e8f0; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 3: Sparkline SVG
+        ══════════════════════════════════════════════════════════════════ */
+        .forma-sparkline { display: block; margin-bottom: 6px; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 6: Historial search
+        ══════════════════════════════════════════════════════════════════ */
+        .hist-search-wrap { margin-bottom: 12px; }
+        .hist-search-input {
+            width: 100%; padding: 9px 12px; background: #0d0e1a;
+            border: 1px solid #252638; border-radius: 8px; font-size: 13px;
+            color: #eaeaf5; font-family: 'Inter', sans-serif; box-sizing: border-box;
+            transition: border-color .15s;
+        }
+        .hist-search-input:focus { outline: none; border-color: #7c6dea; box-shadow: 0 0 0 3px rgba(124,109,234,.15); }
+        .hist-search-input::placeholder { color: #3d3d5a; }
+        .hist-search-empty { text-align: center; padding: 24px; color: #3d3d5a; font-size: 13px; font-style: italic; }
+        body.light-mode .hist-search-input { background: #fff; border-color: #c8c8dd; color: #1a1a2e; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Features 4+5: Tracker breakdown + rachas
+        ══════════════════════════════════════════════════════════════════ */
+        .tracker-breakdown {
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+            padding: 8px 12px; font-size: 12px; font-weight: 600;
+        }
+        .tracker-breakdown-sep { color: #3d3d5a; }
+        .tracker-streak {
+            font-size: 12px; color: #8e8eaa; font-weight: 600;
+            padding: 4px 12px 8px; letter-spacing: .2px;
+        }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 7: Share button + toast
+        ══════════════════════════════════════════════════════════════════ */
+        .btn-share {
+            background: rgba(34,197,94,.10); color: #22c55e;
+            border: 1px solid rgba(34,197,94,.28); border-radius: 8px;
+            padding: 7px 14px; font-size: 11px; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            display: inline-flex; align-items: center; gap: 5px;
+            transition: background .15s; box-shadow: none;
+        }
+        .btn-share:hover { background: rgba(34,197,94,.20); transform: none; box-shadow: none; }
+        #share-toast {
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%);
+            background: #1a1b2a; color: #eaeaf5; font-size: 13px; font-weight: 600;
+            padding: 10px 20px; border-radius: 8px; border: 1px solid #252638;
+            box-shadow: 0 4px 16px rgba(0,0,0,.4); z-index: 9999;
+            transition: bottom .3s ease; font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        #share-toast.visible { bottom: 24px; }
+        body.light-mode #share-toast { background: #fff; color: #1a1a2e; border-color: #e0e0ed; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Feature 2: Pre-match alert banner
+        ══════════════════════════════════════════════════════════════════ */
+        .match-alert-banner {
+            display: flex; align-items: center; gap: 12px;
+            background: linear-gradient(135deg, rgba(251,191,36,.12) 0%, rgba(124,109,234,.08) 100%);
+            border: 1px solid rgba(251,191,36,.4); border-radius: 10px;
+            padding: 12px 16px; margin: 0 0 12px;
+            animation: slideDown .3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .match-alert-icon  { font-size: 22px; flex-shrink: 0; }
+        .match-alert-body  { flex: 1; }
+        .match-alert-title { font-size: 13px; font-weight: 700; color: #fde68a; }
+        .match-alert-sub   { font-size: 11px; color: #8e8eaa; margin-top: 2px; }
+        .match-alert-close {
+            background: none; border: none; color: #5a5a78; font-size: 16px;
+            cursor: pointer; padding: 4px; line-height: 1; width: auto;
+            box-shadow: none; transition: color .15s;
+        }
+        .match-alert-close:hover { color: #eaeaf5; transform: none; box-shadow: none; }
+        body.light-mode .match-alert-title { color: #78500a; }
+        body.light-mode .match-alert-sub   { color: #6b6b99; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
+    <div class="header" style="position:relative">
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
         <h1>⚽ Analizador de Partidos</h1>
         <p>Scalping deportivo · Sofascore tiempo real · IA Kimi K2</p>
     </div>
@@ -585,7 +742,7 @@
     <!-- ── TABS ── -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('tab-single')">🔍 Partido Individual</button>
-        <button class="tab-btn" onclick="switchTab('tab-multi'); renderWatchlist()">📋 Analizar Jornada</button>
+        <button class="tab-btn" onclick="switchTab('tab-multi'); renderWatchlist(); checkWatchlistAlerts()">📋 Analizar Jornada</button>
         <button class="tab-btn" onclick="switchTab('tab-historial'); loadHistorial(); initComparador()">📁 Historial</button>
     </div>
 
@@ -707,6 +864,11 @@
         <div class="card" id="histListCard">
             <h2 id="histTitulo">📁 Recientes (0/5)</h2>
             <p style="font-size:12px; color:#5a5a78; margin: -8px 0 10px; font-weight:500;">Los últimos 5 análisis se guardan automáticamente en este dispositivo</p>
+            <div class="hist-search-wrap">
+                <input type="text" id="histSearch" class="hist-search-input"
+                       placeholder="Buscar por equipo o competición..."
+                       oninput="filtrarHistorial(this.value)">
+            </div>
             <div id="trackerBox" class="tracker-box"></div>
             <div id="histListContent">
                 <div class="hist-empty">Cargando...</div>
@@ -757,6 +919,20 @@ const LIGA_IDS = {
     'MLS':                      242,
     'Eredivisie':               37,
 };
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 8: DARK / LIGHT MODE
+════════════════════════════════════════════════════════════════════════════ */
+function applyTheme(t) {
+    document.body.classList.toggle('light-mode', t === 'light');
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = t === 'light' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+    const next = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+}
 
 /* ════════════════════════════════════════════════════════════════════════════
    TABS
@@ -1467,6 +1643,84 @@ function recomendaciones(r) {
     return recs;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 1: CONFIDENCE SCORE
+════════════════════════════════════════════════════════════════════════════ */
+function calcConfianza(r) {
+    let score = 0;
+    const bd  = [];
+    const add = (label, pts, ok) => { if (ok) score += pts; bd.push({ label, pts, ok }); };
+
+    add('xG disponible (≥1 equipo)',  15, r.xg?.a != null || r.xg?.b != null);
+    add('Cuotas disponibles',         15, !!(r.odds?.home && r.odds?.draw && r.odds?.away));
+    add(`H2H ≥3 partidos`,            15, (r.h2h?.res?.n || 0) >= 3);
+    const formaMax = Math.max((r.forma?.fA?.badges||[]).length, (r.forma?.fB?.badges||[]).length);
+    add('Forma reciente ≥4 partidos', 15, formaMax >= 4);
+    add('Alineaciones confirmadas',   10, !!(r.alin?.confirmadas));
+    add('Stats ≥3 partidos (ambos)',  10, (r.stats?.sA?.n||0) >= 3 && (r.stats?.sB?.n||0) >= 3);
+    add('xG ambos equipos',           10, r.xg?.a != null && r.xg?.b != null);
+    add('Value bet detectado',        10, !!(r.odds && detectValueBets(r)));
+
+    return { score: Math.min(score, 100), breakdown: bd };
+}
+
+function renderConfianzaBadge(r) {
+    const { score, breakdown } = calcConfianza(r);
+    const color  = score >= 70 ? '#22c55e' : score >= 50 ? '#fbbf24' : '#f87171';
+    const bgC    = score >= 70 ? 'rgba(34,197,94,0.1)' : score >= 50 ? 'rgba(251,191,36,0.1)' : 'rgba(248,113,113,0.1)';
+    const bdrC   = score >= 70 ? 'rgba(34,197,94,0.3)' : score >= 50 ? 'rgba(251,191,36,0.3)' : 'rgba(248,113,113,0.3)';
+    const warn   = score < 50 ? `<div class="confianza-warning">⚠️ Datos limitados</div>` : '';
+
+    // SVG semicircular arc gauge
+    const R = 20, cx = 28, cy = 28;
+    const circ = Math.PI * R;
+    const dash  = (score / 100) * circ;
+
+    const tooltipRows = breakdown.map(b => `
+        <div class="conf-tooltip-row">
+            <span class="conf-tooltip-icon" style="color:${b.ok?'#22c55e':'#3d3d5a'}">${b.ok?'✓':'✗'}</span>
+            <span class="conf-tooltip-label">${b.label}</span>
+            <span class="conf-tooltip-pts" style="color:${b.ok?'#22c55e':'#3d3d5a'}">${b.ok?'+'+b.pts:''}</span>
+        </div>`).join('');
+
+    return `
+    <div class="confianza-badge" style="border-color:${bdrC};background:${bgC}">
+        <svg width="56" height="34" viewBox="0 0 56 34">
+            <path d="M8,28 A20,20 0 0,1 48,28" fill="none" stroke="#252638" stroke-width="5" stroke-linecap="round"/>
+            <path d="M8,28 A20,20 0 0,1 48,28" fill="none" stroke="${color}" stroke-width="5"
+                stroke-linecap="round"
+                stroke-dasharray="${dash.toFixed(1)} ${(circ*2).toFixed(1)}"
+                stroke-dashoffset="0"/>
+            <text x="28" y="26" text-anchor="middle" fill="${color}" font-size="10" font-weight="800" font-family="Inter,sans-serif">${score}</text>
+        </svg>
+        <div class="confianza-label" style="color:${color}">Confianza</div>
+        ${warn}
+        <div class="conf-tooltip">${tooltipRows}</div>
+    </div>`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 3: SVG SPARKLINE for forma badges
+════════════════════════════════════════════════════════════════════════════ */
+function sparkline(arr) {
+    if (!arr || !arr.length) return '';
+    const W = 80, H = 24, PAD = 4;
+    const clr = b => b === 'V' ? '#22c55e' : b === 'E' ? '#fbbf24' : '#ef4444';
+    const yv  = b => b === 'V' ? 1 : b === 'E' ? 0.5 : 0;
+    const pts = arr.map((b, i) => ({
+        x: (PAD + (i / Math.max(arr.length - 1, 1)) * (W - PAD * 2)).toFixed(1),
+        y: (H - PAD - yv(b) * (H - PAD * 2)).toFixed(1),
+        b,
+    }));
+    const polyline = arr.length > 1
+        ? `<polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="#3d3d5a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+        : '';
+    const dots = pts.map(p =>
+        `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${clr(p.b)}"/>`
+    ).join('');
+    return `<svg class="forma-sparkline" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${polyline}${dots}</svg>`;
+}
+
 function sr(l,v_) { return `<div class="srow"><span class="slbl">${l}</span><span class="sval">${val(v_)}</span></div>`; }
 
 function badges(arr) {
@@ -1508,6 +1762,7 @@ function renderResultado(r, containerId, mostrarGuardar) {
             ${m.arbitro?'Árbitro: '+m.arbitro:''}
         </div>
         <span class="source-ok">✓ Sofascore tiempo real</span>
+        ${renderConfianzaBadge(r)}
     </div>`;
 
     // ── Cuotas en vivo ──
@@ -1567,8 +1822,8 @@ function renderResultado(r, containerId, mostrarGuardar) {
     }
 
     html += `<div class="card"><h2>Forma Reciente (últimos 5)</h2><div class="two-col">
-    <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
-    <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
+    <div><div class="col-hdr">${m.eqA}</div>${sparkline(fo.fA.badges)}<div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
+    <div><div class="col-hdr">${m.eqB}</div>${sparkline(fo.fB.badges)}<div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
     </div></div>`;
 
     // ── xG card ──
@@ -1631,7 +1886,10 @@ function renderResultado(r, containerId, mostrarGuardar) {
 
     html += `<div class="ia-card" id="ia-bloque">
         <h2>🤖 Análisis de IA <span class="ia-badge">Kimi K2</span>
-            <button class="btn-pdf" onclick="exportarPDF()" title="Exportar a PDF" style="float:right;margin-top:-2px">📄 PDF</button>
+            <span style="float:right;display:inline-flex;gap:6px;margin-top:-2px">
+                <button class="btn-share" onclick="compartirAnalisis(window._currentResultado, window._currentKimiText)" title="Compartir análisis">📤 Compartir</button>
+                <button class="btn-pdf" onclick="exportarPDF()" title="Exportar a PDF">📄 PDF</button>
+            </span>
         </h2>
         <div class="ia-loading" id="ia-loading">
             <div class="ia-spinner"></div>
@@ -2164,37 +2422,67 @@ function parseRecIA(analisisText, eqA, eqB) {
 }
 
 // ── Tracker: calcula estadísticas de rendimiento ──────────────────────────
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURES 4+5: TRACKER BREAKDOWN + RACHAS
+════════════════════════════════════════════════════════════════════════════ */
+// Helper interno: predice el resultado que la IA recomendó para un análisis guardado
+function _predictOutcome(h) {
+    const eqA = h.stats_json?.meta?.eqA || '';
+    const eqB = h.stats_json?.meta?.eqB || '';
+    let rec = parseRecIA(h.analisis_ia, eqA, eqB);
+    if (!rec && h.stats_json) {
+        const recs = recomendaciones(h.stats_json);
+        const top  = (recs[0]?.tipo || '').toLowerCase();
+        const a4   = eqA.toLowerCase().slice(0, 4);
+        const recL = top.includes('local') || top.includes(a4);
+        const recE = top.includes('empate');
+        rec = recE ? 'empate' : recL ? 'local' : 'visitante';
+    }
+    return rec;
+}
+
 function calcTracker() {
     const lista = histGetAll().filter(h => h.resultado_real);
     if (!lista.length) return null;
 
     const total  = lista.length;
-    const conRes = lista.length; // todos en lista ya tienen resultado_real (filtrado arriba)
+    const conRes = lista.length;
 
     let aciertos = 0;
+    let localAciertos = 0, localTotal = 0;
+    let empateAciertos = 0, empateTotal = 0;
+    let visitanteAciertos = 0, visitanteTotal = 0;
+
     for (const h of lista) {
         const res  = h.resultado_real;
-        const eqA  = h.stats_json?.meta?.eqA || '';
-        const eqB  = h.stats_json?.meta?.eqB || '';
+        const recIA = _predictOutcome(h);
+        const ok   = recIA && recIA === res;
+        if (ok) aciertos++;
+        if (res === 'local')     { localTotal++;     if (ok) localAciertos++;     }
+        if (res === 'empate')    { empateTotal++;    if (ok) empateAciertos++;    }
+        if (res === 'visitante') { visitanteTotal++; if (ok) visitanteAciertos++; }
+    }
 
-        // Intentar parsear el texto IA primero (más preciso)
-        let recIA = parseRecIA(h.analisis_ia, eqA, eqB);
+    // Racha actual (más nuevo → más viejo, histGetAll ya viene ordenado así)
+    let currentStreak = 0, streakType = null;
+    for (let i = 0; i < lista.length; i++) {
+        const ok = _predictOutcome(lista[i]) === lista[i].resultado_real;
+        if (i === 0) { currentStreak = 1; streakType = ok ? 'win' : 'loss'; }
+        else if (ok === (streakType === 'win')) { currentStreak++; }
+        else break;
+    }
 
-        // Fallback: usar recomendaciones automáticas de stats si no se pudo parsear IA
-        if (!recIA && h.stats_json) {
-            const recs  = recomendaciones(h.stats_json);
-            const top   = (recs[0]?.tipo || '').toLowerCase();
-            const a4    = eqA.toLowerCase().slice(0,4);
-            const recL  = top.includes('local') || top.includes(a4);
-            const recE  = top.includes('empate');
-            recIA = recE ? 'empate' : recL ? 'local' : 'visitante';
-        }
-
-        if (recIA && recIA === res) aciertos++;
+    // Mejor racha histórica (solo aciertos)
+    let maxStreak = 0, run = 0;
+    for (const h of lista) {
+        if (_predictOutcome(h) === h.resultado_real) { run++; if (run > maxStreak) maxStreak = run; }
+        else run = 0;
     }
 
     const pct = total ? Math.round((aciertos / total) * 100) : 0;
-    return { total, conRes, aciertos, pct };
+    return { total, conRes, aciertos, pct,
+             localAciertos, localTotal, empateAciertos, empateTotal, visitanteAciertos, visitanteTotal,
+             currentStreak, maxStreak, streakType };
 }
 
 // ── Renderizar tracker en el header del Tab 3 ─────────────────────────────
@@ -2207,6 +2495,22 @@ function renderTracker() {
         return;
     }
     const color = t.pct >= 60 ? '#4ade80' : t.pct >= 40 ? '#fbbf24' : '#f87171';
+
+    // Breakdown colors per category
+    const bkClr = (a, tot) => {
+        if (!tot) return '#3d3d5a';
+        const p = (a/tot)*100;
+        return p >= 60 ? '#4ade80' : p >= 40 ? '#fbbf24' : '#f87171';
+    };
+    const bkItem = (lbl, a, tot) =>
+        `<span class="tracker-breakdown-item" style="color:${bkClr(a,tot)}">${lbl} ${a}/${tot}</span>`;
+
+    // Streak display
+    const streakIcon = t.streakType === 'win' ? '🔥' : '❄️';
+    const streakTxt  = t.streakType === 'win'
+        ? `${streakIcon} Racha actual: ${t.currentStreak} · Mejor racha: ${t.maxStreak}`
+        : `${streakIcon} Racha actual: 0 (${t.currentStreak} fallos) · Mejor racha: ${t.maxStreak}`;
+
     el.innerHTML = `
         <div class="tracker-stats">
             <div class="tracker-stat">
@@ -2223,25 +2527,30 @@ function renderTracker() {
                 <span class="tracker-num">${t.total}</span>
                 <span class="tracker-lbl">Analizados</span>
             </div>
-        </div>`;
+        </div>
+        <div class="tracker-breakdown">
+            ${bkItem('Local', t.localAciertos, t.localTotal)}
+            <span class="tracker-breakdown-sep">·</span>
+            ${bkItem('Empate', t.empateAciertos, t.empateTotal)}
+            <span class="tracker-breakdown-sep">·</span>
+            ${bkItem('Visitante', t.visitanteAciertos, t.visitanteTotal)}
+        </div>
+        <div class="tracker-streak">${streakTxt}</div>`;
 }
 
-// ── Lista principal del historial ─────────────────────────────────────────
-function loadHistorial() {
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 6: HISTORIAL SEARCH
+════════════════════════════════════════════════════════════════════════════ */
+function renderHistItems(lista) {
     const content = document.getElementById('histListContent');
-    const detail  = document.getElementById('histDetail');
-    detail.style.display = 'none';
-    document.getElementById('histListCard').style.display = 'block';
+    if (!content) return;
 
-    const lista = histGetAll();
-
-    const titulo = document.getElementById('histTitulo');
-    if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/${HIST_MAX})`;
-
-    renderTracker();
+    const searchVal = (document.getElementById('histSearch')?.value || '').trim();
 
     if (!lista.length) {
-        content.innerHTML = '<div class="hist-empty">Aún no hay análisis guardados.<br>Analizá un partido en la pestaña <strong>Partido</strong> y aparecerá aquí automáticamente.</div>';
+        content.innerHTML = searchVal
+            ? `<div class="hist-search-empty">Sin resultados para "<strong>${searchVal}</strong>"</div>`
+            : '<div class="hist-empty">Aún no hay análisis guardados.<br>Analizá un partido en la pestaña <strong>Partido</strong> y aparecerá aquí automáticamente.</div>';
         return;
     }
 
@@ -2269,6 +2578,34 @@ function loadHistorial() {
             </div>
         </div>`;
     }).join('');
+}
+
+function filtrarHistorial(query) {
+    const lista = histGetAll();
+    if (!query.trim()) { renderHistItems(lista); return; }
+    const q = query.toLowerCase();
+    renderHistItems(lista.filter(item =>
+        (item.partido || '').toLowerCase().includes(q) ||
+        (item.competicion || '').toLowerCase().includes(q)
+    ));
+}
+
+// ── Lista principal del historial ─────────────────────────────────────────
+function loadHistorial() {
+    const detail  = document.getElementById('histDetail');
+    detail.style.display = 'none';
+    document.getElementById('histListCard').style.display = 'block';
+
+    const lista = histGetAll();
+
+    const titulo = document.getElementById('histTitulo');
+    if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/${HIST_MAX})`;
+
+    renderTracker();
+
+    // Respect active search filter
+    const searchVal = (document.getElementById('histSearch')?.value || '').trim();
+    filtrarHistorial(searchVal);
 }
 
 // ── Popover inline para marcar resultado real ─────────────────────────────
@@ -2346,8 +2683,8 @@ function verHistorial(id) {
         const m = r.meta, fo = r.forma, co = r.corners, am = r.amarillas;
         if (fo && fo.fA) {
             html += `<div class="card"><h2>Forma Reciente</h2><div class="two-col">
-            <div><div class="col-hdr">${m.eqA}</div><div class="forma-row">${badges(fo.fA.badges)}</div></div>
-            <div><div class="col-hdr">${m.eqB}</div><div class="forma-row">${badges(fo.fB.badges)}</div></div>
+            <div><div class="col-hdr">${m.eqA}</div>${sparkline(fo.fA.badges)}<div class="forma-row">${badges(fo.fA.badges)}</div></div>
+            <div><div class="col-hdr">${m.eqB}</div>${sparkline(fo.fB.badges)}<div class="forma-row">${badges(fo.fB.badges)}</div></div>
             </div></div>`;
         }
         if (co && (co.a || co.b)) {
@@ -2470,7 +2807,13 @@ function toggleWatchById(id, btn) {
 }
 
 // Inicializar watchlist al cargar la página
-document.addEventListener('DOMContentLoaded', renderWatchlist);
+document.addEventListener('DOMContentLoaded', () => {
+    renderWatchlist();
+    // Feature 8: restaurar tema guardado
+    applyTheme(localStorage.getItem('theme') || 'dark');
+    // Feature 2: verificar alertas de watchlist con delay para no bloquear carga
+    setTimeout(initNotifications, 1500);
+});
 
 // ── Comparador ────────────────────────────────────────────────────────────
 function initComparador() {
@@ -2617,6 +2960,160 @@ function exportarPDF() {
     document.title = titulo + ' — Analizador de Partidos';
     window.print();
     document.title = prev;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 7: SHARE ANALYSIS
+════════════════════════════════════════════════════════════════════════════ */
+function showToast(msg, duration = 2500) {
+    let toast = document.getElementById('share-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'share-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('visible'), duration);
+}
+
+async function clipboardFallback(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+    } catch (_) {
+        // Textarea execCommand fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;pointer-events:none';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch(_2) {}
+        document.body.removeChild(ta);
+    }
+    showToast('✅ Copiado al portapapeles');
+}
+
+async function compartirAnalisis(r, kimiText) {
+    if (!r) return;
+    const m    = r.meta;
+    const od   = r.odds;
+    const recs = recomendaciones(r);
+
+    const oddsLine = od?.home
+        ? `📊 Cuotas: Local ${od.home.toFixed(2)} · X ${od.draw?.toFixed(2)||'—'} · Visit ${od.away?.toFixed(2)||'—'}`
+        : '';
+
+    const topRecs = recs.slice(0, 2)
+        .filter(rc => rc.tipo !== 'Sin recomendación clara')
+        .map(rc => `  • ${rc.tipo} (${rc.conf})`)
+        .join('\n');
+
+    // First substantive line from IA text as snippet
+    let iaSnippet = '';
+    if (kimiText) {
+        const lines = kimiText.split('\n').map(l => l.trim()).filter(l => l.length > 40 && !l.startsWith('#') && !l.startsWith('**'));
+        iaSnippet = (lines[0] || '').slice(0, 200);
+        if (lines[0]?.length > 200) iaSnippet += '...';
+    }
+
+    const parts = [
+        `⚽ ${m.eqA} vs ${m.eqB}${m.competicion ? ' — ' + m.competicion : ''}`,
+        oddsLine,
+        topRecs ? `🎯 Recomendaciones:\n${topRecs}` : '',
+        iaSnippet ? `🤖 IA: ${iaSnippet}` : '',
+        '',
+        '📱 Analizador de Partidos · IA Kimi K2',
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: `${m.eqA} vs ${m.eqB} — Análisis`, text: parts, url: window.location.href });
+            return;
+        } catch (err) {
+            if (err.name === 'AbortError') return; // user cancelled
+        }
+    }
+    await clipboardFallback(parts);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FEATURE 2: PRE-MATCH ALERTS (Push Notifications + in-app banner)
+════════════════════════════════════════════════════════════════════════════ */
+function parseMatchTime(horaStr) {
+    if (!horaStr || typeof horaStr !== 'string') return null;
+    const m = horaStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), +m[1], +m[2], 0, 0);
+}
+
+function showMatchAlert(w, minsLeft) {
+    const alertId = 'alert-' + w.id;
+    if (document.getElementById(alertId)) return;
+    const div = document.createElement('div');
+    div.id        = alertId;
+    div.className = 'match-alert-banner';
+    div.innerHTML = `
+        <div class="match-alert-icon">⚽</div>
+        <div class="match-alert-body">
+            <div class="match-alert-title">Próximo partido en ${minsLeft} min</div>
+            <div class="match-alert-sub">${w.nombre}${w.ronda ? ' · ' + w.ronda : ''} · ${w.hora}</div>
+        </div>
+        <button class="match-alert-close" onclick="this.parentNode.remove()" title="Cerrar">✕</button>`;
+    const header = document.querySelector('.header');
+    if (header) header.insertAdjacentElement('afterend', div);
+    else document.body.prepend(div);
+    setTimeout(() => div.remove(), 10000);
+}
+
+function checkWatchlistAlerts() {
+    const lista = wlGetAll();
+    if (!lista.length) return;
+
+    const now       = Date.now();
+    const WINDOW_MS = 7200000; // 2 hours
+    const NK        = 'notif_sent';
+    let sentSet;
+    try { sentSet = new Set(JSON.parse(localStorage.getItem(NK) || '[]')); }
+    catch (_) { sentSet = new Set(); }
+
+    // Prune IDs older than 24h
+    const now24 = Date.now() - 86400000;
+    for (const id of sentSet) { if (typeof id === 'number' && id < now24) sentSet.delete(id); }
+
+    lista.forEach(w => {
+        const matchTime = parseMatchTime(w.hora);
+        if (!matchTime) return;
+        const diff = matchTime.getTime() - now;
+        if (diff <= 0 || diff > WINDOW_MS) return;
+
+        const nid = `${w.id}_${w.hora}`;
+        if (sentSet.has(nid)) return;
+
+        const minsLeft = Math.round(diff / 60000);
+        showMatchAlert(w, minsLeft);
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                new Notification(`⚽ En ${minsLeft} min: ${w.nombre}`, {
+                    body: `${w.ronda ? w.ronda + ' · ' : ''}${w.hora}`,
+                    icon: '/static/icons/icon-192.png',
+                    tag:  nid,
+                });
+            } catch (_) {}
+        }
+        sentSet.add(nid);
+    });
+
+    try { localStorage.setItem(NK, JSON.stringify([...sentSet])); } catch (_) {}
+}
+
+async function initNotifications() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch (_) {}
+    }
+    checkWatchlistAlerts();
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
