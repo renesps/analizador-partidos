@@ -720,7 +720,7 @@
         <div id="comparadorSection" style="display:none">
             <div class="card">
                 <h2>🆚 Comparar Análisis</h2>
-                <div class="comparador-header">
+                <div class="comparador-header cmp-selects">
                     <select class="comparador-select" id="cmpA"></select>
                     <span class="comparador-vs">VS</span>
                     <select class="comparador-select" id="cmpB"></select>
@@ -1173,6 +1173,8 @@ function renderMultiResultados(resultados) {
         for (let i = 0; i < resultados.length; i++) {
             const texto = await pedirAnalisisIA(resultados[i], 'multi-ia-body-' + i, 'multi-ia-load-' + i, false);
             textos.push({ partido: resultados[i].meta.eqA + ' vs ' + resultados[i].meta.eqB, texto });
+            // Auto-guardar cada partido individual en el historial
+            if (texto) autoGuardarAnalisis(resultados[i], texto);
             await sleep(1000);
         }
 
@@ -2116,33 +2118,79 @@ function autoGuardarAnalisis(resultado, kimiText) {
     } catch(e) { console.warn('autoGuardar error:', e); }
 }
 
+// ── Parsear recomendación de la IA desde el texto ─────────────────────────
+// Busca en la sección VEREDICTO FINAL o en el texto general la apuesta principal
+function parseRecIA(analisisText, eqA, eqB) {
+    if (!analisisText) return null;
+
+    // Normalizar texto para comparar
+    const txt = analisisText.toLowerCase();
+    const a   = (eqA || '').toLowerCase();
+    const b   = (eqB || '').toLowerCase();
+
+    // Buscar la sección "VEREDICTO FINAL" o "APUESTA PRINCIPAL" — la recomendación suele estar ahí
+    const seccionMatch = txt.match(
+        /(?:veredicto final|apuesta principal|recomendaci[oó]n principal)[^\n]*\n([\s\S]{0,600})/i
+    );
+    const zona = seccionMatch ? seccionMatch[1] : txt.slice(-800); // últimos ~800 chars como fallback
+
+    // Señales para EMPATE
+    const empateSignals = [
+        /\bempate\b/, /\bdraw\b/, /\bx\b\s*(?:al|en|como|-)/, /\bdoble chance.{0,30}x/i
+    ];
+    // Señales para LOCAL (eqA)
+    const localSignals  = [
+        /\blocal\s+gana/, /\blocal\s+favorito/, /\bgana\s+(?:el\s+)?local/, /victoria\s+(?:del\s+)?local/,
+        new RegExp('\\b' + a.slice(0,5).replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '.{0,15}(?:gana|vence|victoria|favorit)', 'i'),
+    ];
+    // Señales para VISITANTE (eqB)
+    const visitanteSignals = [
+        /\bvisitante\s+gana/, /\bvisitante\s+favorito/, /\bgana\s+(?:el\s+)?visitante/, /victoria\s+(?:del\s+)?visitante/,
+        new RegExp('\\b' + b.slice(0,5).replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '.{0,15}(?:gana|vence|victoria|favorit)', 'i'),
+    ];
+
+    let scoreLocal = 0, scoreEmpate = 0, scoreVisitante = 0;
+
+    for (const re of localSignals)     if (re.test(zona)) scoreLocal++;
+    for (const re of empateSignals)    if (re.test(zona)) scoreEmpate++;
+    for (const re of visitanteSignals) if (re.test(zona)) scoreVisitante++;
+
+    // Si no detectamos nada claro, caer en stats como antes
+    if (scoreLocal === 0 && scoreEmpate === 0 && scoreVisitante === 0) return null;
+
+    if (scoreEmpate >= scoreLocal && scoreEmpate >= scoreVisitante) return 'empate';
+    if (scoreVisitante > scoreLocal) return 'visitante';
+    return 'local';
+}
+
 // ── Tracker: calcula estadísticas de rendimiento ──────────────────────────
 function calcTracker() {
     const lista = histGetAll().filter(h => h.resultado_real);
     if (!lista.length) return null;
 
-    // Para el tracker contamos si la recomendación top de la IA coincidió con el resultado real.
-    // Como proxy simple: la IA en su texto menciona el equipo ganador / empate como primera apuesta.
-    // Usamos el campo resultado_real para calcular métricas generales.
-    const total    = lista.length;
-    const conRes   = lista.filter(h => h.resultado_real).length;
+    const total  = lista.length;
+    const conRes = lista.length; // todos en lista ya tienen resultado_real (filtrado arriba)
 
-    // "Acierto IA" = la primera recomendación del análisis coincide con resultado real.
-    // Dado que no parseamos el texto de la IA, usamos las recomendaciones automáticas (stats_json).
     let aciertos = 0;
     for (const h of lista) {
-        if (!h.stats_json) continue;
-        const recs   = recomendaciones(h.stats_json);
-        const top    = (recs[0]?.tipo || '').toLowerCase();
-        const res    = h.resultado_real;
-        const eqA    = (h.stats_json?.meta?.eqA || '').toLowerCase();
-        // Mapeo simple: si la rec dice "local gana" o el nombre del equipo A
-        const recLocal     = top.includes('local') || top.includes(eqA.slice(0,4));
-        const recEmpate    = top.includes('empate');
-        const recVisitante = top.includes('visitante') || (!recLocal && !recEmpate);
-        if ((res === 'local'     && recLocal)     ||
-            (res === 'empate'    && recEmpate)    ||
-            (res === 'visitante' && recVisitante)) aciertos++;
+        const res  = h.resultado_real;
+        const eqA  = h.stats_json?.meta?.eqA || '';
+        const eqB  = h.stats_json?.meta?.eqB || '';
+
+        // Intentar parsear el texto IA primero (más preciso)
+        let recIA = parseRecIA(h.analisis_ia, eqA, eqB);
+
+        // Fallback: usar recomendaciones automáticas de stats si no se pudo parsear IA
+        if (!recIA && h.stats_json) {
+            const recs  = recomendaciones(h.stats_json);
+            const top   = (recs[0]?.tipo || '').toLowerCase();
+            const a4    = eqA.toLowerCase().slice(0,4);
+            const recL  = top.includes('local') || top.includes(a4);
+            const recE  = top.includes('empate');
+            recIA = recE ? 'empate' : recL ? 'local' : 'visitante';
+        }
+
+        if (recIA && recIA === res) aciertos++;
     }
 
     const pct = total ? Math.round((aciertos / total) * 100) : 0;
@@ -2431,9 +2479,19 @@ function initComparador() {
     if (!section) return;
 
     if (lista.length < 2) {
-        section.style.display = 'none';
+        section.style.display = 'block';
+        const resultEl = document.getElementById('comparadorResult');
+        if (resultEl) resultEl.innerHTML =
+            '<p style="color:#6b6b99;font-size:12px;font-style:italic;padding:8px 0;text-align:center">' +
+            '📊 Analizá al menos 2 partidos para poder comparar análisis.</p>';
+        // Ocultar los selects y botón hasta tener datos
+        const selRow = section.querySelector('.cmp-selects');
+        if (selRow) selRow.style.display = 'none';
         return;
     }
+    // Asegurarse de que los selects sean visibles si antes estaban ocultos
+    const selRow = section.querySelector('.cmp-selects');
+    if (selRow) selRow.style.display = '';
     section.style.display = 'block';
 
     const opts = lista.map((h,i) => `<option value="${i}">${h.partido}</option>`).join('');
