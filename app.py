@@ -277,12 +277,23 @@ def get_odds():
         if not best_event or best_score < 3:
             return jsonify({'error': 'Partido no encontrado en The Odds API'}), 404
 
-        # Extraer cuotas del primer bookmaker disponible
+        # Extraer cuotas priorizando Bet365, luego 1xbet, luego cualquier otro
+        PREFERRED_BOOKS = ['bet365', '1xbet', 'betfair', 'unibet', 'bwin', 'betway', 'william hill']
+
+        def bk_priority(bk):
+            title = bk.get('title', '').lower()
+            for i, name in enumerate(PREFERRED_BOOKS):
+                if name in title:
+                    return i
+            return len(PREFERRED_BOOKS)  # último lugar si no está en la lista preferida
+
+        bookmakers_sorted = sorted(best_event.get('bookmakers', []), key=bk_priority)
+
         home_odd = draw_odd = away_odd = None
         over25   = under25  = None
         source   = ''
 
-        for bk in best_event.get('bookmakers', []):
+        for bk in bookmakers_sorted:
             for mkt in bk.get('markets', []):
                 if mkt['key'] == 'h2h' and home_odd is None:
                     outs = {o['name']: o['price'] for o in mkt.get('outcomes', [])}
