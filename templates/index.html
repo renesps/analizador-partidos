@@ -537,7 +537,10 @@
             .tabs, .header p, #frm, .loading, .btn, .btn-pdf, .btn-share,
             .hist-back, .btn-notas, .res-selector, .tracker-box,
             .tab-btn, .save-btn, .ia-loading, .watch-btn,
-            .comparador-header, .theme-toggle, .match-alert-banner { display: none !important; }
+            .comparador-header, .theme-toggle, .match-alert-banner,
+            .settings-btn, .settings-overlay, .kelly-calc, .roi-box,
+            .jornada-dashboard, .etiq-filter-wrap, .odds-monitor-btn,
+            .prob-bar-card, .backtest-card, .apuesta-form { display: none !important; }
             .tab-panel { display: block !important; }
             .card, .ia-card, .value-bet-banner {
                 background: #fff !important; border: 1px solid #ccc !important;
@@ -854,11 +857,215 @@
 
         /* card-resultado botones de selector */
         body.light-mode .card-resultado .res-selector button { color: #1a1a2e; background: #f0f0fa; border-color: #c8c8dd; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           NUEVAS FEATURES — CSS
+        ══════════════════════════════════════════════════════════════════ */
+
+        /* Feature: Historial paginación */
+        .hist-pagination { display:flex; justify-content:center; align-items:center; gap:10px; padding:12px 0 4px; }
+        .hist-page-info  { color:#5a5a78; font-size:12px; font-weight:600; }
+        .btn-hist-page   { background:#1a1b2a; border:1px solid #252638; color:#9d8ef5; border-radius:6px; padding:6px 14px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:auto; box-shadow:none; transition:background .15s; }
+        .btn-hist-page:hover:not(:disabled) { background:#252638; transform:none; }
+        .btn-hist-page:disabled { opacity:.35; cursor:not-allowed; }
+        body.light-mode .btn-hist-page { background:#f0f0fa; color:#7c6dea; border-color:#e0e0ed; }
+        body.light-mode .hist-page-info { color:#6b6b99; }
+
+        /* Feature: Etiquetas */
+        .etiq-badge { display:inline-block; font-size:10px; font-weight:700; padding:1px 7px; border-radius:20px; margin-left:6px; vertical-align:middle; border:1px solid transparent; }
+        .etiq-aposto      { background:rgba(251,191,36,.15); color:#fbbf24; border-color:rgba(251,191,36,.3); }
+        .etiq-seguimiento { background:rgba(124,109,234,.15); color:#9d8ef5; border-color:rgba(124,109,234,.3); }
+        .etiq-cancelado   { background:rgba(107,114,128,.15); color:#9ca3af; border-color:rgba(107,114,128,.3); }
+        .etiq-ganada      { background:rgba(34,197,94,.15); color:#22c55e; border-color:rgba(34,197,94,.3); }
+        .etiq-perdida     { background:rgba(239,68,68,.15); color:#f87171; border-color:rgba(239,68,68,.3); }
+        .etiq-filter-wrap { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+        .btn-etiq-filter  { background:#1a1b2a; border:1px solid #252638; color:#5a5a78; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:none; width:auto; transition:all .15s; }
+        .btn-etiq-filter:hover { border-color:#7c6dea; color:#9d8ef5; transform:none; }
+        .btn-etiq-filter.active { background:#7c6dea; color:#fff; border-color:#7c6dea; }
+        .etiq-selector-wrap { margin:14px 0 8px; }
+        .etiq-selector-label { font-size:11px; color:#5a5a78; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px; }
+        .etiq-selector { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+        .btn-etiq { background:#1a1b2a; border:1px solid #252638; color:#8e8eaa; border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:none; width:auto; transition:all .15s; }
+        .btn-etiq:hover { border-color:#7c6dea; transform:none; }
+        .btn-etiq.active { background:#252638; border-color:#7c6dea; color:#eaeaf5; }
+        body.light-mode .btn-etiq-filter { background:#f0f0fa; color:#6b6b99; border-color:#e0e0ed; }
+        body.light-mode .btn-etiq-filter.active { background:#7c6dea; color:#fff; }
+        body.light-mode .btn-etiq { background:#f0f0fa; color:#6b6b99; border-color:#e0e0ed; }
+        body.light-mode .btn-etiq.active { background:#e8e8f5; border-color:#7c6dea; color:#1a1a2e; }
+        body.light-mode .etiq-aposto { color:#a16207; }
+        body.light-mode .etiq-ganada { color:#15803d; }
+        body.light-mode .etiq-perdida { color:#dc2626; }
+
+        /* Feature: Probabilidades animadas */
+        .prob-bar-card { }
+        .prob-bar-grid { display:flex; flex-direction:column; gap:14px; margin-top:8px; }
+        .prob-bar-section { }
+        .prob-bar-row { display:grid; grid-template-columns:90px 1fr 56px; gap:10px; align-items:center; font-size:12px; margin-bottom:4px; }
+        .prob-bar-label { font-weight:700; color:#eaeaf5; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .prob-bar-pct { font-weight:800; font-size:12px; text-align:right; }
+        .prob-bar-track { height:8px; background:#1a1b2a; border-radius:4px; overflow:hidden; position:relative; }
+        .prob-bar-fill { height:100%; border-radius:4px; width:0; transition:width .9s cubic-bezier(.4,0,.2,1); }
+        .prob-bar-fill.local { background:#7c6dea; }
+        .prob-bar-fill.draw  { background:#fbbf24; }
+        .prob-bar-fill.visit { background:#ef4444; }
+        .prob-dual-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; font-size:11px; }
+        .prob-dual-item { text-align:center; padding:4px 8px; border-radius:6px; font-weight:600; }
+        .prob-dual-item.model  { background:rgba(124,109,234,.12); color:#9d8ef5; border:1px solid rgba(124,109,234,.25); }
+        .prob-dual-item.market { background:rgba(107,114,128,.10); color:#8e8eaa; border:1px solid rgba(107,114,128,.2); }
+        .prob-dual-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:2px; }
+        body.light-mode .prob-bar-track { background:#e8e8f5; }
+        body.light-mode .prob-bar-label { color:#1a1a2e; }
+        body.light-mode .prob-bar-pct  { color:#1a1a2e; }
+        body.light-mode .prob-dual-item.model  { background:rgba(124,109,234,.08); }
+        body.light-mode .prob-dual-item.market { background:rgba(0,0,0,.04); color:#6b6b99; }
+
+        /* Feature: Kelly Criterion */
+        .kelly-calc { margin-top:14px; padding:16px; background:rgba(251,191,36,.05); border:1px solid rgba(251,191,36,.2); border-radius:10px; }
+        .kelly-calc-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#fbbf24; margin-bottom:12px; }
+        .kelly-input-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+        .kelly-bankroll-input { flex:1; background:#0d0e1a; border:1px solid #252638; border-radius:8px; padding:9px 12px; color:#eaeaf5; font-family:'Inter',sans-serif; font-size:14px; font-weight:600; transition:border-color .15s; }
+        .kelly-bankroll-input:focus { outline:none; border-color:#fbbf24; box-shadow:0 0 0 3px rgba(251,191,36,.12); }
+        .kelly-bankroll-input::placeholder { color:#3d3d5a; }
+        .kelly-currency { color:#5a5a78; font-size:13px; font-weight:600; white-space:nowrap; }
+        .kelly-results { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .kelly-result-item { background:#0d0e1a; border:1px solid #252638; border-radius:8px; padding:10px 12px; text-align:center; }
+        .kelly-result-lbl { font-size:10px; color:#5a5a78; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+        .kelly-result-val { font-size:18px; font-weight:800; color:#fbbf24; letter-spacing:-.5px; }
+        .kelly-result-item.recommended { border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.05); }
+        .kelly-result-item.recommended .kelly-result-val { color:#22c55e; }
+        .kelly-rec-note { font-size:10px; color:#5a5a78; font-style:italic; margin-top:10px; text-align:center; }
+        body.light-mode .kelly-calc { background:rgba(251,191,36,.04); }
+        body.light-mode .kelly-bankroll-input { background:#fff; border-color:#c8c8dd; color:#1a1a2e; }
+        body.light-mode .kelly-result-item { background:#f0f0fa; border-color:#e0e0ed; }
+        body.light-mode .kelly-result-val { color:#a16207; }
+        body.light-mode .kelly-result-item.recommended .kelly-result-val { color:#15803d; }
+
+        /* Feature: Dashboard Jornada */
+        .jornada-dashboard { margin-bottom:14px; }
+        .dashboard-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
+        .dashboard-table th { font-size:10px; font-weight:700; color:#5a5a78; text-transform:uppercase; letter-spacing:.5px; padding:6px 10px; border-bottom:1px solid #252638; text-align:left; }
+        .dashboard-row { border-bottom:1px solid #1a1b2a; cursor:pointer; transition:background .12s; }
+        .dashboard-row:hover { background:#1a1b2a; }
+        .dashboard-row:last-child { border-bottom:none; }
+        .dashboard-row td { padding:9px 10px; vertical-align:middle; }
+        .dashboard-match-name { font-weight:700; color:#eaeaf5; font-size:12px; }
+        .dashboard-conf-val { font-weight:800; font-size:13px; }
+        .dashboard-vbet-yes { color:#fbbf24; font-weight:700; font-size:11px; }
+        .dashboard-vbet-no  { color:#3d3d5a; font-size:11px; }
+        .dashboard-rec-cell { color:#9d8ef5; font-size:11px; font-weight:600; }
+        body.light-mode .dashboard-row:hover { background:#f0f0fa; }
+        body.light-mode .dashboard-match-name { color:#1a1a2e; }
+        body.light-mode .dashboard-table th { color:#6b6b99; border-bottom-color:#e0e0ed; }
+        body.light-mode .dashboard-row td { border-bottom-color:#e8e8f0; }
+        body.light-mode .dashboard-rec-cell { color:#7c6dea; }
+        body.light-mode .dashboard-vbet-no  { color:#9090aa; }
+
+        /* Feature: Backtesting */
+        .backtest-card { }
+        .backtest-summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .backtest-stat { flex:1; min-width:70px; text-align:center; background:#0d0e1a; border:1px solid #252638; border-radius:8px; padding:10px 8px; }
+        .backtest-stat-val { font-size:20px; font-weight:800; color:#9d8ef5; letter-spacing:-.5px; }
+        .backtest-stat-lbl { font-size:10px; color:#5a5a78; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-top:3px; }
+        .backtest-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:4px; }
+        .backtest-table th { font-size:10px; font-weight:700; color:#5a5a78; text-transform:uppercase; letter-spacing:.4px; padding:6px 8px; border-bottom:1px solid #252638; text-align:left; }
+        .backtest-table td { padding:8px 8px; border-bottom:1px solid #1a1b2a; vertical-align:middle; }
+        .backtest-table tr:last-child td { border-bottom:none; }
+        .bt-row-both-right { background:rgba(34,197,94,.04); }
+        .bt-row-one-right  { background:rgba(251,191,36,.04); }
+        .bt-row-both-wrong { background:rgba(239,68,68,.04); }
+        .bt-pill { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+        .bt-pill-right { background:rgba(34,197,94,.15); color:#22c55e; border:1px solid rgba(34,197,94,.3); }
+        .bt-pill-wrong { background:rgba(239,68,68,.12); color:#f87171; border:1px solid rgba(239,68,68,.25); }
+        .bt-pill-none  { background:rgba(107,114,128,.10); color:#6b7280; border:1px solid rgba(107,114,128,.2); }
+        .backtest-empty { text-align:center; padding:24px; color:#3d3d5a; font-size:12px; font-style:italic; }
+        body.light-mode .backtest-stat { background:#f0f0fa; border-color:#e0e0ed; }
+        body.light-mode .backtest-stat-val { color:#7c6dea; }
+        body.light-mode .backtest-table th { color:#6b6b99; border-bottom-color:#e0e0ed; }
+        body.light-mode .backtest-table td { border-bottom-color:#e8e8f0; }
+
+        /* Feature: ROI Tracker */
+        .roi-box { margin-top:12px; padding:14px; background:#0d0e1a; border:1px solid #252638; border-radius:10px; }
+        .roi-box-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#5a5a78; margin-bottom:10px; }
+        .roi-stats-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+        .roi-stat { flex:1; min-width:60px; text-align:center; }
+        .roi-stat-val { font-size:18px; font-weight:800; letter-spacing:-.5px; }
+        .roi-stat-lbl { font-size:10px; color:#5a5a78; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+        .roi-positive { color:#22c55e; }
+        .roi-negative { color:#f87171; }
+        .roi-neutral  { color:#9d8ef5; }
+        .apuesta-form { margin-top:12px; border-top:1px solid #252638; padding-top:12px; }
+        .apuesta-form-title { font-size:11px; color:#5a5a78; font-weight:600; margin-bottom:10px; }
+        .apuesta-form-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+        .apuesta-lbl { font-size:11px; color:#5a5a78; font-weight:600; white-space:nowrap; }
+        .apuesta-input { width:90px; padding:7px 10px; background:#0d0e1a; border:1px solid #252638; border-radius:6px; font-size:12px; color:#eaeaf5; font-family:'Inter',sans-serif; }
+        .apuesta-input::placeholder { color:#3d3d5a; }
+        .apuesta-input:focus { outline:none; border-color:#7c6dea; }
+        .apuesta-select { padding:7px 8px; background:#0d0e1a; border:1px solid #252638; border-radius:6px; font-size:12px; color:#eaeaf5; font-family:'Inter',sans-serif; cursor:pointer; }
+        .btn-guardar-apuesta { background:rgba(124,109,234,.2); color:#9d8ef5; border:1px solid rgba(124,109,234,.35); border-radius:6px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:auto; box-shadow:none; }
+        .btn-guardar-apuesta:hover { background:rgba(124,109,234,.3); transform:none; }
+        body.light-mode .roi-box { background:#f0f0fa; border-color:#e0e0ed; }
+        body.light-mode .roi-stat-lbl { color:#6b6b99; }
+        body.light-mode .roi-box-title { color:#6b6b99; }
+        body.light-mode .apuesta-input { background:#fff; border-color:#c8c8dd; color:#1a1a2e; }
+        body.light-mode .apuesta-select { background:#fff; border-color:#c8c8dd; color:#1a1a2e; }
+
+        /* Feature: Forma extendida */
+        .forma-split-label { font-size:10px; color:#5a5a78; font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; margin-top:6px; display:block; }
+
+        /* Feature: Alertas de cuotas */
+        .odds-monitor-btn { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.3); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:background .15s; margin-top:12px; display:inline-block; width:auto; box-shadow:none; }
+        .odds-monitor-btn:hover { background:rgba(251,191,36,.2); transform:none; }
+        .odds-monitor-result { margin-top:10px; }
+        .odds-drop-alert { background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.3); border-left:3px solid #ef4444; border-radius:8px; padding:10px 12px; font-size:12px; font-weight:600; color:#fca5a5; margin-bottom:6px; }
+        .odds-rise       { background:rgba(34,197,94,.06); border:1px solid rgba(34,197,94,.25); border-left:3px solid #22c55e; border-radius:8px; padding:10px 12px; font-size:12px; font-weight:600; color:#86efac; margin-bottom:6px; }
+        .odds-smart-money { background:rgba(251,191,36,.08); border:1px solid rgba(251,191,36,.3); border-radius:8px; padding:8px 12px; font-size:11px; color:#fde68a; font-style:italic; margin-top:6px; }
+        .odds-unchanged { font-size:12px; color:#5a5a78; padding:8px 0; }
+        body.light-mode .odds-drop-alert { color:#dc2626; background:rgba(220,38,38,.05); }
+        body.light-mode .odds-rise { color:#15803d; background:rgba(34,197,94,.04); }
+        body.light-mode .odds-smart-money { color:#a16207; }
+        body.light-mode .odds-unchanged { color:#9090aa; }
+
+        /* Feature: Telegram / Settings Panel */
+        .settings-btn { position:absolute; right:44px; top:50%; transform:translateY(-50%); background:#1a1b2a; border:1px solid #252638; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:16px; width:auto; box-shadow:none; line-height:1; color:#eaeaf5; transition:background .15s; }
+        .settings-btn:hover { background:#252638; transform:translateY(-50%); }
+        .settings-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1000; backdrop-filter:blur(2px); align-items:flex-end; justify-content:center; }
+        .settings-overlay.open { display:flex; }
+        @media (min-width:600px) { .settings-overlay.open { align-items:center; } }
+        .settings-panel { background:#13141f; border:1px solid #252638; border-radius:16px 16px 0 0; padding:24px 20px; width:100%; max-width:480px; box-shadow:0 -8px 32px rgba(0,0,0,.5); font-family:'Inter',sans-serif; max-height:90vh; overflow-y:auto; }
+        @media (min-width:600px) { .settings-panel { border-radius:16px; max-height:80vh; } }
+        .settings-panel-title { font-size:14px; font-weight:800; color:#eaeaf5; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; }
+        .settings-subtitle { font-size:11px; color:#5a5a78; margin-bottom:20px; font-weight:500; }
+        .settings-close { background:none; border:none; color:#5a5a78; font-size:20px; cursor:pointer; padding:0; line-height:1; width:auto; box-shadow:none; }
+        .settings-close:hover { color:#eaeaf5; transform:none; }
+        .settings-field { margin-bottom:14px; }
+        .settings-field label { display:block; font-size:11px; font-weight:700; color:#8e8eaa; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+        .settings-field input[type=text] { width:100%; box-sizing:border-box; }
+        .settings-check-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+        .settings-check-row input[type=checkbox] { width:16px; height:16px; accent-color:#7c6dea; cursor:pointer; flex-shrink:0; }
+        .settings-check-row label { font-size:12px; color:#8e8eaa; font-weight:500; cursor:pointer; text-transform:none; letter-spacing:0; display:inline; margin-bottom:0; }
+        .settings-divider { border:none; border-top:1px solid #252638; margin:16px 0; }
+        .btn-test-tg { background:rgba(124,109,234,.15); color:#9d8ef5; border:1px solid rgba(124,109,234,.35); border-radius:8px; padding:9px 16px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:auto; box-shadow:none; margin-bottom:10px; }
+        .btn-test-tg:hover { background:rgba(124,109,234,.25); transform:none; }
+        .btn-save-settings { background:linear-gradient(135deg,#7c6dea,#5b3fa6); color:#fff; border:none; border-radius:8px; padding:12px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:100%; margin-top:6px; box-shadow:0 4px 14px rgba(124,109,234,.3); }
+        .btn-save-settings:hover { opacity:.9; transform:none; }
+        .tg-status { font-size:11px; margin-top:6px; font-style:italic; min-height:16px; }
+        .tg-status.ok    { color:#22c55e; }
+        .tg-status.error { color:#f87171; }
+        .settings-warning { font-size:10px; color:#5a5a78; margin-top:12px; padding:8px 10px; background:rgba(107,114,128,.08); border-radius:6px; border:1px solid rgba(107,114,128,.2); }
+        body.light-mode .settings-panel { background:#fff; border-color:#e0e0ed; }
+        body.light-mode .settings-panel-title { color:#1a1a2e; }
+        body.light-mode .settings-subtitle { color:#6b6b99; }
+        body.light-mode .settings-field label { color:#6b6b99; }
+        body.light-mode .settings-check-row label { color:#6b6b99; }
+        body.light-mode .settings-btn { background:#f0f0fa; border-color:#e0e0ed; color:#1a1a2e; }
+        body.light-mode .settings-close { color:#6b6b99; }
+        body.light-mode .settings-divider { border-color:#e0e0ed; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header" style="position:relative">
+        <button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="Configuración">⚙️</button>
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
         <h1>⚽ Analizador de Partidos</h1>
         <p>Scalping deportivo · Sofascore tiempo real · IA Kimi K2</p>
@@ -987,14 +1194,22 @@
     ════════════════════════════════════════════ -->
     <div class="tab-panel" id="tab-historial">
         <div class="card" id="histListCard">
-            <h2 id="histTitulo">📁 Recientes (0/5)</h2>
-            <p style="font-size:12px; color:#5a5a78; margin: -8px 0 10px; font-weight:500;">Los últimos 5 análisis se guardan automáticamente en este dispositivo</p>
+            <h2 id="histTitulo">📁 Recientes (0/50)</h2>
+            <p style="font-size:12px; color:#5a5a78; margin: -8px 0 10px; font-weight:500;">Los últimos 50 análisis se guardan automáticamente en este dispositivo</p>
             <div class="hist-search-wrap">
                 <input type="text" id="histSearch" class="hist-search-input"
                        placeholder="Buscar por equipo o competición..."
                        oninput="filtrarHistorial(this.value)">
             </div>
+            <div class="etiq-filter-wrap" id="etiqFilterWrap">
+                <button class="btn-etiq-filter active" onclick="setEtiqFilter(null,this)">Todas</button>
+                <button class="btn-etiq-filter" onclick="setEtiqFilter('aposto',this)">🎯 Aposté</button>
+                <button class="btn-etiq-filter" onclick="setEtiqFilter('ganada',this)">✅ Ganadas</button>
+                <button class="btn-etiq-filter" onclick="setEtiqFilter('perdida',this)">❌ Perdidas</button>
+                <button class="btn-etiq-filter" onclick="setEtiqFilter('seguimiento',this)">👁️ Seguimiento</button>
+            </div>
             <div id="trackerBox" class="tracker-box"></div>
+            <div id="backtestBox"></div>
             <div id="histListContent">
                 <div class="hist-empty">Cargando...</div>
             </div>
@@ -1016,6 +1231,35 @@
                 <div id="comparadorResult"></div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsIfOutside(event)">
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-panel-title">
+            ⚙️ Configuración
+            <button class="settings-close" onclick="closeSettings()">✕</button>
+        </div>
+        <div class="settings-subtitle">Integración Telegram y preferencias</div>
+
+        <div class="settings-field">
+            <label>Telegram Bot Token</label>
+            <input type="text" id="tgToken" placeholder="1234567890:ABCDefGhIJKlmNOpQRsT...">
+        </div>
+        <div class="settings-field">
+            <label>Telegram Chat ID</label>
+            <input type="text" id="tgChatId" placeholder="@micanal o ID numérico (ej: -1001234567890)">
+        </div>
+        <div class="settings-check-row">
+            <input type="checkbox" id="tgOnlyVbet">
+            <label for="tgOnlyVbet">Enviar solo cuando haya value bet detectado</label>
+        </div>
+        <button class="btn-test-tg" onclick="testTelegram()">📤 Probar conexión</button>
+        <div class="tg-status" id="tgStatus"></div>
+        <hr class="settings-divider">
+        <button class="btn-save-settings" onclick="saveSettings()">💾 Guardar configuración</button>
+        <div class="settings-warning">⚠️ El token se almacena localmente en este dispositivo. No lo compartas con nadie.</div>
     </div>
 </div>
 
@@ -1427,6 +1671,36 @@ function renderMultiResultados(resultados) {
     const container = document.getElementById('resultadoMulti');
     container.innerHTML = '';
 
+    // ── Dashboard de Jornada ──
+    if (resultados.length >= 2) {
+        const dashDiv = document.createElement('div');
+        dashDiv.className = 'card jornada-dashboard';
+        const confColor = s => s >= 70 ? '#22c55e' : s >= 50 ? '#fbbf24' : '#f87171';
+        const rows = resultados.map((r, i) => {
+            const m2   = r.meta;
+            const conf = calcConfianza(r).score;
+            const vb   = r.odds ? detectValueBets(r) : null;
+            const recs2 = recomendaciones(r);
+            const topRec = recs2[0]?.tipo !== 'Sin recomendación clara' ? recs2[0]?.tipo : '—';
+            const topConf2 = recs2[0]?.conf || '';
+            const vbCell = vb
+                ? `<span class="dashboard-vbet-yes">✓ ${vb.outcome} (${vb.cuota.toFixed(2)}, +${(vb.edge*100).toFixed(0)}%)</span>`
+                : `<span class="dashboard-vbet-no">—</span>`;
+            return `<tr class="dashboard-row" onclick="document.querySelectorAll('.multi-partido-card')[${i}]?.scrollIntoView({behavior:'smooth',block:'start'})">
+                <td><div class="dashboard-match-name">${m2.eqA} vs ${m2.eqB}</div><div style="font-size:10px;color:#5a5a78">${m2.competicion||''}</div></td>
+                <td><span class="dashboard-conf-val" style="color:${confColor(conf)}">${conf}</span></td>
+                <td>${vbCell}</td>
+                <td class="dashboard-rec-cell">${topRec}<br><span style="font-size:10px;color:#5a5a78">${topConf2}</span></td>
+            </tr>`;
+        }).join('');
+        dashDiv.innerHTML = `<h2>📊 Resumen de Jornada</h2>
+            <table class="dashboard-table">
+                <thead><tr><th>Partido</th><th>Conf.</th><th>Value Bet</th><th>Recomendación</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+        container.appendChild(dashDiv);
+    }
+
     resultados.forEach((r, i) => {
         const m = r.meta;
         const divId = 'multi-ia-body-' + i;
@@ -1541,7 +1815,7 @@ async function fetchStats(events, teamId) {
 }
 
 function forma(events, teamId) {
-    const list = finished(events).slice(-5);
+    const list = finished(events).slice(-10);
     const badges = [], detalle = [];
     for (const ev of list) {
         const local = ev.homeTeam?.id === teamId;
@@ -1557,7 +1831,7 @@ function forma(events, teamId) {
 }
 
 function calcStats(events, teamId) {
-    const list = finished(events).slice(-5);
+    const list = finished(events).slice(-10);
     if (!list.length) return {};
     const gf = [], gc = [];
     for (const ev of list) {
@@ -1617,9 +1891,9 @@ async function fetchResultadoCompleto(evento, teamAId, teamBId) {
         fetch('/odds?match=' + matchParam).then(r => r.ok ? r.json() : null).catch(() => null),
     ]);
 
-    step('Calculando corners y tarjetas...', 'Analizando últimos 5 partidos...');
-    const evA = finished(lastA?.events).slice(-5);
-    const evB = finished(lastB?.events).slice(-5);
+    step('Calculando corners y tarjetas...', 'Analizando últimos 10 partidos...');
+    const evA = finished(lastA?.events).slice(-10);
+    const evB = finished(lastB?.events).slice(-10);
     const [statsA, statsB] = await Promise.all([
         fetchStats(evA, teamAId),
         fetchStats(evB, teamBId),
@@ -1935,6 +2209,50 @@ function renderResultado(r, containerId, mostrarGuardar) {
         </div>`;
     }
 
+    // ── Probabilidades del modelo ──
+    {
+        const probs = computeModelProbabilities(r);
+        const od2 = r.odds;
+        const pA = (probs.probA * 100).toFixed(1);
+        const pD = (probs.probDraw * 100).toFixed(1);
+        const pB = (probs.probB * 100).toFixed(1);
+        const impA = od2?.home ? (100/od2.home).toFixed(1) : null;
+        const impD = od2?.draw ? (100/od2.draw).toFixed(1) : null;
+        const impB = od2?.away ? (100/od2.away).toFixed(1) : null;
+        const dualRow = (model, market) => `<div class="prob-dual-row">
+            <div class="prob-dual-item model"><div class="prob-dual-label">Modelo</div>${model}%</div>
+            <div class="prob-dual-item market"><div class="prob-dual-label">Mercado</div>${market ? market+'%' : '—'}</div>
+        </div>`;
+        const clrA = '#9d8ef5', clrD = '#fbbf24', clrB = '#ef4444';
+        html += `<div class="card prob-bar-card"><h2>Probabilidades del Modelo</h2>
+        <div class="prob-bar-grid">
+            <div class="prob-bar-section">
+                <div class="prob-bar-row">
+                    <span class="prob-bar-label">${m.eqA}</span>
+                    <div class="prob-bar-track"><div class="prob-bar-fill local" data-pct="${pA}"></div></div>
+                    <span class="prob-bar-pct" style="color:${clrA}">${pA}%</span>
+                </div>
+                ${dualRow(pA, impA)}
+            </div>
+            <div class="prob-bar-section">
+                <div class="prob-bar-row">
+                    <span class="prob-bar-label">Empate</span>
+                    <div class="prob-bar-track"><div class="prob-bar-fill draw" data-pct="${pD}"></div></div>
+                    <span class="prob-bar-pct" style="color:${clrD}">${pD}%</span>
+                </div>
+                ${dualRow(pD, impD)}
+            </div>
+            <div class="prob-bar-section">
+                <div class="prob-bar-row">
+                    <span class="prob-bar-label">${m.eqB}</span>
+                    <div class="prob-bar-track"><div class="prob-bar-fill visit" data-pct="${pB}"></div></div>
+                    <span class="prob-bar-pct" style="color:${clrB}">${pB}%</span>
+                </div>
+                ${dualRow(pB, impB)}
+            </div>
+        </div></div>`;
+    }
+
     // ── Value Bet banner ──
     if (vbet) {
         const pctM = (vbet.probModel*100).toFixed(0);
@@ -1948,6 +2266,36 @@ function renderResultado(r, containerId, mostrarGuardar) {
                 <div class="vbet-disclaimer">Solo orientativo. Modelo basado en forma + stats + H2H. No garantiza resultado.</div>
             </div>
         </div>`;
+        // ── Calculadora Kelly ──
+        html += `<div class="kelly-calc">
+            <div class="kelly-calc-title">📐 Calculadora Kelly</div>
+            <div class="kelly-input-row">
+                <span class="kelly-currency">Bankroll</span>
+                <input type="number" class="kelly-bankroll-input" id="kellyBankroll"
+                       placeholder="Ej: 1000" min="1" step="1"
+                       oninput="calcKelly(${vbet.edge.toFixed(6)}, ${vbet.cuota.toFixed(4)}, this.value)">
+                <span class="kelly-currency">unidades</span>
+            </div>
+            <div class="kelly-results" id="kellyResults" style="display:none">
+                <div class="kelly-result-item">
+                    <div class="kelly-result-lbl">Kelly Lleno</div>
+                    <div class="kelly-result-val" id="kellyFull">—</div>
+                </div>
+                <div class="kelly-result-item">
+                    <div class="kelly-result-lbl">Half Kelly</div>
+                    <div class="kelly-result-val" id="kellyHalf">—</div>
+                </div>
+                <div class="kelly-result-item">
+                    <div class="kelly-result-lbl">Límite (25%)</div>
+                    <div class="kelly-result-val" id="kellyCap">—</div>
+                </div>
+                <div class="kelly-result-item recommended">
+                    <div class="kelly-result-lbl">Recomendado ✓</div>
+                    <div class="kelly-result-val" id="kellyRec">—</div>
+                </div>
+            </div>
+            <p class="kelly-rec-note">Recomendado = min(Kelly, Half Kelly, 25% bankroll) · Apostá responsablemente</p>
+        </div>`;
     }
 
     if (al.tA.length || al.tB.length) {
@@ -1960,16 +2308,42 @@ function renderResultado(r, containerId, mostrarGuardar) {
         html += `</div></div>`;
     }
 
-    html += `<div class="card"><h2>Forma Reciente (últimos 5)</h2><div class="two-col">
-    <div><div class="col-hdr">${m.eqA}</div>${sparkline(fo.fA.badges)}<div class="forma-row">${badges(fo.fA.badges)}</div><div class="forma-det">${detHTML(fo.fA.detalle)}</div></div>
-    <div><div class="col-hdr">${m.eqB}</div>${sparkline(fo.fB.badges)}<div class="forma-row">${badges(fo.fB.badges)}</div><div class="forma-det">${detHTML(fo.fB.detalle)}</div></div>
-    </div></div>`;
+    {
+        const buildFormaCol = (fo_team, teamName) => {
+            const all = fo_team.badges || [];
+            const rec5 = all.slice(-5);
+            const prev = all.length > 5 ? all.slice(0, all.length - 5) : [];
+            const localDet  = (fo_team.detalle||[]).filter(d => d.local);
+            const visitDet  = (fo_team.detalle||[]).filter(d => !d.local);
+            const mkBadge = (d) => {
+                const parts = (d.res||'0-0').split('-');
+                const gf = parseInt(parts[0])||0, gc = parseInt(parts[1])||0;
+                return gf > gc ? 'V' : gf === gc ? 'E' : 'D';
+            };
+            const localBadges = localDet.map(mkBadge);
+            const visitBadges = visitDet.map(mkBadge);
+            return `<div>
+                <div class="col-hdr">${teamName}</div>
+                ${sparkline(all)}
+                <span class="forma-split-label">Últimos 5</span>
+                <div class="forma-row">${badges(rec5)}</div>
+                ${prev.length ? `<span class="forma-split-label">Anteriores (6-10)</span><div class="forma-row">${badges(prev)}</div>` : ''}
+                ${localBadges.length ? `<span class="forma-split-label">De local</span><div class="forma-row">${badges(localBadges)}</div>` : ''}
+                ${visitBadges.length ? `<span class="forma-split-label">De visitante</span><div class="forma-row">${badges(visitBadges)}</div>` : ''}
+                <div class="forma-det">${detHTML(fo_team.detalle)}</div>
+            </div>`;
+        };
+        html += `<div class="card"><h2>Forma Reciente (últimos 10)</h2><div class="two-col">
+        ${buildFormaCol(fo.fA, m.eqA)}
+        ${buildFormaCol(fo.fB, m.eqB)}
+        </div></div>`;
+    }
 
     // ── xG card ──
     const xg = r.xg || {};
     if (xg.a != null || xg.b != null) {
         const xgTot = (xg.a != null && xg.b != null) ? (xg.a + xg.b).toFixed(2) : null;
-        html += `<div class="card card-xg"><h2>Expected Goals — xG promedio (últimos 5)</h2>
+        html += `<div class="card card-xg"><h2>Expected Goals — xG promedio (últimos 10)</h2>
         <div class="two-col">
             <div><div class="col-hdr">${m.eqA}</div>${sr('xG por partido', xg.a)}</div>
             <div><div class="col-hdr">${m.eqB}</div>${sr('xG por partido', xg.b)}</div>
@@ -1983,7 +2357,7 @@ function renderResultado(r, containerId, mostrarGuardar) {
 
     const sA=st.sA, sB=st.sB;
     if (Object.keys(sA).length||Object.keys(sB).length)
-        html += `<div class="card"><h2>Estadísticas (últimos 5 partidos)</h2><div class="two-col">
+        html += `<div class="card"><h2>Estadísticas (últimos 10 partidos)</h2><div class="two-col">
         <div><div class="col-hdr">${m.eqA}</div>${sr('Goles marcados',sA.gf)}${sr('Goles recibidos',sA.gc)}${sr('Promedio GF',sA.pgf)}${sr('Promedio GC',sA.pgc)}${sr('Clean sheets',sA.cs)}</div>
         <div><div class="col-hdr">${m.eqB}</div>${sr('Goles marcados',sB.gf)}${sr('Goles recibidos',sB.gc)}${sr('Promedio GF',sB.pgf)}${sr('Promedio GC',sB.pgc)}${sr('Clean sheets',sB.cs)}</div>
         </div></div>`;
@@ -2040,6 +2414,13 @@ function renderResultado(r, containerId, mostrarGuardar) {
     const el = document.getElementById(containerId);
     el.innerHTML = html;
     el.style.display = 'block';
+
+    // Animar barras de probabilidad
+    requestAnimationFrame(() => {
+        el.querySelectorAll('.prob-bar-fill[data-pct]').forEach(bar => {
+            bar.style.width = bar.dataset.pct + '%';
+        });
+    });
 
     // Guardar resultado actual para poder guardarlo en historial
     window._currentResultado = r;
@@ -2112,25 +2493,25 @@ ${contextoCiudad ? contextoCiudad : ''}
 ${m.arbitro ? 'Árbitro: '+m.arbitro : 'Árbitro: sin confirmar'}
 ${tipoPartidoBloque}
 
-FORMA RECIENTE — ${m.eqA} (últimos 5):
+FORMA RECIENTE — ${m.eqA} (últimos 10):
 ${formaStr(fo.fA.badges, fo.fA.detalle)}
 
-FORMA RECIENTE — ${m.eqB} (últimos 5):
+FORMA RECIENTE — ${m.eqB} (últimos 10):
 ${formaStr(fo.fB.badges, fo.fB.detalle)}
 
-ESTADÍSTICAS ÚLTIMOS 5 PARTIDOS:
+ESTADÍSTICAS ÚLTIMOS 10 PARTIDOS:
 ${m.eqA}: ${sA.gf||'?'} goles marcados, ${sA.gc||'?'} recibidos | Prom: ${sA.pgf||'?'} GF / ${sA.pgc||'?'} GC | Clean sheets: ${sA.cs||'?'}
 ${m.eqB}: ${sB.gf||'?'} goles marcados, ${sB.gc||'?'} recibidos | Prom: ${sB.pgf||'?'} GF / ${sB.pgc||'?'} GC | Clean sheets: ${sB.cs||'?'}
 
-XG — EXPECTED GOALS PROMEDIO (últimos 5 partidos):
+XG — EXPECTED GOALS PROMEDIO (últimos 10 partidos):
 ${m.eqA}: ${xg.a??'N/D'} xG/partido | ${m.eqB}: ${xg.b??'N/D'} xG/partido
 xG combinado total: ${(xg.a!=null&&xg.b!=null)?(xg.a+xg.b).toFixed(2):'N/D'}
 
-CORNERS PROMEDIO (últimos 5):
+CORNERS PROMEDIO (últimos 10):
 ${m.eqA}: ${co.a||'N/D'} corners/partido | ${m.eqB}: ${co.b||'N/D'} corners/partido
 Total combinado: ${cornTotal} corners/partido
 
-TARJETAS AMARILLAS PROMEDIO (últimos 5):
+TARJETAS AMARILLAS PROMEDIO (últimos 10):
 ${m.eqA}: ${am.a||'N/D'} | ${m.eqB}: ${am.b||'N/D'}
 
 CUOTAS DE MERCADO EN VIVO${od?` (${od.source||'bookmaker europeo'})`:''}:
@@ -2476,7 +2857,7 @@ function procesarMarkdown(text) {
 ════════════════════════════════════════════════════════════════════════════ */
 
 const HIST_KEY = 'historial_auto';
-const HIST_MAX = 5;
+const HIST_MAX = 50;
 
 // ── Helpers de acceso a localStorage ──────────────────────────────────────
 function histGetAll() {
@@ -2505,14 +2886,22 @@ function autoGuardarAnalisis(resultado, kimiText) {
         stats_json:    resultado,
         analisis_ia:   kimiText,
         // Fase 2: campos extra (vacíos al crear)
-        resultado_real: null,  // 'local'|'empate'|'visitante'|null
-        notas:          '',
+        resultado_real:  null,  // 'local'|'empate'|'visitante'|null
+        notas:           '',
+        etiqueta:        null,  // Feature: etiquetas
+        apuesta:         null,  // Feature: ROI — importe apostado
+        cuota_apostada:  null,  // Feature: ROI — cuota usada
+        apuesta_en:      null,  // Feature: ROI — 'local'|'empate'|'visitante'
+        ganancia:        null,  // Feature: ROI — unidades ganadas/perdidas
+        odds_saved:      resultado.odds || null,  // Feature: alertas de cuotas
     };
     try {
         const hist = histGetAll();
         hist.unshift(entrada);
         histSaveAll(hist.slice(0, HIST_MAX));
     } catch(e) { console.warn('autoGuardar error:', e); }
+    // Notificación Telegram (fire-and-forget)
+    notificarTelegram(resultado, kimiText).catch(() => {});
 }
 
 // ── Parsear recomendación de la IA desde el texto ─────────────────────────
@@ -2675,11 +3064,38 @@ function renderTracker() {
             ${bkItem('Visitante', t.visitanteAciertos, t.visitanteTotal)}
         </div>
         <div class="tracker-streak">${streakTxt}</div>`;
+
+    // ROI box
+    const roi = calcROI();
+    if (roi && roi.n >= 1) {
+        const roiColor = roi.totalGanancia >= 0 ? 'roi-positive' : 'roi-negative';
+        const saldoStr = roi.totalGanancia >= 0 ? `+${roi.totalGanancia.toFixed(2)}` : roi.totalGanancia.toFixed(2);
+        const roiStr   = roi.roi >= 0 ? `+${roi.roi.toFixed(1)}` : roi.roi.toFixed(1);
+        el.innerHTML += `<div class="roi-box">
+            <div class="roi-box-title">💰 ROI — Rentabilidad Real (${roi.n} apuesta${roi.n!==1?'s':''})</div>
+            <div class="roi-stats-row">
+                <div class="roi-stat"><div class="roi-stat-val ${roiColor}">${saldoStr} u</div><div class="roi-stat-lbl">Saldo total</div></div>
+                <div class="roi-stat"><div class="roi-stat-val ${roiColor}">${roiStr}%</div><div class="roi-stat-lbl">ROI</div></div>
+                <div class="roi-stat"><div class="roi-stat-val roi-neutral">${roi.totalApostado.toFixed(1)} u</div><div class="roi-stat-lbl">Apostado</div></div>
+            </div>
+            ${roiCapitalSparkline(roi.curve)}
+        </div>`;
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
    FEATURE 6: HISTORIAL SEARCH
 ════════════════════════════════════════════════════════════════════════════ */
+// Pagination state
+let _histPage = 0;
+const HIST_PAGE_SIZE = 10;
+
+// Etiqueta filter state
+window._histEtiFilter = null;
+
+const ETIQ_LABEL = { aposto: '🎯', seguimiento: '👁️', cancelado: '❌', ganada: '✅', perdida: '❌' };
+const ETIQ_TEXT  = { aposto: 'Aposté', seguimiento: 'Seguimiento', cancelado: 'Cancelado', ganada: 'Ganada', perdida: 'Perdida' };
+
 function renderHistItems(lista) {
     const content = document.getElementById('histListContent');
     if (!content) return;
@@ -2687,16 +3103,20 @@ function renderHistItems(lista) {
     const searchVal = (document.getElementById('histSearch')?.value || '').trim();
 
     if (!lista.length) {
-        content.innerHTML = searchVal
-            ? `<div class="hist-search-empty">Sin resultados para "<strong>${searchVal}</strong>"</div>`
+        content.innerHTML = searchVal || window._histEtiFilter
+            ? `<div class="hist-search-empty">Sin resultados para el filtro activo</div>`
             : '<div class="hist-empty">Aún no hay análisis guardados.<br>Analizá un partido en la pestaña <strong>Partido</strong> y aparecerá aquí automáticamente.</div>';
         return;
     }
 
+    const totalPages = Math.ceil(lista.length / HIST_PAGE_SIZE);
+    if (_histPage >= totalPages) _histPage = Math.max(0, totalPages - 1);
+    const page = lista.slice(_histPage * HIST_PAGE_SIZE, (_histPage + 1) * HIST_PAGE_SIZE);
+
     const BADGE = { local: '🏠 Local', empate: '🤝 Empate', visitante: '✈️ Visitante' };
     const BCLS  = { local: 'res-local', empate: 'res-empate', visitante: 'res-visit' };
 
-    content.innerHTML = lista.map(item => {
+    let html = page.map(item => {
         const fecha = item.fecha_analisis
             ? new Date(item.fecha_analisis).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
             : '—';
@@ -2706,9 +3126,12 @@ function renderHistItems(lista) {
         const resBadge = item.resultado_real
             ? `<span class="res-badge ${BCLS[item.resultado_real]}">${BADGE[item.resultado_real]}</span>`
             : `<span class="res-badge res-pending" onclick="event.stopPropagation(); abrirResultado(${item.id}, this)">+ Resultado</span>`;
+        const etiqBadge = item.etiqueta
+            ? `<span class="etiq-badge etiq-${item.etiqueta}" title="${ETIQ_TEXT[item.etiqueta]||item.etiqueta}">${ETIQ_LABEL[item.etiqueta]||item.etiqueta}</span>`
+            : '';
         return `<div class="hist-item" onclick="verHistorial(${item.id})">
             <div class="hist-item-info">
-                <div class="hist-item-name">${item.partido}</div>
+                <div class="hist-item-name">${item.partido}${etiqBadge}</div>
                 <div class="hist-item-meta">${item.competicion || ''}${fechaPartido ? ' · ' + fechaPartido : ''} · ${fecha}</div>
             </div>
             <div class="hist-item-actions">
@@ -2717,16 +3140,46 @@ function renderHistItems(lista) {
             </div>
         </div>`;
     }).join('');
+
+    if (totalPages > 1) {
+        html += `<div class="hist-pagination">
+            <button class="btn-hist-page" onclick="histGoPage(${_histPage - 1})" ${_histPage === 0 ? 'disabled' : ''}>← Anterior</button>
+            <span class="hist-page-info">Pág. ${_histPage + 1} / ${totalPages}</span>
+            <button class="btn-hist-page" onclick="histGoPage(${_histPage + 1})" ${_histPage >= totalPages - 1 ? 'disabled' : ''}>Siguiente →</button>
+        </div>`;
+    }
+    content.innerHTML = html;
+}
+
+function histGoPage(page) {
+    _histPage = page;
+    const searchVal = (document.getElementById('histSearch')?.value || '').trim();
+    filtrarHistorial(searchVal);
+}
+
+function setEtiqFilter(etiq, btn) {
+    window._histEtiFilter = etiq;
+    document.querySelectorAll('.btn-etiq-filter').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    _histPage = 0;
+    const searchVal = (document.getElementById('histSearch')?.value || '').trim();
+    filtrarHistorial(searchVal);
 }
 
 function filtrarHistorial(query) {
-    const lista = histGetAll();
-    if (!query.trim()) { renderHistItems(lista); return; }
-    const q = query.toLowerCase();
-    renderHistItems(lista.filter(item =>
-        (item.partido || '').toLowerCase().includes(q) ||
-        (item.competicion || '').toLowerCase().includes(q)
-    ));
+    _histPage = 0;
+    let lista = histGetAll();
+    if (query.trim()) {
+        const q = query.toLowerCase();
+        lista = lista.filter(item =>
+            (item.partido || '').toLowerCase().includes(q) ||
+            (item.competicion || '').toLowerCase().includes(q)
+        );
+    }
+    if (window._histEtiFilter) {
+        lista = lista.filter(item => item.etiqueta === window._histEtiFilter);
+    }
+    renderHistItems(lista);
 }
 
 // ── Lista principal del historial ─────────────────────────────────────────
@@ -2738,9 +3191,10 @@ function loadHistorial() {
     const lista = histGetAll();
 
     const titulo = document.getElementById('histTitulo');
-    if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/${HIST_MAX})`;
+    if (titulo) titulo.textContent = `📁 Recientes (${lista.length}/50)`;
 
     renderTracker();
+    renderBacktest();
 
     // Respect active search filter
     const searchVal = (document.getElementById('histSearch')?.value || '').trim();
@@ -2760,6 +3214,24 @@ function abrirResultado(id, btn) {
             <button onclick="guardarResultado(${id},'local')">🏠 Local</button>
             <button onclick="guardarResultado(${id},'empate')">🤝 Empate</button>
             <button onclick="guardarResultado(${id},'visitante')">✈️ Visitante</button>
+        </div>
+        <div class="apuesta-form">
+            <div class="apuesta-form-title">¿Apostaste? (opcional)</div>
+            <div class="apuesta-form-row">
+                <span class="apuesta-lbl">Aposté a</span>
+                <select class="apuesta-select" id="apuestaOutcome_${id}">
+                    <option value="local">🏠 Local</option>
+                    <option value="empate">🤝 Empate</option>
+                    <option value="visitante">✈️ Visitante</option>
+                </select>
+            </div>
+            <div class="apuesta-form-row">
+                <span class="apuesta-lbl">Importe</span>
+                <input type="number" class="apuesta-input" id="apuestaAmount_${id}" placeholder="0" min="0" step="0.01">
+                <span class="apuesta-lbl">u · Cuota</span>
+                <input type="number" class="apuesta-input" id="apuestaCuota_${id}" placeholder="1.80" min="1" step="0.01">
+            </div>
+            <button class="btn-guardar-apuesta" onclick="guardarApuestaEnHistorial(${id})">💰 Guardar apuesta</button>
         </div>`;
     btn.parentNode.insertBefore(pop, btn.nextSibling);
 
@@ -2814,6 +3286,17 @@ function verHistorial(id) {
         <h2 style="margin-top:18px">Notas personales</h2>
         <textarea class="notas-input" id="notasInput_${item.id}" placeholder="Aposté Over 2.5 a 1.85... resultado: ganado ✓">${item.notas || ''}</textarea>
         <button class="btn-notas" onclick="guardarNotas(${item.id})">💾 Guardar notas</button>
+        <div class="etiq-selector-wrap">
+            <div class="etiq-selector-label">Etiqueta</div>
+            <div class="etiq-selector">
+                ${[['🎯 Aposté','aposto'],['👁️ Seguimiento','seguimiento'],['❌ Cancelado','cancelado'],['✅ Ganada','ganada'],['❌ Perdida','perdida']].map(([lbl,key]) =>
+                    `<button class="btn-etiq ${item.etiqueta===key?'active':''}" onclick="setItemEtiqueta(${item.id},'${key}',this)">${lbl}</button>`
+                ).join('')}
+                <button class="btn-etiq" style="border-style:dashed" onclick="setItemEtiqueta(${item.id},null,this)">✕ Quitar</button>
+            </div>
+        </div>
+        ${item.odds_saved ? `<button class="odds-monitor-btn" onclick="monitorearCuotas(${item.id})">📡 Monitorear cuotas actuales</button>
+        <div id="oddsMonitorResult_${item.id}" class="odds-monitor-result"></div>` : ''}
     </div>`;
 
     // ── Stats ──
@@ -2870,6 +3353,178 @@ function guardarNotas(id) {
     if (!ta) return;
     histUpdate(id, { notas: ta.value });
     if (btn) { btn.textContent = '✅ Guardado'; setTimeout(() => btn.textContent = '💾 Guardar notas', 1800); }
+}
+
+function setItemEtiqueta(id, etiq, btn) {
+    histUpdate(id, { etiqueta: etiq });
+    btn.closest('.etiq-selector').querySelectorAll('.btn-etiq').forEach(b => b.classList.remove('active'));
+    if (etiq) btn.classList.add('active');
+    showToast(etiq ? '🏷️ Etiqueta guardada' : 'Etiqueta eliminada');
+}
+
+function guardarApuestaEnHistorial(id) {
+    const lista = histGetAll();
+    const item  = lista.find(h => h.id === id);
+    if (!item || !item.resultado_real) { showToast('Marcá primero el resultado real del partido'); return; }
+
+    const amtEl     = document.getElementById('apuestaAmount_' + id);
+    const cuotaEl   = document.getElementById('apuestaCuota_' + id);
+    const outcomeEl = document.getElementById('apuestaOutcome_' + id);
+    const amount  = parseFloat(amtEl?.value);
+    const cuota   = parseFloat(cuotaEl?.value);
+    const outcome = outcomeEl?.value;
+
+    if (!amount || amount <= 0 || !cuota || cuota < 1) { showToast('Ingresá importe y cuota válidos'); return; }
+
+    const ganancia = outcome === item.resultado_real ? (cuota - 1) * amount : -amount;
+    histUpdate(id, { apuesta: amount, cuota_apostada: cuota, apuesta_en: outcome, ganancia });
+    document.querySelectorAll('.res-popover').forEach(p => p.remove());
+    showToast(ganancia >= 0 ? `✅ Apuesta ganada: +${ganancia.toFixed(2)} u` : `❌ Apuesta perdida: ${ganancia.toFixed(2)} u`);
+    loadHistorial();
+}
+
+function calcROI() {
+    const lista = histGetAll().filter(h => h.apuesta && h.apuesta_en && h.resultado_real && h.ganancia !== null);
+    if (!lista.length) return null;
+    let totalApostado = 0, totalGanancia = 0;
+    const curve = [];
+    let capital = 0;
+    const sorted = [...lista].reverse(); // oldest first
+    for (const h of sorted) {
+        totalApostado += h.apuesta;
+        totalGanancia += h.ganancia;
+        capital += h.ganancia;
+        curve.push(+capital.toFixed(2));
+    }
+    const roi = totalApostado > 0 ? (totalGanancia / totalApostado) * 100 : 0;
+    return { totalApostado, totalGanancia, roi, curve, n: lista.length };
+}
+
+function roiCapitalSparkline(data) {
+    if (!data || data.length < 2) return '';
+    const W = 240, H = 40, PAD = 6;
+    const min = Math.min(...data), max = Math.max(...data);
+    const range = max - min || 1;
+    const pts = data.map((v, i) => ({
+        x: +(PAD + (i / Math.max(data.length - 1, 1)) * (W - PAD * 2)).toFixed(1),
+        y: +(H - PAD - ((v - min) / range) * (H - PAD * 2)).toFixed(1),
+    }));
+    const lastPos = data[data.length - 1] >= 0;
+    const color   = lastPos ? '#22c55e' : '#f87171';
+    const polyline = `<polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const zeroY = (1 - (0 - min) / range) * (H - PAD * 2) + PAD;
+    const zeroline = (min < 0 && max > 0)
+        ? `<line x1="${PAD}" y1="${zeroY.toFixed(1)}" x2="${W-PAD}" y2="${zeroY.toFixed(1)}" stroke="#252638" stroke-width="1" stroke-dasharray="3,3"/>`
+        : '';
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:8px auto 0">${zeroline}${polyline}</svg>`;
+}
+
+function renderBacktest() {
+    const el = document.getElementById('backtestBox');
+    if (!el) return;
+    const lista = histGetAll().filter(h => h.resultado_real && h.stats_json);
+    if (lista.length < 1) { el.innerHTML = ''; return; }
+
+    const LABEL = { local: 'Local', empate: 'Empate', visitante: 'Visit.' };
+    let modelRight = 0, iaRight = 0, bothRight = 0;
+    const total = lista.length;
+
+    const rows = lista.map(h => {
+        const real   = h.resultado_real;
+        const iaPred = _predictOutcome(h);
+        const iaOk   = iaPred === real;
+
+        let modelPred = null;
+        if (h.stats_json) {
+            try {
+                const probs2 = computeModelProbabilities(h.stats_json);
+                const maxP = Math.max(probs2.probA, probs2.probDraw, probs2.probB);
+                if (probs2.probA === maxP)    modelPred = 'local';
+                else if (probs2.probDraw === maxP) modelPred = 'empate';
+                else                          modelPred = 'visitante';
+            } catch(_) {}
+        }
+        const modelOk = modelPred === real;
+
+        if (iaOk)    iaRight++;
+        if (modelOk) modelRight++;
+        if (iaOk && modelOk) bothRight++;
+
+        const rowCls = (iaOk && modelOk) ? 'bt-row-both-right' : (iaOk || modelOk) ? 'bt-row-one-right' : 'bt-row-both-wrong';
+        const pill  = ok => ok ? `<span class="bt-pill bt-pill-right">✓</span>` : `<span class="bt-pill bt-pill-wrong">✗</span>`;
+        const agree = iaPred === modelPred ? `<span class="bt-pill bt-pill-right">Sí</span>` : `<span class="bt-pill bt-pill-none">No</span>`;
+
+        return `<tr class="${rowCls}">
+            <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.partido}</td>
+            <td>${LABEL[real]||real}</td>
+            <td>${modelPred ? LABEL[modelPred] : '—'} ${pill(modelOk)}</td>
+            <td>${iaPred ? LABEL[iaPred] : '—'} ${pill(iaOk)}</td>
+            <td>${agree}</td>
+        </tr>`;
+    }).join('');
+
+    const pct = n => total ? Math.round((n/total)*100)+'%' : '—';
+    el.innerHTML = `<div class="card backtest-card">
+        <h2>🔬 Backtesting del Modelo</h2>
+        <div class="backtest-summary">
+            <div class="backtest-stat"><div class="backtest-stat-val">${pct(modelRight)}</div><div class="backtest-stat-lbl">Modelo</div></div>
+            <div class="backtest-stat"><div class="backtest-stat-val">${pct(iaRight)}</div><div class="backtest-stat-lbl">IA</div></div>
+            <div class="backtest-stat"><div class="backtest-stat-val">${pct(bothRight)}</div><div class="backtest-stat-lbl">Ambos ✓</div></div>
+            <div class="backtest-stat"><div class="backtest-stat-val">${total}</div><div class="backtest-stat-lbl">Partidos</div></div>
+        </div>
+        <table class="backtest-table">
+            <thead><tr><th>Partido</th><th>Real</th><th>Modelo</th><th>IA</th><th>Acuerdo</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+    </div>`;
+}
+
+async function monitorearCuotas(id) {
+    const lista = histGetAll();
+    const item  = lista.find(h => h.id === id);
+    if (!item || !item.odds_saved) return;
+
+    const resultEl = document.getElementById('oddsMonitorResult_' + id);
+    if (!resultEl) return;
+    resultEl.innerHTML = '<span class="odds-unchanged">Consultando cuotas actuales...</span>';
+
+    const matchParam = encodeURIComponent(item.partido.replace(' vs ', '_vs_'));
+    try {
+        const data = await fetch('/odds?match=' + matchParam).then(r => r.ok ? r.json() : null).catch(() => null);
+        const old  = item.odds_saved;
+
+        if (!data || data.error || !old) {
+            resultEl.innerHTML = '<span class="odds-unchanged">No se pudieron obtener cuotas actuales para este partido.</span>';
+            return;
+        }
+
+        const THRESHOLD = 0.05;
+        const diffPct   = (curr, prev) => prev ? (curr - prev) / prev : 0;
+        let htmlOdds = '';
+        const smartMoneyLabels = [];
+
+        const checkOdd = (label, curr, prev, side) => {
+            if (!curr || !prev) return;
+            const dp = diffPct(curr, prev);
+            if (dp < -THRESHOLD) {
+                htmlOdds += `<div class="odds-drop-alert">⬇️ ${label}: ${prev.toFixed(2)} → ${curr.toFixed(2)} (${(dp*100).toFixed(1)}%)</div>`;
+                if (side !== 'local') smartMoneyLabels.push(label);
+            } else if (dp > THRESHOLD) {
+                htmlOdds += `<div class="odds-rise">⬆️ ${label}: ${prev.toFixed(2)} → ${curr.toFixed(2)} (+${(dp*100).toFixed(1)}%)</div>`;
+            }
+        };
+        checkOdd('Local', data.home, old.home, 'local');
+        checkOdd('Empate', data.draw, old.draw, 'empate');
+        checkOdd('Visitante', data.away, old.away, 'visitante');
+
+        if (!htmlOdds) htmlOdds = '<span class="odds-unchanged">✓ Cuotas sin cambios significativos (±5%).</span>';
+        if (smartMoneyLabels.length) {
+            htmlOdds += `<div class="odds-smart-money">💡 Smart money: movimiento detectado en ${smartMoneyLabels.join(', ')} — posible apuesta de inversores informados.</div>`;
+        }
+        resultEl.innerHTML = htmlOdds;
+    } catch(e) {
+        resultEl.innerHTML = '<span class="odds-unchanged">Error al consultar cuotas.</span>';
+    }
 }
 
 function borrarHistorial(id) {
@@ -3131,6 +3786,122 @@ async function clipboardFallback(text) {
         document.body.removeChild(ta);
     }
     showToast('✅ Copiado al portapapeles');
+}
+
+function calcKelly(edge, cuota, bankrollStr) {
+    const bankroll = parseFloat(bankrollStr);
+    const res = document.getElementById('kellyResults');
+    if (!res || isNaN(bankroll) || bankroll <= 0) { if (res) res.style.display = 'none'; return; }
+    const fraction = Math.max(0, edge / (cuota - 1));
+    const kelly    = fraction * bankroll;
+    const half     = kelly / 2;
+    const cap      = bankroll * 0.25;
+    const rec      = Math.min(kelly, half, cap);
+    document.getElementById('kellyFull').textContent = kelly.toFixed(2) + ' u';
+    document.getElementById('kellyHalf').textContent = half.toFixed(2) + ' u';
+    document.getElementById('kellyCap').textContent  = cap.toFixed(2)  + ' u';
+    document.getElementById('kellyRec').textContent  = rec.toFixed(2)  + ' u';
+    res.style.display = 'grid';
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Settings Panel + Telegram Webhook
+════════════════════════════════════════════════════════════════════════════ */
+const SETTINGS_KEY = 'settings';
+
+function getSettings() {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(_) { return {}; }
+}
+
+function saveSettings() {
+    const s = {
+        tgToken:    document.getElementById('tgToken')?.value.trim() || '',
+        tgChatId:   document.getElementById('tgChatId')?.value.trim() || '',
+        tgOnlyVbet: document.getElementById('tgOnlyVbet')?.checked || false,
+    };
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+    showToast('✅ Configuración guardada');
+    closeSettings();
+}
+
+function openSettings() {
+    const s = getSettings();
+    const el = id => document.getElementById(id);
+    if (el('tgToken'))    el('tgToken').value    = s.tgToken || '';
+    if (el('tgChatId'))   el('tgChatId').value   = s.tgChatId || '';
+    if (el('tgOnlyVbet')) el('tgOnlyVbet').checked = !!s.tgOnlyVbet;
+    if (el('tgStatus'))   el('tgStatus').textContent = '';
+    document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+    document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function closeSettingsIfOutside(e) {
+    if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+}
+
+async function testTelegram() {
+    const s = getSettings();
+    // Read current values from fields (may not be saved yet)
+    const token  = document.getElementById('tgToken')?.value.trim() || s.tgToken;
+    const chatId = document.getElementById('tgChatId')?.value.trim() || s.tgChatId;
+    const statusEl = document.getElementById('tgStatus');
+    if (!token || !chatId) {
+        statusEl.className = 'tg-status error';
+        statusEl.textContent = '⚠️ Ingresá el token y chat ID primero.';
+        return;
+    }
+    statusEl.className = 'tg-status';
+    statusEl.textContent = 'Enviando mensaje de prueba...';
+    const ok = await sendTelegramMessage(token, chatId, '✅ <b>Analizador de Partidos</b> conectado correctamente.\n\n📱 Recibirás análisis y value bets aquí.');
+    statusEl.className = 'tg-status ' + (ok ? 'ok' : 'error');
+    statusEl.textContent = ok ? '✅ Mensaje enviado correctamente.' : '❌ Error. Verificá el token y chat ID.';
+}
+
+async function sendTelegramMessage(token, chatId, text) {
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+        });
+        return res.ok;
+    } catch(_) { return false; }
+}
+
+async function notificarTelegram(resultado, kimiText) {
+    const s = getSettings();
+    if (!s.tgToken || !s.tgChatId) return;
+
+    const vbet = resultado.odds ? detectValueBets(resultado) : null;
+    if (s.tgOnlyVbet && !vbet) return;
+
+    const m    = resultado.meta;
+    const od   = resultado.odds;
+    const recs = recomendaciones(resultado);
+    const conf = calcConfianza(resultado).score;
+
+    const oddsLine = od?.home
+        ? `📊 Cuotas: Local ${od.home.toFixed(2)} · X ${od.draw?.toFixed(2)||'—'} · Visit ${od.away?.toFixed(2)||'—'}`
+        : '';
+    const topRec = recs[0]?.tipo !== 'Sin recomendación clara' ? `🎯 Rec: ${recs[0].tipo}` : '';
+    const vbetLine = vbet
+        ? `🟡 <b>Value Bet:</b> ${vbet.outcome} @ ${vbet.cuota.toFixed(2)} (+${(vbet.edge*100).toFixed(0)}% edge)`
+        : '';
+
+    const parts = [
+        `⚽ <b>${m.eqA} vs ${m.eqB}</b>${m.competicion ? ' — ' + m.competicion : ''}`,
+        oddsLine,
+        topRec,
+        vbetLine,
+        `📈 Confianza del análisis: ${conf}/100`,
+        '',
+        '📱 Analizador de Partidos · IA Kimi K2',
+    ].filter(Boolean).join('\n');
+
+    await sendTelegramMessage(s.tgToken, s.tgChatId, parts);
 }
 
 async function compartirAnalisis(r, kimiText) {
