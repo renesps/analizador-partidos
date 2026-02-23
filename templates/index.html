@@ -729,6 +729,131 @@
         .match-alert-close:hover { color: #eaeaf5; transform: none; box-shadow: none; }
         body.light-mode .match-alert-title { color: #78500a; }
         body.light-mode .match-alert-sub   { color: #6b6b99; }
+
+        /* ══════════════════════════════════════════════════════════════════
+           Light mode — overrides de texto faltantes (texto invisible)
+        ══════════════════════════════════════════════════════════════════ */
+
+        /* Tabs */
+        body.light-mode .tab-btn.active   { color: #7c6dea; }
+        body.light-mode .tab-btn:hover:not(.active) { color: #6b6b99; }
+
+        /* Labels e inputs */
+        body.light-mode label             { color: #6b6b99; }
+        body.light-mode input::placeholder,
+        body.light-mode textarea::placeholder { color: #9090aa; }
+        body.light-mode select option     { background: #fff; color: #1a1a2e; }
+
+        /* Botones secundarios */
+        body.light-mode .btn-secondary    { color: #6b6b99; border-color: #c8c8dd; background: #f0f0fa; }
+        body.light-mode .btn-notas        { color: #7c6dea; border-color: rgba(124,109,234,.4); background: rgba(124,109,234,.08); }
+        body.light-mode .btn-pdf          { color: #7c6dea; border-color: rgba(124,109,234,.4); background: rgba(124,109,234,.06); }
+
+        /* Loading step messages */
+        body.light-mode #stepMsg,
+        body.light-mode #stepMsgM         { color: #1a1a2e; }
+        body.light-mode #subMsg,
+        body.light-mode #subMsgM          { color: #6b6b99; }
+
+        /* Forma */
+        body.light-mode .forma-det        { color: #6b6b99; }
+        body.light-mode .fitem            { color: #6b6b99; }
+
+        /* H2H */
+        body.light-mode .h2h-num          { color: #7c6dea; }
+        body.light-mode .h2h-lbl          { color: #6b6b99; }
+        body.light-mode .h2h-comp         { color: #9090aa; }
+
+        /* Alineaciones */
+        body.light-mode .lineup-list li   { color: #1a1a2e; }
+        body.light-mode .lnum             { color: #9090aa; }
+
+        /* Recomendaciones */
+        body.light-mode .rec-tipo         { color: #1a1a2e; }
+        body.light-mode .rec-razon        { color: #6b6b99; }
+        body.light-mode .rec-meta         { color: #6b6b99; }
+        body.light-mode .cb               { color: #9090aa; }
+
+        /* Análisis IA */
+        body.light-mode .ia-loading span  { color: #6b6b99; }
+        body.light-mode .ia-body h3,
+        body.light-mode .ia-body strong,
+        body.light-mode .ia-body b        { color: #5b3fa6; }
+        body.light-mode .ia-seccion-titulo { color: #7c6dea; }
+        body.light-mode .ia-badge         { color: #7c6dea; background: rgba(124,109,234,.12); }
+        body.light-mode .ia-card h2       { color: #7c6dea; }
+        body.light-mode .ia-error         { color: #dc2626; }
+
+        /* Lista de partidos (Tab 2 jornada) */
+        body.light-mode .match-item-name  { color: #1a1a2e; }
+        body.light-mode .match-item-meta  { color: #6b6b99; }
+        body.light-mode .match-item-hora  { color: #7c6dea; }
+        body.light-mode .multi-partido-header span { color: #1a1a2e; }
+        body.light-mode .multi-partido-header small { color: #6b6b99; }
+
+        /* Resultado real popover */
+        body.light-mode .res-pop-title    { color: #6b6b99; }
+        body.light-mode .res-hint         { color: #9090aa; }
+        body.light-mode .res-btn          { color: #7c6dea; border-color: rgba(124,109,234,.3); }
+        body.light-mode .res-confirmado   { color: #7c6dea; }
+        body.light-mode .res-pending      { color: #7c6dea; }
+
+        /* Historial */
+        body.light-mode .hist-empty       { color: #9090aa; }
+        body.light-mode .hist-back        { color: #7c6dea; }
+        body.light-mode .hist-search-input::placeholder { color: #9090aa; }
+        body.light-mode .hist-search-empty { color: #9090aa; }
+
+        /* Tracker */
+        body.light-mode .tracker-num      { color: #1a1a2e; }
+        body.light-mode .tracker-hint     { color: #9090aa; }
+        body.light-mode .tracker-breakdown-sep { color: #9090aa; }
+        body.light-mode .tracker-streak   { color: #6b6b99; }
+
+        /* Watchlist */
+        body.light-mode .watchlist-item-name { color: #1a1a2e; }
+        body.light-mode .watchlist-item-meta { color: #6b6b99; }
+        body.light-mode .watchlist-empty     { color: #9090aa; }
+
+        /* Comparador */
+        body.light-mode .cmp-lbl          { color: #6b6b99; }
+        body.light-mode .cmp-val          { color: #1a1a2e; }
+        body.light-mode .cmp-ia           { color: #6b6b99; }
+        body.light-mode .cmp-col-header   { color: #7c6dea; }
+
+        /* Cuotas odds card */
+        body.light-mode .odds-label       { color: #6b6b99; }
+
+        /* Value bet banner */
+        body.light-mode .vbet-title       { color: #92400e; }
+        body.light-mode .vbet-detail      { color: #3a3a4a; }
+        body.light-mode .vbet-disclaimer  { color: #9090aa; }
+
+        /* xG card */
+        body.light-mode .card-xg .sval,
+        body.light-mode .xg-combined      { color: #7c6dea; }
+
+        /* Confianza badge tooltip */
+        body.light-mode .conf-tooltip-icon { color: #6b6b99; }
+
+        /* Source ok badge */
+        body.light-mode .source-ok        { color: #22c55e; }
+
+        /* Col header */
+        body.light-mode .col-hdr          { color: #7c6dea; }
+
+        /* Error box */
+        body.light-mode .error-box        { color: #dc2626; background: rgba(220,38,38,.06); border-color: rgba(220,38,38,.3); }
+
+        /* ia-seccion (fondo de sección en el análisis) */
+        body.light-mode .ia-seccion       { background: rgba(124,109,234,.06); }
+
+        /* notas */
+        body.light-mode .notas-input      { background: #f0f0fa; color: #1a1a2e; border-color: #c8c8dd; }
+        body.light-mode .notas-input::placeholder { color: #9090aa; }
+
+        /* card-resultado botones de selector */
+        body.light-mode .card-resultado .res-selector button { color: #1a1a2e; background: #f0f0fa; border-color: #c8c8dd; }
     </style>
 </head>
 <body>
