@@ -2261,17 +2261,9 @@ function renderResultado(r, containerId, mostrarGuardar) {
     // ── Probabilidades del modelo ──
     {
         const probs = computeModelProbabilities(r);
-        const od2 = r.odds;
         const pA = (probs.probA * 100).toFixed(1);
         const pD = (probs.probDraw * 100).toFixed(1);
         const pB = (probs.probB * 100).toFixed(1);
-        const impA = od2?.home ? (100/od2.home).toFixed(1) : null;
-        const impD = od2?.draw ? (100/od2.draw).toFixed(1) : null;
-        const impB = od2?.away ? (100/od2.away).toFixed(1) : null;
-        const dualRow = (model, market) => `<div class="prob-dual-row">
-            <div class="prob-dual-item model"><div class="prob-dual-label">Modelo</div>${model}%</div>
-            <div class="prob-dual-item market"><div class="prob-dual-label">Mercado</div>${market ? market+'%' : '—'}</div>
-        </div>`;
         const clrA = '#9d8ef5', clrD = '#fbbf24', clrB = '#ef4444';
         html += `<div class="card prob-bar-card"><h2>Probabilidades del Modelo</h2>
         <div class="prob-bar-grid">
@@ -2281,7 +2273,6 @@ function renderResultado(r, containerId, mostrarGuardar) {
                     <div class="prob-bar-track"><div class="prob-bar-fill local" data-pct="${pA}"></div></div>
                     <span class="prob-bar-pct" style="color:${clrA}">${pA}%</span>
                 </div>
-                ${dualRow(pA, impA)}
             </div>
             <div class="prob-bar-section">
                 <div class="prob-bar-row">
@@ -2289,7 +2280,6 @@ function renderResultado(r, containerId, mostrarGuardar) {
                     <div class="prob-bar-track"><div class="prob-bar-fill draw" data-pct="${pD}"></div></div>
                     <span class="prob-bar-pct" style="color:${clrD}">${pD}%</span>
                 </div>
-                ${dualRow(pD, impD)}
             </div>
             <div class="prob-bar-section">
                 <div class="prob-bar-row">
@@ -2297,7 +2287,6 @@ function renderResultado(r, containerId, mostrarGuardar) {
                     <div class="prob-bar-track"><div class="prob-bar-fill visit" data-pct="${pB}"></div></div>
                     <span class="prob-bar-pct" style="color:${clrB}">${pB}%</span>
                 </div>
-                ${dualRow(pB, impB)}
             </div>
         </div></div>`;
     }
@@ -2874,7 +2863,7 @@ IMPORTANTE: Sé directo y específico. Priorizá confianza sobre cuota. Si un pi
 function parsearCuadroApuestas(text) {
     const bloques = [];
     // Detecta bloques ═══...🏆/🔗...═══ seguidos de una tabla markdown
-    const re = /={3,}[^\n]*\n([^\n]*(🏆|🔗)[^\n]*)\n={3,}\n([\s\S]*?)(?=\n={3,}|$)/g;
+    const re = /[═=]{3,}[^\n]*\n([^\n]*(🏆|🔗)[^\n]*)\n[═=]{3,}\n([\s\S]*?)(?=\n[═=]{3,}|$)/g;
     let m;
     while ((m = re.exec(text)) !== null) {
         const emoji = m[2];
@@ -2939,7 +2928,7 @@ function markdownToHtml(text) {
     // 2. Quitar los cuadros del texto para procesar el resto normalmente
     let textoSinCuadros = text;
     if (bloques.length) {
-        const corte = text.search(/={3,}[^\n]*\n[^\n]*(?:🏆|🔗)/);
+        const corte = text.search(/[═=]{3,}[^\n]*\n[^\n]*(?:🏆|🔗)/);
         if (corte > 0) textoSinCuadros = text.slice(0, corte);
     }
 
