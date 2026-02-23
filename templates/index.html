@@ -1003,7 +1003,16 @@
         .apuesta-select { padding:7px 8px; background:#0d0e1a; border:1px solid #252638; border-radius:6px; font-size:12px; color:#eaeaf5; font-family:'Inter',sans-serif; cursor:pointer; }
         .btn-guardar-apuesta { background:rgba(124,109,234,.2); color:#9d8ef5; border:1px solid rgba(124,109,234,.35); border-radius:6px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:auto; box-shadow:none; }
         .btn-guardar-apuesta:hover { background:rgba(124,109,234,.3); transform:none; }
+        .btn-apuesta-res { background:#1a1b2a; border:1px solid #252638; color:#8e8eaa; border-radius:6px; padding:6px 12px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:auto; box-shadow:none; transition:all .15s; }
+        .btn-apuesta-res:hover { border-color:#7c6dea; transform:none; }
+        .btn-apuesta-res.ganada-active { background:rgba(34,197,94,.15); color:#22c55e; border-color:rgba(34,197,94,.4); }
+        .btn-apuesta-res.perdida-active { background:rgba(239,68,68,.12); color:#f87171; border-color:rgba(239,68,68,.35); }
+        .apuesta-registrada { margin-top:12px; padding:12px; background:rgba(124,109,234,.08); border:1px solid rgba(124,109,234,.2); border-radius:8px; }
+        .apuesta-reg-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#5a5a78; margin-bottom:8px; }
+        .apuesta-reg-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; padding:3px 0; color:#eaeaf5; }
         body.light-mode .roi-box { background:#f0f0fa; border-color:#e0e0ed; }
+        body.light-mode .apuesta-registrada { background:rgba(124,109,234,.06); border-color:rgba(124,109,234,.18); }
+        body.light-mode .apuesta-reg-row { color:#1a1a2e; }
         body.light-mode .roi-stat-lbl { color:#6b6b99; }
         body.light-mode .roi-box-title { color:#6b6b99; }
         body.light-mode .apuesta-input { background:#fff; border-color:#c8c8dd; color:#1a1a2e; }
@@ -2891,7 +2900,8 @@ function autoGuardarAnalisis(resultado, kimiText) {
         etiqueta:        null,  // Feature: etiquetas
         apuesta:         null,  // Feature: ROI — importe apostado
         cuota_apostada:  null,  // Feature: ROI — cuota usada
-        apuesta_en:      null,  // Feature: ROI — 'local'|'empate'|'visitante'
+        apuesta_en:      null,  // Feature: ROI — mercado apostado
+        apuesta_resultado: null,  // Feature: ROI — 'ganada'|'perdida'
         ganancia:        null,  // Feature: ROI — unidades ganadas/perdidas
         odds_saved:      resultado.odds || null,  // Feature: alertas de cuotas
     };
@@ -3219,18 +3229,31 @@ function abrirResultado(id, btn) {
             <div class="apuesta-form-title">¿Apostaste? (opcional)</div>
             <div class="apuesta-form-row">
                 <span class="apuesta-lbl">Aposté a</span>
-                <select class="apuesta-select" id="apuestaOutcome_${id}">
-                    <option value="local">🏠 Local</option>
+                <select class="apuesta-select" id="apuestaOutcome_${id}" onchange="toggleCustomBet(this, ${id})">
+                    <option value="local">🏠 Victoria Local</option>
                     <option value="empate">🤝 Empate</option>
-                    <option value="visitante">✈️ Visitante</option>
+                    <option value="visitante">✈️ Victoria Visitante</option>
+                    <option value="over25">⚽ Más de 2.5 goles</option>
+                    <option value="under25">⚽ Menos de 2.5 goles</option>
+                    <option value="corners">📐 Más de 9.5 corners</option>
+                    <option value="btts">🎯 Ambos marcan (SI)</option>
+                    <option value="btts_no">🎯 Ambos marcan (NO)</option>
+                    <option value="custom">✏️ Otro mercado...</option>
                 </select>
             </div>
+            <input type="text" class="apuesta-input" id="apuestaCustom_${id}" placeholder="Ej: Over 1.5 local, Handicap..." style="display:none;margin-top:-2px;margin-bottom:6px;width:calc(100% - 22px)">
             <div class="apuesta-form-row">
                 <span class="apuesta-lbl">Importe</span>
                 <input type="number" class="apuesta-input" id="apuestaAmount_${id}" placeholder="0" min="0" step="0.01">
                 <span class="apuesta-lbl">u · Cuota</span>
                 <input type="number" class="apuesta-input" id="apuestaCuota_${id}" placeholder="1.80" min="1" step="0.01">
             </div>
+            <div class="apuesta-form-row">
+                <span class="apuesta-lbl">Resultado</span>
+                <button type="button" class="btn-apuesta-res" id="apuestaResGanada_${id}" onclick="setApuestaRes(${id},'ganada')">✅ Ganada</button>
+                <button type="button" class="btn-apuesta-res" id="apuestaResPerdida_${id}" onclick="setApuestaRes(${id},'perdida')">❌ Perdida</button>
+            </div>
+            <input type="hidden" id="apuestaResVal_${id}" value="">
             <button class="btn-guardar-apuesta" onclick="guardarApuestaEnHistorial(${id})">💰 Guardar apuesta</button>
         </div>`;
     btn.parentNode.insertBefore(pop, btn.nextSibling);
@@ -3297,6 +3320,23 @@ function verHistorial(id) {
         </div>
         ${item.odds_saved ? `<button class="odds-monitor-btn" onclick="monitorearCuotas(${item.id})">📡 Monitorear cuotas actuales</button>
         <div id="oddsMonitorResult_${item.id}" class="odds-monitor-result"></div>` : ''}
+        ${item.apuesta ? (() => {
+            const OUTCOME_LABELS = {
+                local: '🏠 Victoria Local', empate: '🤝 Empate', visitante: '✈️ Victoria Visitante',
+                over25: '⚽ Más de 2.5 goles', under25: '⚽ Menos de 2.5 goles',
+                corners: '📐 Más de 9.5 corners', btts: '🎯 Ambos marcan (SI)', btts_no: '🎯 Ambos marcan (NO)',
+            };
+            const outcomeLbl = OUTCOME_LABELS[item.apuesta_en] || item.apuesta_en || '?';
+            const resIcon = item.apuesta_resultado === 'ganada' ? '✅' : item.apuesta_resultado === 'perdida' ? '❌' : '⏳';
+            const gananciaStr = item.ganancia >= 0 ? `+${item.ganancia.toFixed(2)} u` : `${item.ganancia.toFixed(2)} u`;
+            const gananciaColor = item.ganancia >= 0 ? '#22c55e' : '#f87171';
+            return `<div class="apuesta-registrada">
+                <div class="apuesta-reg-title">💰 Apuesta registrada</div>
+                <div class="apuesta-reg-row"><span>${outcomeLbl}</span><span>@ ${item.cuota_apostada?.toFixed(2)}</span></div>
+                <div class="apuesta-reg-row"><span>${resIcon} ${item.apuesta_resultado === 'ganada' ? 'Ganada' : item.apuesta_resultado === 'perdida' ? 'Perdida' : 'Pendiente'}</span><span style="color:${gananciaColor};font-weight:800">${gananciaStr}</span></div>
+                <div class="apuesta-reg-row"><span style="color:#5a5a78">Apostado: ${item.apuesta?.toFixed(2)} u</span></div>
+            </div>`;
+        })() : ''}
     </div>`;
 
     // ── Stats ──
@@ -3362,29 +3402,45 @@ function setItemEtiqueta(id, etiq, btn) {
     showToast(etiq ? '🏷️ Etiqueta guardada' : 'Etiqueta eliminada');
 }
 
-function guardarApuestaEnHistorial(id) {
-    const lista = histGetAll();
-    const item  = lista.find(h => h.id === id);
-    if (!item || !item.resultado_real) { showToast('Marcá primero el resultado real del partido'); return; }
+function toggleCustomBet(select, id) {
+    const customInput = document.getElementById('apuestaCustom_' + id);
+    if (customInput) customInput.style.display = select.value === 'custom' ? 'block' : 'none';
+}
 
-    const amtEl     = document.getElementById('apuestaAmount_' + id);
-    const cuotaEl   = document.getElementById('apuestaCuota_' + id);
-    const outcomeEl = document.getElementById('apuestaOutcome_' + id);
-    const amount  = parseFloat(amtEl?.value);
-    const cuota   = parseFloat(cuotaEl?.value);
-    const outcome = outcomeEl?.value;
+function setApuestaRes(id, val) {
+    document.getElementById('apuestaResVal_' + id).value = val;
+    const g = document.getElementById('apuestaResGanada_' + id);
+    const p = document.getElementById('apuestaResPerdida_' + id);
+    g.className = 'btn-apuesta-res' + (val === 'ganada' ? ' ganada-active' : '');
+    p.className = 'btn-apuesta-res' + (val === 'perdida' ? ' perdida-active' : '');
+}
+
+function guardarApuestaEnHistorial(id) {
+    const amtEl      = document.getElementById('apuestaAmount_' + id);
+    const cuotaEl    = document.getElementById('apuestaCuota_' + id);
+    const outcomeEl  = document.getElementById('apuestaOutcome_' + id);
+    const customEl   = document.getElementById('apuestaCustom_' + id);
+    const resEl      = document.getElementById('apuestaResVal_' + id);
+
+    const amount   = parseFloat(amtEl?.value);
+    const cuota    = parseFloat(cuotaEl?.value);
+    const outcome  = outcomeEl?.value === 'custom'
+        ? (customEl?.value.trim() || 'Personalizado')
+        : outcomeEl?.value;
+    const apuestaResultado = resEl?.value; // 'ganada' | 'perdida'
 
     if (!amount || amount <= 0 || !cuota || cuota < 1) { showToast('Ingresá importe y cuota válidos'); return; }
+    if (!apuestaResultado) { showToast('Indicá si la apuesta fue Ganada o Perdida'); return; }
 
-    const ganancia = outcome === item.resultado_real ? (cuota - 1) * amount : -amount;
-    histUpdate(id, { apuesta: amount, cuota_apostada: cuota, apuesta_en: outcome, ganancia });
+    const ganancia = apuestaResultado === 'ganada' ? (cuota - 1) * amount : -amount;
+    histUpdate(id, { apuesta: amount, cuota_apostada: cuota, apuesta_en: outcome, apuesta_resultado: apuestaResultado, ganancia });
     document.querySelectorAll('.res-popover').forEach(p => p.remove());
     showToast(ganancia >= 0 ? `✅ Apuesta ganada: +${ganancia.toFixed(2)} u` : `❌ Apuesta perdida: ${ganancia.toFixed(2)} u`);
     loadHistorial();
 }
 
 function calcROI() {
-    const lista = histGetAll().filter(h => h.apuesta && h.apuesta_en && h.resultado_real && h.ganancia !== null);
+    const lista = histGetAll().filter(h => h.apuesta && h.apuesta_en && h.ganancia !== null);
     if (!lista.length) return null;
     let totalApostado = 0, totalGanancia = 0;
     const curve = [];
