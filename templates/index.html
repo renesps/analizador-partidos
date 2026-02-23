@@ -1014,6 +1014,29 @@
         body.light-mode .apuesta-registrada { background:rgba(124,109,234,.06); border-color:rgba(124,109,234,.18); }
         body.light-mode .apuesta-reg-row { color:#1a1a2e; }
 
+        /* Feature: Cuadros de apuestas IA */
+        .cuadros-apuestas { margin-top:14px; }
+        .cuadro-apuestas-card { background:#0d0e1a; border:1px solid #252638; border-radius:10px; margin-bottom:12px; overflow:hidden; }
+        .cuadro-apuestas-header { padding:10px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+        .cuadro-header-top   { background:linear-gradient(90deg,rgba(251,191,36,.12),rgba(251,191,36,.04)); color:#fbbf24; border-bottom:1px solid rgba(251,191,36,.2); }
+        .cuadro-header-combo { background:linear-gradient(90deg,rgba(124,109,234,.12),rgba(124,109,234,.04)); color:#a78bfa; border-bottom:1px solid rgba(124,109,234,.2); }
+        .cuadro-apuestas-items { padding:6px 0; }
+        .cuadro-apuesta-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; border-bottom:1px solid #1a1b2a; }
+        .cuadro-apuesta-item:last-child { border-bottom:none; }
+        .cuadro-num { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.06); color:#5a5a78; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+        .cuadro-content { flex:1; min-width:0; }
+        .cuadro-apuesta-nombre { font-size:13px; font-weight:700; color:#eaeaf5; margin-bottom:2px; }
+        .cuadro-mercado { font-size:11px; color:#7c6dea; font-weight:600; margin-bottom:3px; }
+        .cuadro-razon { font-size:11px; color:#5a5a78; line-height:1.4; }
+        .cuadro-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+        .cuadro-cuota { font-size:15px; font-weight:800; color:#eaeaf5; }
+        .cuadro-confianza { font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+        body.light-mode .cuadro-apuestas-card { background:#f8f8ff; border-color:#e0e0ed; }
+        body.light-mode .cuadro-apuesta-item { border-color:#e8e8f5; }
+        body.light-mode .cuadro-apuesta-nombre { color:#1a1a2e; }
+        body.light-mode .cuadro-razon { color:#6b6b99; }
+        body.light-mode .cuadro-cuota { color:#1a1a2e; }
+
         /* Feature: Análisis Batch */
         .btn-batch-telegram { background:linear-gradient(135deg,#2563eb,#7c6dea); color:#fff; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; width:100%; margin-top:14px; box-shadow:0 4px 14px rgba(124,109,234,.3); transition:opacity .15s; }
         .btn-batch-telegram:hover { opacity:.88; transform:none; }
@@ -2848,10 +2871,83 @@ IMPORTANTE: Sé directo y específico. Priorizá confianza sobre cuota. Si un pi
 /* ════════════════════════════════════════════════════════════════════════════
    MARKDOWN RENDERER
 ════════════════════════════════════════════════════════════════════════════ */
+function parsearCuadroApuestas(text) {
+    const bloques = [];
+    // Detecta bloques ═══...🏆/🔗...═══ seguidos de una tabla markdown
+    const re = /={3,}[^\n]*\n([^\n]*(🏆|🔗)[^\n]*)\n={3,}\n([\s\S]*?)(?=\n={3,}|$)/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+        const emoji = m[2];
+        const esTop = emoji === '🏆';
+        const tabla = m[3];
+        const filas = tabla.split('\n')
+            .filter(l => l.startsWith('|') && !/^\|[\s|:-]+\|$/.test(l))
+            .slice(1) // skip header row
+            .map(l => {
+                const cols = l.split('|').map(c => c.trim()).filter(Boolean);
+                if (cols.length < 5) return null;
+                return {
+                    num:       cols[0],
+                    apuesta:   cols[1],
+                    mercado:   cols[2],
+                    cuota:     cols[3],
+                    confianza: cols[4],
+                    razon:     cols[5] || '',
+                };
+            }).filter(Boolean);
+        if (filas.length) bloques.push({ esTop, filas });
+    }
+    return bloques;
+}
+
+function renderCuadrosApuestas(bloques) {
+    if (!bloques.length) return '';
+    let html = '<div class="cuadros-apuestas">';
+    for (const bloque of bloques) {
+        const titulo      = bloque.esTop ? '🏆 Top 3 Apuestas · cuota ~1.80' : '🔗 Para Combinar · cuota ~1.50';
+        const headerClass = bloque.esTop ? 'cuadro-header-top' : 'cuadro-header-combo';
+        html += `<div class="cuadro-apuestas-card">
+            <div class="cuadro-apuestas-header ${headerClass}">${titulo}</div>
+            <div class="cuadro-apuestas-items">`;
+        for (const f of bloque.filas) {
+            const confNum   = parseInt(f.confianza) || 0;
+            const confColor = confNum >= 70 ? '#22c55e' : confNum >= 50 ? '#fbbf24' : '#8e8eaa';
+            const confBg    = confNum >= 70 ? 'rgba(34,197,94,.1)' : confNum >= 50 ? 'rgba(251,191,36,.1)' : 'rgba(255,255,255,.04)';
+            html += `<div class="cuadro-apuesta-item">
+                <div class="cuadro-num">${f.num}</div>
+                <div class="cuadro-content">
+                    <div class="cuadro-apuesta-nombre">${f.apuesta}</div>
+                    <div class="cuadro-mercado">${f.mercado}</div>
+                    ${f.razon ? `<div class="cuadro-razon">${f.razon}</div>` : ''}
+                </div>
+                <div class="cuadro-right">
+                    <div class="cuadro-cuota">${f.cuota}</div>
+                    <div class="cuadro-confianza" style="color:${confColor};background:${confBg}">${f.confianza}</div>
+                </div>
+            </div>`;
+        }
+        html += `</div></div>`;
+    }
+    html += '</div>';
+    return html;
+}
+
 function markdownToHtml(text) {
-    const secciones = text.split(/(?=\n\d+\.\s+\*\*)/);
+    // 1. Extraer cuadros de apuestas del final del texto
+    const bloques = parsearCuadroApuestas(text);
+
+    // 2. Quitar los cuadros del texto para procesar el resto normalmente
+    let textoSinCuadros = text;
+    if (bloques.length) {
+        const corte = text.search(/={3,}[^\n]*\n[^\n]*(?:🏆|🔗)/);
+        if (corte > 0) textoSinCuadros = text.slice(0, corte);
+    }
+
+    // 3. Procesar secciones 1-11 como antes
+    const secciones = textoSinCuadros.split(/(?=\n\d+\.\s+\*\*)/);
+    let htmlBase = '';
     if (secciones.length > 1) {
-        return secciones.map(sec => {
+        htmlBase = secciones.map(sec => {
             const matchTitulo = sec.match(/^\n?(\d+\.\s+\*\*([^*]+)\*\*)([\s\S]*)/);
             if (matchTitulo) {
                 const titulo = matchTitulo[2].trim();
@@ -2863,8 +2959,14 @@ function markdownToHtml(text) {
             }
             return `<p>${procesarMarkdown(sec)}</p>`;
         }).join('');
+    } else {
+        htmlBase = procesarMarkdown(textoSinCuadros);
     }
-    return procesarMarkdown(text);
+
+    // 4. Agregar cuadros visuales al final
+    if (bloques.length) htmlBase += renderCuadrosApuestas(bloques);
+
+    return htmlBase;
 }
 
 function procesarMarkdown(text) {
